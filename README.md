@@ -1,13 +1,26 @@
-# PyQtPass
+# PyQtPass: Python Port of QtPass
 
-PyQtPass is a graphical user interface built with PyQt5 for the `pass` password manager, leveraging the `passpy` library to provide a user-friendly way to interact with passwords stored securely.
+## Introduction
+
+Welcome to PyQtPass, an experimental and early-stage Python port of the renowned QtPass, originally developed in C++. This initiative aims to leverage the versatility and simplicity of Python to enhance maintainability and extend the functionality of QtPass, a user-friendly GUI for `pass`, the standard Unix password manager.
+
+QtPass has been a staple for users who prefer a graphical interface to manage their passwords securely and conveniently. Recognizing the growing Python ecosystem and its powerful libraries, PyQtPass is an endeavor to transition the application from C++ to Python. This move not only aligns with modern development practices but also opens up new avenues for features and improvements.
+
+## Project Status: Experimental
+
+Please note that PyQtPass is currently in an **early experimental phase**. This means that while it encompasses the core functionalities of the original QtPass, it might not yet offer the full range of features, and you might encounter bugs or limitations that are typical in early-stage software.
+
+We are actively developing PyQtPass and working towards a more stable and feature-rich version. Your feedback and contributions during this phase are invaluable and will help shape the future of this project.
 
 ## Features
 
-- **Browse Passwords**: View your password entries in a tree structure that reflects the `pass` storage hierarchy.
-- **Retrieve Passwords**: Double-click on an entry to view the corresponding password or secret.
-- **Search and Filter**: Use the search box to filter out the entries you are looking for.
-- **Cross-Platform**: Runs anywhere PyQt5 and `pass` can be installed.
+As of now, PyQtPass provides the following features:
+
+- Graphical interface to interact with the `pass` password store.
+- Tree view for password navigation.
+- Password retrieval and display with a simple double-click action.
+- Basic filtering capabilities to easily find specific passwords.
+- Cross-platform compatibility, thanks to the Python and PyQt5 combination.
 
 ## Installation
 
@@ -38,9 +51,13 @@ Upon launching PyQtPass, you will see a split interface.
 On the left side is the tree view of your passwords, and on the right is the text area where the content of the selected password entry is displayed.
 You can filter the entries using the search box above the tree view.
 
-## Contributing
+## Contributions and Feedback
 
-Contributions to PyQtPass are welcome! Feel free to submit pull requests or open issues to suggest features or report bugs.
+We warmly welcome contributions, be it in the form of code, bug reports, suggestions, or documentation.
+
+Since PyQtPass is in its experimental stage, your input is crucial for its refinement and progression.
+
+Should you encounter any issues or have feature suggestions, please feel free to open an issue on our [GitHub issues page](https://github.com/annejan/PyQtPass/issues).
 
 ## License
 
@@ -58,4 +75,4 @@ Contributions to PyQtPass are welcome! Feel free to submit pull requests or open
 
 - `pass`: The standard Unix password manager.
 - `passpy`: A Python library for interacting with `pass`.
-- Co-Authorship: This project includes code co-written with the assistance of ChatGPT from OpenAI.
+- Co-Authorship: This project includes code and documentation co-written with the assistance of ChatGPT from OpenAI.
