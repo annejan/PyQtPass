@@ -11,6 +11,7 @@ Dependencies:
     - sys
 """
 
+import argparse
 import os
 import sys
 import passpy
@@ -82,8 +83,9 @@ class QtPassGUI(QMainWindow):
     PyQt GUI class for the passpy password store.
     """
 
-    def __init__(self):
+    def __init__(self, verbose=False):
         super().__init__()
+        self.verbose = verbose
         self.proxy_model = None
         self.filter_text_box = None
         self.text_edit = None
@@ -96,18 +98,21 @@ class QtPassGUI(QMainWindow):
         """
         Handle the double click event on an item in the tree view.
 
-        :param index: The index of the double-clicked item in the tree model.
+        :param index: The index of the double-clicked item in the proxy model.
         """
-        item = self.tree_model.itemFromIndex(index)
+        # Map the index from the proxy model to the source model
+        source_index = self.proxy_model.mapToSource(index)
+        # Get the item from the source model
+        item = self.tree_model.itemFromIndex(source_index)
         path = get_item_full_path(item)
         try:
             password = self.store.get_key(path)
             self.text_edit.setText(password)
-            print(f"Double-clicked on: {path}")
+            if self.verbose:
+                print(f"Double-clicked on: {path}")
         except FileNotFoundError:
-            print(f"Cannot retrieve key for a directory or non-existent key: {path}")
-            # self.textEdit.clear()
-            # self.textEdit.setText(f"Item at path '{path}' is not a file or does not exist.")
+            if self.verbose:
+                print(f"Cannot retrieve key for a directory or non-existent key: {path}")
 
     def on_selection_changed(self, selected, deselected):
         """
@@ -118,8 +123,12 @@ class QtPassGUI(QMainWindow):
         """
         indexes = selected.indexes()
         if indexes:
-            item = self.tree_model.itemFromIndex(indexes[0])
-            print(f"Selected: {get_item_full_path(item)}")
+            # Map the index from the proxy model to the source model
+            source_index = self.proxy_model.mapToSource(indexes[0])
+            # Get the item from the source model
+            item = self.tree_model.itemFromIndex(source_index)
+            if self.verbose:
+                print(f"Selected: {get_item_full_path(item)}")
 
     def filter_tree_view(self, text):
         """
@@ -185,13 +194,17 @@ class QtPassGUI(QMainWindow):
         self.setCentralWidget(central_widget)
 
         self.setGeometry(300, 300, 768, 596)
-        self.setWindowTitle("Python QtPass")
+        self.setWindowTitle("PyQtPass Experimental")
 
 
 def main():
     """
     Main function to start the PyQt application.
     """
+    parser = argparse.ArgumentParser(description='PyQtPass: A GUI for the pass password manager.')
+    parser.add_argument('-v', '--verbose', action='store_true', help='Increase output verbosity.')
+    args = parser.parse_args()
+
     app = QApplication(sys.argv)
     if sys.platform == "win32":
         icon_path = 'artwork/icon.ico'
@@ -201,7 +214,7 @@ def main():
         icon_path = 'artwork/icon.svg'
     icon_full_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), icon_path)
     app.setWindowIcon(QIcon(icon_full_path))
-    ex = QtPassGUI()
+    ex = QtPassGUI(verbose=args.verbose)
     ex.show()
     sys.exit(app.exec_())
 

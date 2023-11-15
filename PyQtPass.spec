@@ -34,4 +34,12 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon='artwork/icon.ico',
+)
+
+app = BUNDLE(
+    exe,
+    name='PyQtPass.app',
+    icon='artwork/icon.icns',
+    bundle_identifier='com.IJHack.PyQtPass'
 )
