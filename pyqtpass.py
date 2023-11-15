@@ -50,20 +50,24 @@ def create_tree_model(store):
         :param parent: The parent item in the tree model.
         :param path: The current path of items being added.
         """
-        directories, entries = store.list_dir(path)
+        try:
+            directories, entries = store.list_dir(path)
+            for directory in directories:
+                dir_name = os.path.basename(directory)
+                dir_item = QStandardItem(dir_name)
+                dir_item.setFlags(dir_item.flags() & ~Qt.ItemIsEditable)
+                parent.appendRow(dir_item)
+                add_items(
+                    dir_item, os.path.join(path, directory) if path else directory
+                )
 
-        for directory in directories:
-            dir_name = os.path.basename(directory)
-            dir_item = QStandardItem(dir_name)
-            dir_item.setFlags(dir_item.flags() & ~Qt.ItemIsEditable)
-            parent.appendRow(dir_item)
-            add_items(dir_item, os.path.join(path, directory) if path else directory)
-
-        for entry in entries:
-            entry_name = os.path.basename(entry)
-            entry_item = QStandardItem(entry_name)
-            entry_item.setFlags(entry_item.flags() & ~Qt.ItemIsEditable)
-            parent.appendRow(entry_item)
+            for entry in entries:
+                entry_name = os.path.basename(entry)
+                entry_item = QStandardItem(entry_name)
+                entry_item.setFlags(entry_item.flags() & ~Qt.ItemIsEditable)
+                parent.appendRow(entry_item)
+        except (FileNotFoundError, PermissionError) as e:
+            print(f"Error accessing {path}: {e}")
 
     add_items(model.invisibleRootItem(), "")
     return model
@@ -95,8 +99,12 @@ class QtPassGUI(QMainWindow):
         self.filter_text_box = None
         self.text_edit = None
         self.tree_view = None
-        self.store = passpy.Store()
-        self.tree_model = create_tree_model(self.store)
+        try:
+            self.store = passpy.Store()
+            self.tree_model = create_tree_model(self.store)
+        except passpy.StoreNotInitialisedError as e:
+            print(f"Error initializing passpy store: {e}")
+            sys.exit(1)
         self.init_ui()
 
     def on_item_double_clicked(self, index):
@@ -119,12 +127,12 @@ class QtPassGUI(QMainWindow):
                 f"Cannot retrieve key for a directory or non-existent key: {path}"
             )
 
-    def on_selection_changed(self, selected, deselected):
+    def on_selection_changed(self, selected, _deselected):
         """
         Handle the selection change event in the tree view.
 
         :param selected: The new selection.
-        :param deselected: The old selection.
+        :param _deselected: The old selection (unused)
         """
         indexes = selected.indexes()
         if indexes:
