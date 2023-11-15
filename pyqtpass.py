@@ -31,6 +31,7 @@ from PyQt5.QtWidgets import (
 )
 
 from settingsmanager import SettingsManager
+from configdialog import ConfigDialog
 
 PLATFORM_ICONS = {
     "win32": "artwork/icon.ico",
@@ -273,6 +274,13 @@ class QtPassGUI(QMainWindow):
             else:
                 self.show()
 
+    def open_config_dialog(self):
+        """
+        Opens the configuration dialog.
+        """
+        dialog = ConfigDialog()
+        dialog.exec_()
+
     def verbose_print(self, *args, **kwargs):
         """
         Prints messages to the console if verbose mode is enabled.
@@ -283,6 +291,7 @@ class QtPassGUI(QMainWindow):
     def exit(self):
         """
         Really quit that shit.
+        But save first <3
         :return:
         """
         self.save_settings()
@@ -308,6 +317,12 @@ class QtPassGUI(QMainWindow):
 
         self.setGeometry(300, 300, 768, 596)
         self.setWindowTitle("PyQtPass Experimental")
+
+        menubar = self.menuBar()
+        settings_menu = menubar.addMenu("Settings")
+        settings_action = QAction("Config", self)
+        settings_action.triggered.connect(self.open_config_dialog)
+        settings_menu.addAction(settings_action)
 
         self.ui.tray_icon = QSystemTrayIcon(QIcon("artwork/icon.svg"), self)
         self.ui.tray_icon.setToolTip("PyQtPass")
