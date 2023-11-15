@@ -30,6 +30,8 @@ from PyQt5.QtWidgets import (
     QAction,
 )
 
+from settingsmanager import SettingsManager
+
 PLATFORM_ICONS = {
     "win32": "artwork/icon.ico",
     "darwin": "artwork/icon.icns",
@@ -96,10 +98,11 @@ class UiContainer:
     """
 
     def __init__(self):
+        self.tree_model = None
+
         self.text_edit = None
         self.tree_view = None
         self.tray_icon = None
-        self.tree_model = None
 
         self.central_widget = QWidget()
         self.filter_text_box = QLineEdit()
@@ -113,6 +116,9 @@ class UiContainer:
         Set up the User Interface items
         :param splitter:
         """
+        if not self.tree_model:
+            print("No tree nodel")
+            sys.exit(1)
         self.proxy_model.setSourceModel(self.tree_model)
         self.proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
         self.proxy_model.setRecursiveFilteringEnabled(True)  # Requires PyQt5 >= 5.10
@@ -157,6 +163,7 @@ class QtPassGUI(QMainWindow):
 
     def __init__(self, verbose=False):
         super().__init__()
+        self.splitter = None
         self.ui = UiContainer()
         self.verbose = verbose
         try:
@@ -165,7 +172,50 @@ class QtPassGUI(QMainWindow):
         except passpy.StoreNotInitialisedError as e:
             print(f"Error initializing passpy store: {e}")
             sys.exit(1)
+        self.settings = SettingsManager()
         self.init_ui()
+        self.restore_settings()
+
+    def closeEvent(self, event):  # pylint: disable=invalid-name
+        """
+        Handles the close event of the window.
+
+        This method is overridden to control the behavior of the application on window close.
+        Depending on the 'close_is_hide' setting, the window will either be hidden or closed.
+
+        Note: The method name 'closeEvent' is a Qt5 convention and does not follow the PEP8
+        snake_case naming style. The Pylint warning for the method name is disabled for this reason.
+
+        Args:
+            event: The close event object, which contains information about the close event.
+        """
+        if self.settings.get_close_is_hide():
+            self.hide()
+            event.ignore()
+        else:
+            self.save_settings()
+            event.accept()
+
+    def save_settings(self):
+        """
+        Saves the current settings of the application.
+
+        This method stores the current window geometry and splitter sizes into the settings
+        so that these can be restored the next time the application is started.
+        """
+        self.settings.set_window_geometry(self.saveGeometry())
+        self.settings.set_splitter_sizes(self.splitter.sizes())
+
+    def restore_settings(self):
+        """
+        Restores the saved settings of the application.
+
+        This method retrieves the previously saved window geometry and splitter sizes
+        from the settings and applies them to restore the state of the application
+        as it was in the previous session.
+        """
+        self.restoreGeometry(self.settings.get_window_geometry())
+        self.splitter.setSizes(self.settings.get_splitter_sizes())
 
     def on_item_double_clicked(self, index):
         """
@@ -200,6 +250,11 @@ class QtPassGUI(QMainWindow):
             item = self.ui.tree_model.itemFromIndex(source_index)
             self.verbose_print(f"Selected: {get_item_full_path(item)}")
 
+            # Check if 'select_is_open' setting is True
+            if self.settings.get_select_is_open():
+                # Perform the double click action or additional logic here
+                self.on_item_double_clicked(indexes[0])
+
     def on_tray_icon_clicked(self, reason):
         """
         Handles the click event on the system tray icon.
@@ -225,12 +280,20 @@ class QtPassGUI(QMainWindow):
         if self.verbose:
             print(*args, **kwargs)
 
+    def exit(self):
+        """
+        Really quit that shit.
+        :return:
+        """
+        self.save_settings()
+        sys.exit(1)
+
     def init_ui(self):
         """
         Initialize the user interface.
         """
-        splitter = QSplitter(self)
-        self.ui.setup_ui(splitter)
+        self.splitter = QSplitter(self)
+        self.ui.setup_ui(self.splitter)
         self.ui.tree_view.doubleClicked.connect(self.on_item_double_clicked)
         self.ui.tree_view.selectionModel().selectionChanged.connect(
             self.on_selection_changed
@@ -254,7 +317,7 @@ class QtPassGUI(QMainWindow):
         open_action = QAction("Open PyQtPass", self)
         open_action.triggered.connect(self.show)
         exit_action = QAction("Exit", self)
-        exit_action.triggered.connect(self.close)
+        exit_action.triggered.connect(self.exit)
         tray_menu.addAction(open_action)
         tray_menu.addAction(exit_action)
         self.ui.tray_icon.setContextMenu(tray_menu)
