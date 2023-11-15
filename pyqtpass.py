@@ -7,8 +7,6 @@ password retrieval by double-clicking on a password entry.
 Dependencies:
     - PyQt5
     - passpy
-    - os
-    - sys
 """
 
 import argparse
@@ -123,9 +121,7 @@ class QtPassGUI(QMainWindow):
         """
         indexes = selected.indexes()
         if indexes:
-            # Map the index from the proxy model to the source model
             source_index = self.proxy_model.mapToSource(indexes[0])
-            # Get the item from the source model
             item = self.tree_model.itemFromIndex(source_index)
             if self.verbose:
                 print(f"Selected: {get_item_full_path(item)}")
@@ -133,46 +129,40 @@ class QtPassGUI(QMainWindow):
     def filter_tree_view(self, text):
         """
         Filter the tree view based on the text input in the filter text box.
+        Uses a regular expression to filter the tree view.
 
         :param text: Text to filter the tree view.
         """
-        # Use a regular expression to filter the tree view
+        #
         self.proxy_model.setFilterRegularExpression(text)
 
     def init_ui(self):
         """
         Initialize the user interface.
         """
-        # Create a splitter to divide the tree view and the text area
         splitter = QSplitter(self)
 
-        # Create a layout for the top part of the splitter (search box and tree view)
         top_layout = QVBoxLayout()
 
-        # Create the filter text box
         self.filter_text_box = QLineEdit()
         self.filter_text_box.setPlaceholderText("Type here to filter passwords...")
         self.filter_text_box.textChanged.connect(self.filter_tree_view)
         top_layout.addWidget(self.filter_text_box)
 
-        # Create the proxy model for filtering and set the source model
         self.proxy_model = QSortFilterProxyModel()
         self.proxy_model.setSourceModel(self.tree_model)
         self.proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
         self.proxy_model.setRecursiveFilteringEnabled(True)  # Requires PyQt5 >= 5.10
 
-        # Create the tree view
         self.tree_view = QTreeView(splitter)
         self.tree_view.setHeaderHidden(True)
         self.tree_view.setModel(self.proxy_model)
 
-        # Add the tree view to the top layout and then to the splitter
         top_layout.addWidget(self.tree_view)
-        top_widget = QWidget()  # Create a container widget for the top layout
+        top_widget = QWidget()
         top_widget.setLayout(top_layout)
         splitter.addWidget(top_widget)
 
-        # Connect signals to slots
         self.tree_view.doubleClicked.connect(self.on_item_double_clicked)
         self.tree_view.selectionModel().selectionChanged.connect(
             self.on_selection_changed
