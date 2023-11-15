@@ -39,10 +39,14 @@ class ConfigDialog(QtWidgets.QDialog):
         self.setWindowTitle("Configuration")
 
         self.select_is_open_checkbox = QtWidgets.QCheckBox("Select Is Open", self)
-        self.select_is_open_checkbox.setChecked(self.settings_manager.get_select_is_open())
+        self.select_is_open_checkbox.setChecked(
+            self.settings_manager.get_select_is_open()
+        )
 
         self.close_is_hide_checkbox = QtWidgets.QCheckBox("Close Is Hide", self)
-        self.close_is_hide_checkbox.setChecked(self.settings_manager.get_close_is_hide())
+        self.close_is_hide_checkbox.setChecked(
+            self.settings_manager.get_close_is_hide()
+        )
 
         self.save_button = QtWidgets.QPushButton("Save", self)
         self.save_button.clicked.connect(self.save_settings)
@@ -60,6 +64,8 @@ class ConfigDialog(QtWidgets.QDialog):
         This method is connected to the save button's clicked signal and updates the
         application settings to reflect the state of the checkboxes when the button is pressed.
         """
-        self.settings_manager.set_select_is_open(self.select_is_open_checkbox.isChecked())
+        self.settings_manager.set_select_is_open(
+            self.select_is_open_checkbox.isChecked()
+        )
         self.settings_manager.set_close_is_hide(self.close_is_hide_checkbox.isChecked())
         self.close()
