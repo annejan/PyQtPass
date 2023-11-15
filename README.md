@@ -1,6 +1,6 @@
 # PyQtPass
 
-PyQtPass is a graphical user interface built with PyQt5 for the `pass` password manager, leveraging the `passpy` library to provide a user-friendly way to interact with passwords stored securely on a Unix system.
+PyQtPass is a graphical user interface built with PyQt5 for the `pass` password manager, leveraging the `passpy` library to provide a user-friendly way to interact with passwords stored securely.
 
 ## Features
 
@@ -58,4 +58,4 @@ Contributions to PyQtPass are welcome! Feel free to submit pull requests or open
 
 - `pass`: The standard Unix password manager.
 - `passpy`: A Python library for interacting with `pass`.
-
+- Co-Authorship: This project includes code co-written with the assistance of ChatGPT from OpenAI.

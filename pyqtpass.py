@@ -15,7 +15,7 @@ import os
 import sys
 import passpy
 from PyQt5.QtCore import Qt, QSortFilterProxyModel
-from PyQt5.QtGui import QStandardItemModel, QStandardItem
+from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon
 from PyQt5.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -193,6 +193,14 @@ def main():
     Main function to start the PyQt application.
     """
     app = QApplication(sys.argv)
+    if sys.platform == "win32":
+        icon_path = 'artwork/icon.ico'
+    elif sys.platform == "darwin":
+        icon_path = 'artwork/icon.icns'
+    else:
+        icon_path = 'artwork/icon.svg'
+    icon_full_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), icon_path)
+    app.setWindowIcon(QIcon(icon_full_path))
     ex = QtPassGUI()
     ex.show()
     sys.exit(app.exec_())
