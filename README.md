@@ -2,15 +2,20 @@
 
 ## Introduction
 
-Welcome to PyQtPass, an experimental and early-stage Python port of the renowned QtPass, originally developed in C++. This initiative aims to leverage the versatility and simplicity of Python to enhance maintainability and extend the functionality of QtPass, a user-friendly GUI for `pass`, the standard Unix password manager.
+Welcome to PyQtPass, an experimental and early-stage Python port of the renowned QtPass, originally developed in C++.
+This initiative aims to leverage the versatility and simplicity of Python to enhance maintainability and extend the functionality of QtPass, a user-friendly GUI for `pass`, the standard Unix password manager.
 
-QtPass has been a staple for users who prefer a graphical interface to manage their passwords securely and conveniently. Recognizing the growing Python ecosystem and its powerful libraries, PyQtPass is an endeavor to transition the application from C++ to Python. This move not only aligns with modern development practices but also opens up new avenues for features and improvements.
+QtPass has been a staple for users who prefer a graphical interface to manage their passwords securely and conveniently.
+Recognizing the growing Python ecosystem and its powerful libraries, PyQtPass is an endeavor to transition the application from C++ to Python.
+This move not only aligns with modern development practices but also opens up new avenues for features and improvements.
 
 ## Project Status: Experimental
 
-Please note that PyQtPass is currently in an **early experimental phase**. This means that while it encompasses the core functionalities of the original QtPass, it might not yet offer the full range of features, and you might encounter bugs or limitations that are typical in early-stage software.
+Please note that PyQtPass is currently in an **early experimental phase**.
+This means that while it encompasses the core functionalities of the original QtPass, it might not yet offer the full range of features, and you might encounter bugs or limitations that are typical in early-stage software.
 
-We are actively developing PyQtPass and working towards a more stable and feature-rich version. Your feedback and contributions during this phase are invaluable and will help shape the future of this project.
+We are actively developing PyQtPass and working towards a more stable and feature-rich version.
+Your feedback and contributions during this phase are invaluable and will help shape the future of this project.
 
 ## Features
 
@@ -47,7 +52,7 @@ Before running PyQtPass, ensure you have `pass` and `gpg` properly set up on you
 
 ## Usage
 
-Upon launching PyQtPass, you will see a split interface. 
+Upon launching PyQtPass, you will see a split interface.
 On the left side is the tree view of your passwords, and on the right is the text area where the content of the selected password entry is displayed.
 You can filter the entries using the search box above the tree view.
 
@@ -73,6 +78,7 @@ Should you encounter any issues or have feature suggestions, please feel free to
 
 ## Acknowledgments
 
-- `pass`: The standard Unix password manager.
-- `passpy`: A Python library for interacting with `pass`.
+- `pass`: The standard Unix password manager. For more information, visit [passwordstore.org](https://www.passwordstore.org/).
+- `Qt Framework`: PyQtPass utilizes the Qt Framework, specifically Qt 5, a comprehensive set of C++ libraries and development tools that enable the creation of cross-platform applications.
+  Discover more about the Qt Framework at [qt.io](https://www.qt.io/).
 - Co-Authorship: This project includes code and documentation co-written with the assistance of ChatGPT from OpenAI.
