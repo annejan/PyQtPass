@@ -14,7 +14,7 @@ Dependencies:
 import os
 import sys
 import passpy
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QSortFilterProxyModel
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import (
     QApplication,
@@ -24,6 +24,7 @@ from PyQt5.QtWidgets import (
     QTextEdit,
     QVBoxLayout,
     QWidget,
+    QLineEdit,
 )
 
 
@@ -83,6 +84,8 @@ class QtPassGUI(QMainWindow):
 
     def __init__(self):
         super().__init__()
+        self.proxy_model = None
+        self.filter_text_box = None
         self.text_edit = None
         self.tree_view = None
         self.store = passpy.Store()
@@ -118,20 +121,56 @@ class QtPassGUI(QMainWindow):
             item = self.tree_model.itemFromIndex(indexes[0])
             print(f"Selected: {get_item_full_path(item)}")
 
+    def filter_tree_view(self, text):
+        """
+        Filter the tree view based on the text input in the filter text box.
+
+        :param text: Text to filter the tree view.
+        """
+        # Use a regular expression to filter the tree view
+        self.proxy_model.setFilterRegularExpression(text)
+
     def init_ui(self):
         """
         Initialize the user interface.
         """
+        # Create a splitter to divide the tree view and the text area
         splitter = QSplitter(self)
+
+        # Create a layout for the top part of the splitter (search box and tree view)
+        top_layout = QVBoxLayout()
+
+        # Create the filter text box
+        self.filter_text_box = QLineEdit()
+        self.filter_text_box.setPlaceholderText("Type here to filter passwords...")
+        self.filter_text_box.textChanged.connect(self.filter_tree_view)
+        top_layout.addWidget(self.filter_text_box)
+
+        # Create the proxy model for filtering and set the source model
+        self.proxy_model = QSortFilterProxyModel()
+        self.proxy_model.setSourceModel(self.tree_model)
+        self.proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
+        self.proxy_model.setRecursiveFilteringEnabled(True)  # Requires PyQt5 >= 5.10
+
+        # Create the tree view
         self.tree_view = QTreeView(splitter)
         self.tree_view.setHeaderHidden(True)
-        self.tree_view.setModel(self.tree_model)
+        self.tree_view.setModel(self.proxy_model)
+
+        # Add the tree view to the top layout and then to the splitter
+        top_layout.addWidget(self.tree_view)
+        top_widget = QWidget()  # Create a container widget for the top layout
+        top_widget.setLayout(top_layout)
+        splitter.addWidget(top_widget)
+
+        # Connect signals to slots
         self.tree_view.doubleClicked.connect(self.on_item_double_clicked)
         self.tree_view.selectionModel().selectionChanged.connect(
             self.on_selection_changed
         )
 
         self.text_edit = QTextEdit(splitter)
+
         self.text_edit.setText(
             "PyQtPass is a GUI for pass, the standard Unix password manager.\n\n"
             "Please report any issues you might have with this software."
