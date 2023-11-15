@@ -12,6 +12,7 @@ Dependencies:
 import argparse
 import os
 import sys
+
 import passpy
 from PyQt5.QtCore import Qt, QSortFilterProxyModel
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon
@@ -25,6 +26,12 @@ from PyQt5.QtWidgets import (
     QWidget,
     QLineEdit,
 )
+
+PLATFORM_ICONS = {
+    "win32": "artwork/icon.ico",
+    "darwin": "artwork/icon.icns",
+    "default": "artwork/icon.svg",  # Assuming 'linux' for all other platforms
+}
 
 
 def create_tree_model(store):
@@ -106,11 +113,11 @@ class QtPassGUI(QMainWindow):
         try:
             password = self.store.get_key(path)
             self.text_edit.setText(password)
-            if self.verbose:
-                print(f"Double-clicked on: {path}")
+            self.verbose_print(f"Double-clicked on: {path}")
         except FileNotFoundError:
-            if self.verbose:
-                print(f"Cannot retrieve key for a directory or non-existent key: {path}")
+            self.verbose_print(
+                f"Cannot retrieve key for a directory or non-existent key: {path}"
+            )
 
     def on_selection_changed(self, selected, deselected):
         """
@@ -123,8 +130,7 @@ class QtPassGUI(QMainWindow):
         if indexes:
             source_index = self.proxy_model.mapToSource(indexes[0])
             item = self.tree_model.itemFromIndex(source_index)
-            if self.verbose:
-                print(f"Selected: {get_item_full_path(item)}")
+            self.verbose_print(f"Selected: {get_item_full_path(item)}")
 
     def filter_tree_view(self, text):
         """
@@ -135,6 +141,13 @@ class QtPassGUI(QMainWindow):
         """
         #
         self.proxy_model.setFilterRegularExpression(text)
+
+    def verbose_print(self, *args, **kwargs):
+        """
+        Prints messages to the console if verbose mode is enabled.
+        """
+        if self.verbose:
+            print(*args, **kwargs)
 
     def init_ui(self):
         """
@@ -189,21 +202,20 @@ class QtPassGUI(QMainWindow):
 
 def main():
     """
-    Main function to start the PyQt application.
+    Main function to start the PyQtPass application.
     """
-    parser = argparse.ArgumentParser(description='PyQtPass: A GUI for the pass password manager.')
-    parser.add_argument('-v', '--verbose', action='store_true', help='Increase output verbosity.')
+    parser = argparse.ArgumentParser(
+        description="PyQtPass: A GUI for the pass password manager."
+    )
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="Increase output verbosity."
+    )
     args = parser.parse_args()
 
     app = QApplication(sys.argv)
-    if sys.platform == "win32":
-        icon_path = 'artwork/icon.ico'
-    elif sys.platform == "darwin":
-        icon_path = 'artwork/icon.icns'
-    else:
-        icon_path = 'artwork/icon.svg'
-    icon_full_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), icon_path)
-    app.setWindowIcon(QIcon(icon_full_path))
+    platform = sys.platform if sys.platform in PLATFORM_ICONS else "default"
+    icon_path = PLATFORM_ICONS[platform]
+    app.setWindowIcon(QIcon(os.path.join(os.path.dirname(__file__), icon_path)))
     ex = QtPassGUI(verbose=args.verbose)
     ex.show()
     sys.exit(app.exec_())
