@@ -25,6 +25,9 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QWidget,
     QLineEdit,
+    QSystemTrayIcon,
+    QMenu,
+    QAction,
 )
 
 PLATFORM_ICONS = {
@@ -87,6 +90,66 @@ def get_item_full_path(item):
     return "/".join(path_list)
 
 
+class UiContainer:
+    """
+    User Interface Container Class
+    """
+
+    def __init__(self):
+        self.text_edit = None
+        self.tree_view = None
+        self.tray_icon = None
+        self.tree_model = None
+
+        self.central_widget = QWidget()
+        self.filter_text_box = QLineEdit()
+        self.proxy_model = QSortFilterProxyModel()
+
+        self.filter_text_box.setPlaceholderText("Type here to filter passwords...")
+        self.filter_text_box.textChanged.connect(self.filter_tree_view)
+
+    def setup_ui(self, splitter):
+        """
+        Set up the User Interface items
+        :param splitter:
+        """
+        self.proxy_model.setSourceModel(self.tree_model)
+        self.proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
+        self.proxy_model.setRecursiveFilteringEnabled(True)  # Requires PyQt5 >= 5.10
+
+        self.tree_view = QTreeView()
+        self.tree_view.setHeaderHidden(True)
+        self.tree_view.setModel(self.proxy_model)
+
+        top_layout = QVBoxLayout()
+        top_layout.addWidget(self.filter_text_box)
+        top_layout.addWidget(self.tree_view)
+
+        top_widget = QWidget()
+        top_widget.setLayout(top_layout)
+
+        self.text_edit = QTextEdit()
+
+        splitter.addWidget(top_widget)
+        splitter.addWidget(self.text_edit)
+
+        splitter.setSizes([200, 400])  # Adjust these values as needed
+
+        vbox = QVBoxLayout()
+        vbox.addWidget(splitter)
+        self.central_widget.setLayout(vbox)
+
+    def filter_tree_view(self, text):
+        """
+        Filter the tree view based on the text input in the filter text box.
+        Uses a regular expression to filter the tree view.
+
+        :param text: Text to filter the tree view.
+        """
+        #
+        self.proxy_model.setFilterRegularExpression(text)
+
+
 class QtPassGUI(QMainWindow):
     """
     PyQt GUI class for the passpy password store.
@@ -94,14 +157,11 @@ class QtPassGUI(QMainWindow):
 
     def __init__(self, verbose=False):
         super().__init__()
+        self.ui = UiContainer()
         self.verbose = verbose
-        self.proxy_model = None
-        self.filter_text_box = None
-        self.text_edit = None
-        self.tree_view = None
         try:
             self.store = passpy.Store()
-            self.tree_model = create_tree_model(self.store)
+            self.ui.tree_model = create_tree_model(self.store)
         except passpy.StoreNotInitialisedError as e:
             print(f"Error initializing passpy store: {e}")
             sys.exit(1)
@@ -114,13 +174,13 @@ class QtPassGUI(QMainWindow):
         :param index: The index of the double-clicked item in the proxy model.
         """
         # Map the index from the proxy model to the source model
-        source_index = self.proxy_model.mapToSource(index)
+        source_index = self.ui.proxy_model.mapToSource(index)
         # Get the item from the source model
-        item = self.tree_model.itemFromIndex(source_index)
+        item = self.ui.tree_model.itemFromIndex(source_index)
         path = get_item_full_path(item)
         try:
             password = self.store.get_key(path)
-            self.text_edit.setText(password)
+            self.ui.text_edit.setText(password)
             self.verbose_print(f"Double-clicked on: {path}")
         except FileNotFoundError:
             self.verbose_print(
@@ -136,19 +196,27 @@ class QtPassGUI(QMainWindow):
         """
         indexes = selected.indexes()
         if indexes:
-            source_index = self.proxy_model.mapToSource(indexes[0])
-            item = self.tree_model.itemFromIndex(source_index)
+            source_index = self.ui.proxy_model.mapToSource(indexes[0])
+            item = self.ui.tree_model.itemFromIndex(source_index)
             self.verbose_print(f"Selected: {get_item_full_path(item)}")
 
-    def filter_tree_view(self, text):
+    def on_tray_icon_clicked(self, reason):
         """
-        Filter the tree view based on the text input in the filter text box.
-        Uses a regular expression to filter the tree view.
+        Handles the click event on the system tray icon.
 
-        :param text: Text to filter the tree view.
+        This method is triggered when the tray icon is interacted with, such as
+        a single click or double click. Depending on the current visibility of
+        the main window, it either hides the window (if visible) or shows it
+        (if hidden).
+
+        :param reason: The reason for the trigger, indicating the type of interaction
+                       (e.g., single click, double click).
         """
-        #
-        self.proxy_model.setFilterRegularExpression(text)
+        if reason in (QSystemTrayIcon.Trigger, QSystemTrayIcon.DoubleClick):
+            if self.isVisible():
+                self.hide()
+            else:
+                self.show()
 
     def verbose_print(self, *args, **kwargs):
         """
@@ -162,50 +230,36 @@ class QtPassGUI(QMainWindow):
         Initialize the user interface.
         """
         splitter = QSplitter(self)
-
-        top_layout = QVBoxLayout()
-
-        self.filter_text_box = QLineEdit()
-        self.filter_text_box.setPlaceholderText("Type here to filter passwords...")
-        self.filter_text_box.textChanged.connect(self.filter_tree_view)
-        top_layout.addWidget(self.filter_text_box)
-
-        self.proxy_model = QSortFilterProxyModel()
-        self.proxy_model.setSourceModel(self.tree_model)
-        self.proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
-        self.proxy_model.setRecursiveFilteringEnabled(True)  # Requires PyQt5 >= 5.10
-
-        self.tree_view = QTreeView(splitter)
-        self.tree_view.setHeaderHidden(True)
-        self.tree_view.setModel(self.proxy_model)
-
-        top_layout.addWidget(self.tree_view)
-        top_widget = QWidget()
-        top_widget.setLayout(top_layout)
-        splitter.addWidget(top_widget)
-
-        self.tree_view.doubleClicked.connect(self.on_item_double_clicked)
-        self.tree_view.selectionModel().selectionChanged.connect(
+        self.ui.setup_ui(splitter)
+        self.ui.tree_view.doubleClicked.connect(self.on_item_double_clicked)
+        self.ui.tree_view.selectionModel().selectionChanged.connect(
             self.on_selection_changed
         )
 
-        self.text_edit = QTextEdit(splitter)
-
-        self.text_edit.setText(
+        self.ui.text_edit.setText(
             "PyQtPass is a GUI for pass, the standard Unix password manager.\n\n"
             "Please report any issues you might have with this software."
         )
 
-        splitter.setSizes([200, 400])
-        vbox = QVBoxLayout()
-        vbox.addWidget(splitter)
-
-        central_widget = QWidget()
-        central_widget.setLayout(vbox)
-        self.setCentralWidget(central_widget)
+        self.setCentralWidget(self.ui.central_widget)
 
         self.setGeometry(300, 300, 768, 596)
         self.setWindowTitle("PyQtPass Experimental")
+
+        self.ui.tray_icon = QSystemTrayIcon(QIcon("artwork/icon.svg"), self)
+        self.ui.tray_icon.setToolTip("PyQtPass")
+        self.ui.tray_icon.activated.connect(self.on_tray_icon_clicked)
+
+        tray_menu = QMenu()
+        open_action = QAction("Open PyQtPass", self)
+        open_action.triggered.connect(self.show)
+        exit_action = QAction("Exit", self)
+        exit_action.triggered.connect(self.close)
+        tray_menu.addAction(open_action)
+        tray_menu.addAction(exit_action)
+        self.ui.tray_icon.setContextMenu(tray_menu)
+
+        self.ui.tray_icon.show()
 
 
 def main():
