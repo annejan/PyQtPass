@@ -26,6 +26,7 @@ def init_clipboard_group(layout):
     clipboard_layout = QFormLayout()
     clipboard_group.setLayout(clipboard_layout)
     copy_to_clipboard = QCheckBox("Always copy to clipboard")
+    copy_to_clipboard.setDisabled(True)
     clipboard_layout.addRow(copy_to_clipboard)
     layout.addWidget(clipboard_group)
 
@@ -37,6 +38,8 @@ def init_password_generation_group(layout):
     password_group.setLayout(password_layout)
     spin_password_length = QSpinBox()
     spin_password_length.setValue(8)
+    spin_password_length.setDisabled(True)
+    spin_password_length.setReadOnly(True)
     password_layout.addRow("Password Length:", spin_password_length)
     layout.addWidget(password_group)
 
@@ -47,6 +50,7 @@ def init_git_group(layout):
     git_layout = QFormLayout()
     git_group.setLayout(git_layout)
     use_git = QCheckBox("Use Git")
+    use_git.setDisabled(True)
     git_layout.addRow(use_git)
     layout.addWidget(git_group)
 
@@ -57,6 +61,7 @@ def init_content_panel_group(layout):
     content_panel_layout = QFormLayout()
     content_panel_group.setLayout(content_panel_layout)
     hide_content = QCheckBox("Hide content")
+    hide_content.setDisabled(True)
     content_panel_layout.addRow(hide_content)
     layout.addWidget(content_panel_group)
 
