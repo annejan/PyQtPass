@@ -1,5 +1,7 @@
 # PyQtPass: Python Port of QtPass
 
+<div>
+
 <img src="artwork/icon.png" style="float: right; width: 30%; margin-left: 10px;" alt="Python QtPass icon">
 
 ## Introduction
@@ -18,6 +20,8 @@ This means that while it encompasses the core functionalities of the original Qt
 
 We are actively developing PyQtPass and working towards a more stable and feature-rich version.
 Your feedback and contributions during this phase are invaluable and will help shape the future of this project.
+
+</div>
 
 ## Features
 
