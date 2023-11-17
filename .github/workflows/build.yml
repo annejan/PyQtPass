@@ -1,0 +1,68 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*'
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install pyinstaller
+    - name: Build with PyInstaller
+      run: pyinstaller PyQtPass.spec
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: PyQtPass-Executable
+        path: dist/
+
+  build-mac:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install pyinstaller
+    - name: Build with PyInstaller
+      run: pyinstaller PyQtPass.spec
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: PyQtPass-Executable
+        path: dist/
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install pyinstaller
+    - name: Build with PyInstaller
+      run: pyinstaller PyQtPass.spec
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: PyQtPass-Executable
+        path: dist/
