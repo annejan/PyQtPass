@@ -24,7 +24,7 @@ jobs:
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
       with:
-        name: PyQtPass-Executable
+        name: PyQtPass-Windows
         path: dist/
 
   build-mac:
@@ -44,7 +44,7 @@ jobs:
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
       with:
-        name: PyQtPass-Executable
+        name: PyQtPass-Macos
         path: dist/
 
   build-linux:
@@ -64,5 +64,5 @@ jobs:
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
       with:
-        name: PyQtPass-Executable
+        name: PyQtPass-Ubuntu
         path: dist/
