@@ -48,7 +48,7 @@ jobs:
     - name: Build with PyInstaller
       run: pyinstaller PyQtPass.spec
     - name: Create DMG
-      run: create-dmg dist/PyQtPass.app dist/PyQtPass.dmg
+      run: create-dmg dist/PyQtPass.dmg dist/PyQtPass.app
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
       with:
