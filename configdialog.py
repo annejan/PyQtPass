@@ -101,7 +101,7 @@ class ConfigDialog(QDialog):
 
     def init_treeview_group(self, layout):
         """Setup treeview group"""
-        treeview_group = QGroupBox("Treeview behavior:")
+        treeview_group = QGroupBox("Tree view behavior:")
         treeview_layout = QFormLayout()
         treeview_group.setLayout(treeview_layout)
         self.select_is_open = QCheckBox("Select is open")

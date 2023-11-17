@@ -138,6 +138,7 @@ class UiContainer:
         self.tree_view = QTreeView()
         self.tree_view.setHeaderHidden(True)
         self.tree_view.setModel(self.proxy_model)
+        self.tree_view.setContextMenuPolicy(Qt.CustomContextMenu)
 
         top_layout = QVBoxLayout()
         top_layout.addWidget(self.filter_text_box)
@@ -346,6 +347,35 @@ class QtPassGUI(QMainWindow):
         else:
             self.setWindowFlags(self.windowFlags() & ~Qt.WindowStaysOnTopHint)
 
+    def show_context_menu(self, position):
+        """Create context menu"""
+        context_menu = QMenu(self.ui.tree_view)
+
+        index = self.ui.tree_view.indexAt(position)
+        if not index.isValid():
+            return  # No item under the cursor, might need to add New or something there?
+
+        open_action = context_menu.addAction("Open")
+        edit_action = context_menu.addAction("Edit")
+        delete_action = context_menu.addAction("Delete")
+
+        open_action.triggered.connect(lambda: self.on_item_double_clicked(index))
+        edit_action.triggered.connect(lambda: self.edit_item(index))
+        delete_action.triggered.connect(lambda: self.delete_item(index))
+
+        context_menu.exec_(self.ui.tree_view.mapToGlobal(position))
+
+    def edit_item(self, index):
+        """TODO Edit item"""
+        self.on_item_double_clicked(index)
+
+    def delete_item(self, index):
+        """TODO Delete item"""
+        source_index = self.ui.proxy_model.mapToSource(index)
+        item = self.ui.tree_model.itemFromIndex(source_index)
+        path = get_item_full_path(item)
+        print(f"Delete action for {path}")
+
     def init_ui(self):
         """
         Initialize the user interface.
@@ -356,6 +386,7 @@ class QtPassGUI(QMainWindow):
         self.ui.tree_view.selectionModel().selectionChanged.connect(
             self.on_selection_changed
         )
+        self.ui.tree_view.customContextMenuRequested.connect(self.show_context_menu)
 
         self.ui.text_edit.setText(
             "PyQtPass is a GUI for pass, the standard Unix password manager.\n\n"
