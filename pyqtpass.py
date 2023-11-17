@@ -28,6 +28,8 @@ from PyQt5.QtWidgets import (
     QSystemTrayIcon,
     QMenu,
     QAction,
+    QMessageBox,
+    QInputDialog,
 )
 
 from settingsmanager import SettingsManager
@@ -358,10 +360,12 @@ class QtPassGUI(QMainWindow):
 
         open_action = context_menu.addAction("Open")
         edit_action = context_menu.addAction("Edit")
+        rename_action = context_menu.addAction("Rename")
         delete_action = context_menu.addAction("Delete")
 
         open_action.triggered.connect(lambda: self.on_item_double_clicked(index))
         edit_action.triggered.connect(lambda: self.edit_item(index))
+        rename_action.triggered.connect(lambda: self.rename_item(index))
         delete_action.triggered.connect(lambda: self.delete_item(index))
 
         context_menu.exec_(self.ui.tree_view.mapToGlobal(position))
@@ -370,12 +374,41 @@ class QtPassGUI(QMainWindow):
         """TODO Edit item"""
         self.on_item_double_clicked(index)
 
-    def delete_item(self, index):
-        """TODO Delete item"""
+    def rename_item(self, index):
+        """Rename item"""
         source_index = self.ui.proxy_model.mapToSource(index)
         item = self.ui.tree_model.itemFromIndex(source_index)
         path = get_item_full_path(item)
-        print(f"Delete action for {path}")
+        new_path, ok = QInputDialog.getText(self, "Rename Item", "New Path:", text=path)
+        if ok and new_path:
+            self.store.move_path(path, new_path)
+            item.setText(new_path)
+        else:
+            self.verbose_print("Rename cancelled")
+
+    def delete_item(self, index):
+        """Delete item"""
+        source_index = self.ui.proxy_model.mapToSource(index)
+        item = self.ui.tree_model.itemFromIndex(source_index)
+        path = get_item_full_path(item)
+
+        reply = QMessageBox.question(
+            self,
+            "Confirm Delete",
+            f"Are you sure you want to delete {path}?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
+        )
+        if reply == QMessageBox.Yes:
+            self.verbose_print(f"Deleting {path}")
+            try:
+                self.store.remove_path(path, True)
+                source_model = self.ui.proxy_model.sourceModel()
+                source_model.removeRow(source_index.row(), source_index.parent())
+            except FileNotFoundError as e:
+                print(f"Failure to delete {path}: {e}")
+        else:
+            self.verbose_print("Deletion cancelled")
 
     def init_ui(self):
         """
