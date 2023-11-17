@@ -24,10 +24,13 @@ class SettingsManager:
     def __init__(self):
         self.settings = QSettings("IJHack", "PyQtPass")
         self.options = {
-            "select_is_open": False,
+            "select_is_open": True,
             "close_is_hide": False,
             "splitter_sizes": [200, 400],
             "window_geometry": QByteArray,
+            "always_on_top": False,
+            "use_tray_icon": True,
+            "start_minimized": False,
         }
         self.load()
 

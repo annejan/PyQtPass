@@ -74,6 +74,9 @@ class ConfigDialog(QDialog):
         Initializes the configuration dialog, setting up the UI components and settings manager.
         """
         super().__init__()
+        self.cb_start_minimized = None
+        self.cb_always_on_top = None
+        self.cb_use_tray_icon = None
         self.cb_select_is_open = None
         self.cb_close_is_hide = None
         self.settings_manager = SettingsManager()
@@ -110,14 +113,14 @@ class ConfigDialog(QDialog):
         system_group = QGroupBox("System:")
         system_layout = QHBoxLayout()
         system_group.setLayout(system_layout)
-        cb_use_tray_icon = QCheckBox("Use Tray icon")
-        cb_use_start_minimized = QCheckBox("Start minimized")
+        self.cb_use_tray_icon = QCheckBox("Use Tray icon")
+        self.cb_start_minimized = QCheckBox("Start minimized")
         self.cb_close_is_hide = QCheckBox("Hide on close")
-        cb_always_on_top = QCheckBox("Always on top")
-        system_layout.addWidget(cb_use_tray_icon)
-        system_layout.addWidget(cb_use_start_minimized)
+        self.cb_always_on_top = QCheckBox("Always on top")
+        system_layout.addWidget(self.cb_use_tray_icon)
+        system_layout.addWidget(self.cb_start_minimized)
         system_layout.addWidget(self.cb_close_is_hide)
-        system_layout.addWidget(cb_always_on_top)
+        system_layout.addWidget(self.cb_always_on_top)
         layout.addWidget(system_group)
 
     def init_buttons(self, layout):

@@ -14,7 +14,7 @@ import os
 import sys
 
 import passpy
-from PyQt5.QtCore import Qt, QSortFilterProxyModel, QByteArray
+from PyQt5.QtCore import Qt, QSortFilterProxyModel, QByteArray, QTimer
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon
 from PyQt5.QtWidgets import (
     QApplication,
@@ -168,14 +168,6 @@ class UiContainer:
         self.proxy_model.setFilterRegularExpression(text)
 
 
-def open_config_dialog():
-    """
-    Opens the configuration dialog.
-    """
-    dialog = ConfigDialog()
-    dialog.exec_()
-
-
 class QtPassGUI(QMainWindow):
     """
     PyQt GUI class for the passpy password store.
@@ -309,6 +301,39 @@ class QtPassGUI(QMainWindow):
         self.save_settings()
         sys.exit(1)
 
+    def setup_tray_icon(self):
+        """
+        Setup and enable trayicon
+        """
+        self.ui.tray_icon = QSystemTrayIcon(QIcon(get_icon_path()), self)
+        self.ui.tray_icon.setToolTip("PyQtPass")
+        self.ui.tray_icon.activated.connect(self.on_tray_icon_clicked)
+
+        tray_menu = QMenu()
+        open_action = QAction("Open PyQtPass", self)
+        open_action.triggered.connect(self.show)
+        exit_action = QAction("Exit", self)
+        exit_action.triggered.connect(self.exit)
+        tray_menu.addAction(open_action)
+        tray_menu.addAction(exit_action)
+        self.ui.tray_icon.setContextMenu(tray_menu)
+
+    def open_config_dialog(self):
+        """
+        Opens the configuration dialog.
+        """
+        dialog = ConfigDialog()
+        dialog.exec_()
+        if self.settings.get("use_tray_icon"):
+            self.ui.tray_icon.show()
+        else:
+            self.ui.tray_icon.hide()
+
+        if self.settings.get("always_on_top"):
+            self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
+        else:
+            self.setWindowFlags(self.windowFlags() & ~Qt.WindowStaysOnTopHint)
+
     def init_ui(self):
         """
         Initialize the user interface.
@@ -333,26 +358,21 @@ class QtPassGUI(QMainWindow):
         menubar = self.menuBar()
         settings_menu = menubar.addMenu("System")
         settings_action = QAction("Configuration", self)
-        settings_action.triggered.connect(open_config_dialog)
+        settings_action.triggered.connect(self.open_config_dialog)
         settings_menu.addAction(settings_action)
         quit_action = QAction("Quit", self)
         quit_action.triggered.connect(self.exit)
         settings_menu.addAction(quit_action)
 
-        self.ui.tray_icon = QSystemTrayIcon(QIcon(get_icon_path()), self)
-        self.ui.tray_icon.setToolTip("PyQtPass")
-        self.ui.tray_icon.activated.connect(self.on_tray_icon_clicked)
+        self.setup_tray_icon()
+        if self.settings.get("use_tray_icon"):
+            self.ui.tray_icon.show()
 
-        tray_menu = QMenu()
-        open_action = QAction("Open PyQtPass", self)
-        open_action.triggered.connect(self.show)
-        exit_action = QAction("Exit", self)
-        exit_action.triggered.connect(self.exit)
-        tray_menu.addAction(open_action)
-        tray_menu.addAction(exit_action)
-        self.ui.tray_icon.setContextMenu(tray_menu)
+        if self.settings.get("start_minimized"):
+            QTimer.singleShot(0, self.hide)
 
-        self.ui.tray_icon.show()
+        if self.settings.get("always_on_top"):
+            self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
 
 
 def main():
