@@ -36,8 +36,19 @@ from configdialog import ConfigDialog
 PLATFORM_ICONS = {
     "win32": "artwork/icon.ico",
     "darwin": "artwork/icon.icns",
-    "default": "artwork/icon.svg",  # Assuming 'linux' for all other platforms
+    "default": "artwork/icon.svg",
 }
+
+
+def get_icon_path():
+    """
+    Get correct icon path for platform.
+
+    :return: str path of icon.
+    """
+    platform = sys.platform if sys.platform in PLATFORM_ICONS else "default"
+    icon_path = PLATFORM_ICONS[platform]
+    return os.path.join(os.path.dirname(__file__), icon_path)
 
 
 def create_tree_model(store):
@@ -328,7 +339,7 @@ class QtPassGUI(QMainWindow):
         quit_action.triggered.connect(self.exit)
         settings_menu.addAction(quit_action)
 
-        self.ui.tray_icon = QSystemTrayIcon(QIcon("artwork/icon.svg"), self)
+        self.ui.tray_icon = QSystemTrayIcon(QIcon(get_icon_path()), self)
         self.ui.tray_icon.setToolTip("PyQtPass")
         self.ui.tray_icon.activated.connect(self.on_tray_icon_clicked)
 
@@ -357,9 +368,8 @@ def main():
     args = parser.parse_args()
 
     app = QApplication(sys.argv)
-    platform = sys.platform if sys.platform in PLATFORM_ICONS else "default"
-    icon_path = PLATFORM_ICONS[platform]
-    app.setWindowIcon(QIcon(os.path.join(os.path.dirname(__file__), icon_path)))
+
+    app.setWindowIcon(QIcon(get_icon_path()))
     ex = QtPassGUI(verbose=args.verbose)
     ex.show()
     sys.exit(app.exec_())
