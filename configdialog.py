@@ -25,8 +25,8 @@ def init_clipboard_group(layout):
     clipboard_group = QGroupBox("Clipboard behavior:")
     clipboard_layout = QFormLayout()
     clipboard_group.setLayout(clipboard_layout)
-    cb_copy_to_clipboard = QCheckBox("Always copy to clipboard")
-    clipboard_layout.addRow(cb_copy_to_clipboard)
+    copy_to_clipboard = QCheckBox("Always copy to clipboard")
+    clipboard_layout.addRow(copy_to_clipboard)
     layout.addWidget(clipboard_group)
 
 
@@ -46,8 +46,8 @@ def init_git_group(layout):
     git_group = QGroupBox("Git:")
     git_layout = QFormLayout()
     git_group.setLayout(git_layout)
-    cb_use_git = QCheckBox("Use Git")
-    git_layout.addRow(cb_use_git)
+    use_git = QCheckBox("Use Git")
+    git_layout.addRow(use_git)
     layout.addWidget(git_group)
 
 
@@ -56,8 +56,8 @@ def init_content_panel_group(layout):
     content_panel_group = QGroupBox("Content panel behavior:")
     content_panel_layout = QFormLayout()
     content_panel_group.setLayout(content_panel_layout)
-    cb_hide_content = QCheckBox("Hide content")
-    content_panel_layout.addRow(cb_hide_content)
+    hide_content = QCheckBox("Hide content")
+    content_panel_layout.addRow(hide_content)
     layout.addWidget(content_panel_group)
 
 
@@ -74,11 +74,11 @@ class ConfigDialog(QDialog):
         Initializes the configuration dialog, setting up the UI components and settings manager.
         """
         super().__init__()
-        self.cb_start_minimized = None
-        self.cb_always_on_top = None
-        self.cb_use_tray_icon = None
-        self.cb_select_is_open = None
-        self.cb_close_is_hide = None
+        self.start_minimized = None
+        self.always_on_top = None
+        self.use_tray_icon = None
+        self.select_is_open = None
+        self.close_is_hide = None
         self.settings_manager = SettingsManager()
         self.init_ui()
         self.load_settings()
@@ -104,8 +104,8 @@ class ConfigDialog(QDialog):
         treeview_group = QGroupBox("Treeview behavior:")
         treeview_layout = QFormLayout()
         treeview_group.setLayout(treeview_layout)
-        self.cb_select_is_open = QCheckBox("Select is open")
-        treeview_layout.addRow(self.cb_select_is_open)
+        self.select_is_open = QCheckBox("Select is open")
+        treeview_layout.addRow(self.select_is_open)
         layout.addWidget(treeview_group)
 
     def init_system_group(self, layout):
@@ -113,14 +113,14 @@ class ConfigDialog(QDialog):
         system_group = QGroupBox("System:")
         system_layout = QHBoxLayout()
         system_group.setLayout(system_layout)
-        self.cb_use_tray_icon = QCheckBox("Use Tray icon")
-        self.cb_start_minimized = QCheckBox("Start minimized")
-        self.cb_close_is_hide = QCheckBox("Hide on close")
-        self.cb_always_on_top = QCheckBox("Always on top")
-        system_layout.addWidget(self.cb_use_tray_icon)
-        system_layout.addWidget(self.cb_start_minimized)
-        system_layout.addWidget(self.cb_close_is_hide)
-        system_layout.addWidget(self.cb_always_on_top)
+        self.use_tray_icon = QCheckBox("Use Tray icon")
+        self.start_minimized = QCheckBox("Start minimized")
+        self.close_is_hide = QCheckBox("Hide on close")
+        self.always_on_top = QCheckBox("Always on top")
+        system_layout.addWidget(self.use_tray_icon)
+        system_layout.addWidget(self.start_minimized)
+        system_layout.addWidget(self.close_is_hide)
+        system_layout.addWidget(self.always_on_top)
         layout.addWidget(system_group)
 
     def init_buttons(self, layout):
@@ -139,7 +139,7 @@ class ConfigDialog(QDialog):
         Load settings.
         """
         for key in self.settings_manager.options:
-            widget = getattr(self, f"cb_{key}", None)
+            widget = getattr(self, key, None)
             if widget:
                 if isinstance(widget, QCheckBox):
                     widget.setChecked(self.settings_manager.get(key))
@@ -154,7 +154,7 @@ class ConfigDialog(QDialog):
         application settings to reflect the state of the checkboxes when the button is pressed.
         """
         for key in self.settings_manager.options:
-            widget = getattr(self, f"cb_{key}", None)
+            widget = getattr(self, key, None)
             if widget:
                 if isinstance(widget, QCheckBox):
                     self.settings_manager.set(key, widget.isChecked())
