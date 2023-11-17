@@ -6,7 +6,7 @@ on:
       - 'v*'
 
 jobs:
-  build-windows:
+  build-windows32:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
@@ -23,7 +23,36 @@ jobs:
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
       with:
-        name: PyQtPass-Windows
+        name: PyQtPass-Windows32
+        path: dist/
+    - name: Rename to PyQtPass-32.exe
+      run: mv dist/PyQtPass.exe dist/PyQtPass-32.exe
+    - name: Upload Release Asset
+      uses: softprops/action-gh-release@v1
+      with:
+        files: ./dist/PyQtPass-32.exe
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-windows64:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+        architecture: 'x64'
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install pyinstaller
+    - name: Build with PyInstaller
+      run: pyinstaller PyQtPass.spec
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: PyQtPass-Windows64
         path: dist/
     - name: Upload Release Asset
       uses: softprops/action-gh-release@v1
@@ -52,7 +81,7 @@ jobs:
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
       with:
-        name: PyQtPass-Macos
+        name: PyQtPass-macOS
         path: dist/
     - name: Upload Release Asset
       uses: softprops/action-gh-release@v1
@@ -80,9 +109,11 @@ jobs:
       with:
         name: PyQtPass-Linux
         path: dist/
+    - name: Rename to PyQtPass-linux
+      run: mv dist/PyQtPass dist/PyQtPass-linux
     - name: Upload Release Asset
       uses: softprops/action-gh-release@v1
       with:
-        files: ./dist/PyQtPass
+        files: ./dist/PyQtPass-linux
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
