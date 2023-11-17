@@ -1,5 +1,7 @@
 # PyQtPass: Python Port of QtPass
 
+<img src="artwork/icon.png" style="float: right; width: 30%; margin-left: 10px;" alt="Python QtPass icon">
+
 ## Introduction
 
 Welcome to PyQtPass, an experimental and early-stage Python port of the renowned QtPass, originally developed in C++.

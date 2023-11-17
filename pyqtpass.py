@@ -382,7 +382,7 @@ class QtPassGUI(QMainWindow):
         new_path, ok = QInputDialog.getText(self, "Rename Item", "New Path:", text=path)
         if ok and new_path:
             self.store.move_path(path, new_path)
-            item.setText(new_path) ## TODO move ?
+            item.setText(new_path)  ## TODO move ?
         else:
             self.verbose_print("Rename cancelled")
 
