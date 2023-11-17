@@ -148,6 +148,7 @@ class UiContainer:
         top_widget.setLayout(top_layout)
 
         self.text_edit = QTextEdit()
+        self.text_edit.setReadOnly(True)
 
         splitter.addWidget(top_widget)
         splitter.addWidget(self.text_edit)
