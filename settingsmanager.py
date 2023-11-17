@@ -14,44 +14,37 @@ class SettingsManager:
     application settings. It uses QSettings for persistent storage.
     """
 
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(SettingsManager, cls).__new__(cls)
+        return cls._instance
+
     def __init__(self):
         self.settings = QSettings("IJHack", "PyQtPass")
+        self.options = {
+            "select_is_open": False,
+            "close_is_hide": False,
+            "splitter_sizes": [200, 400],
+            "window_geometry": QByteArray,
+        }
+        self.load()
 
-    def get_select_is_open(self):
+    def set(self, key, value):
         """
-        Retrieves the boolean value indicating if 'select' is open.
+        Set that value
+        """
+        self.options[key] = value
 
-        Returns:
-            bool: True if 'select' is open, False otherwise.
+    def get(self, key):
         """
-        return self.settings.value("select_is_open", True, type=bool)
+        Get the option from settings
+        """
+        if key == "splitter_sizes":
+            return self.get_splitter_sizes()
 
-    def set_select_is_open(self, value):
-        """
-        Sets the boolean value for the 'select_is_open' setting.
-
-        Args:
-            value (bool): The value to set for the 'select_is_open' setting.
-        """
-        self.settings.setValue("select_is_open", value)
-
-    def get_close_is_hide(self):
-        """
-        Retrieves the boolean value indicating if 'close' action should hide the application.
-
-        Returns:
-            bool: True if 'close' should hide the application, False otherwise.
-        """
-        return self.settings.value("close_is_hide", True, type=bool)
-
-    def set_close_is_hide(self, value):
-        """
-        Sets the boolean value for the 'close_is_hide' setting.
-
-        Args:
-            value (bool): The value to set for the 'close_is_hide' setting.
-        """
-        self.settings.setValue("close_is_hide", value)
+        return self.options.get(key)
 
     def get_splitter_sizes(self):
         """
@@ -65,29 +58,18 @@ class SettingsManager:
             for item in self.settings.value("splitter_sizes", [200, 400], type=list)
         ]
 
-    def set_splitter_sizes(self, sizes):
-        """
-        Sets the sizes of the splitters.
+    def load(self):
+        """Load settings"""
+        for key, value in self.options.items():
+            settings_value = self.settings.value(key)
+            if not settings_value:
+                continue
+            if isinstance(value, bool) and not isinstance(settings_value, bool):
+                self.options[key] = settings_value.lower() in ("true", "1")
+            else:
+                self.options[key] = settings_value
 
-        Args:
-            sizes (list): A list of integers representing the sizes of the splitters.
-        """
-        self.settings.setValue("splitter_sizes", [int(item) for item in sizes])
-
-    def get_window_geometry(self):
-        """
-        Retrieves the window geometry.
-
-        Returns:
-            QByteArray: The geometry of the window.
-        """
-        return self.settings.value("window_geometry", QByteArray())
-
-    def set_window_geometry(self, geometry):
-        """
-        Sets the window geometry.
-
-        Args:
-            geometry (QByteArray): The geometry to set for the window.
-        """
-        self.settings.setValue("window_geometry", geometry)
+    def save(self):
+        """Save settings"""
+        for key, value in self.options.items():
+            self.settings.setValue(key, value)

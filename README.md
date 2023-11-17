@@ -81,4 +81,5 @@ Should you encounter any issues or have feature suggestions, please feel free to
 - `pass`: The standard Unix password manager. For more information, visit [passwordstore.org](https://www.passwordstore.org/).
 - `Qt Framework`: PyQtPass utilizes the Qt Framework, specifically Qt 5, a comprehensive set of C++ libraries and development tools that enable the creation of cross-platform applications.
   Discover more about the Qt Framework at [qt.io](https://www.qt.io/).
+- `QtPass`: Qt GUI for Pass, written in C++, can be found at [qtpass.org](https://qtpass.org/).
 - Co-Authorship: This project includes code and documentation co-written with the assistance of ChatGPT from OpenAI.

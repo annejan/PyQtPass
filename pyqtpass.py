@@ -14,7 +14,7 @@ import os
 import sys
 
 import passpy
-from PyQt5.QtCore import Qt, QSortFilterProxyModel
+from PyQt5.QtCore import Qt, QSortFilterProxyModel, QByteArray
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon
 from PyQt5.QtWidgets import (
     QApplication,
@@ -157,6 +157,14 @@ class UiContainer:
         self.proxy_model.setFilterRegularExpression(text)
 
 
+def open_config_dialog():
+    """
+    Opens the configuration dialog.
+    """
+    dialog = ConfigDialog()
+    dialog.exec_()
+
+
 class QtPassGUI(QMainWindow):
     """
     PyQt GUI class for the passpy password store.
@@ -190,7 +198,7 @@ class QtPassGUI(QMainWindow):
         Args:
             event: The close event object, which contains information about the close event.
         """
-        if self.settings.get_close_is_hide():
+        if self.settings.get("close_is_hide"):
             self.hide()
             event.ignore()
         else:
@@ -204,8 +212,9 @@ class QtPassGUI(QMainWindow):
         This method stores the current window geometry and splitter sizes into the settings
         so that these can be restored the next time the application is started.
         """
-        self.settings.set_window_geometry(self.saveGeometry())
-        self.settings.set_splitter_sizes(self.splitter.sizes())
+        self.settings.set("window_geometry", self.saveGeometry())
+        self.settings.set("splitter_sizes", self.splitter.sizes())
+        self.settings.save()
 
     def restore_settings(self):
         """
@@ -215,8 +224,10 @@ class QtPassGUI(QMainWindow):
         from the settings and applies them to restore the state of the application
         as it was in the previous session.
         """
-        self.restoreGeometry(self.settings.get_window_geometry())
-        self.splitter.setSizes(self.settings.get_splitter_sizes())
+        geometry = self.settings.get("window_geometry")
+        if isinstance(geometry, QByteArray):
+            self.restoreGeometry(geometry)
+        self.splitter.setSizes(self.settings.get("splitter_sizes"))
 
     def on_item_double_clicked(self, index):
         """
@@ -250,10 +261,7 @@ class QtPassGUI(QMainWindow):
             source_index = self.ui.proxy_model.mapToSource(indexes[0])
             item = self.ui.tree_model.itemFromIndex(source_index)
             self.verbose_print(f"Selected: {get_item_full_path(item)}")
-
-            # Check if 'select_is_open' setting is True
-            if self.settings.get_select_is_open():
-                # Perform the double click action or additional logic here
+            if self.settings.get("select_is_open"):
                 self.on_item_double_clicked(indexes[0])
 
     def on_tray_icon_clicked(self, reason):
@@ -273,13 +281,6 @@ class QtPassGUI(QMainWindow):
                 self.hide()
             else:
                 self.show()
-
-    def open_config_dialog(self):
-        """
-        Opens the configuration dialog.
-        """
-        dialog = ConfigDialog()
-        dialog.exec_()
 
     def verbose_print(self, *args, **kwargs):
         """
@@ -319,10 +320,13 @@ class QtPassGUI(QMainWindow):
         self.setWindowTitle("PyQtPass Experimental")
 
         menubar = self.menuBar()
-        settings_menu = menubar.addMenu("Settings")
-        settings_action = QAction("Config", self)
-        settings_action.triggered.connect(self.open_config_dialog)
+        settings_menu = menubar.addMenu("System")
+        settings_action = QAction("Configuration", self)
+        settings_action.triggered.connect(open_config_dialog)
         settings_menu.addAction(settings_action)
+        quit_action = QAction("Quit", self)
+        quit_action.triggered.connect(self.exit)
+        settings_menu.addAction(quit_action)
 
         self.ui.tray_icon = QSystemTrayIcon(QIcon("artwork/icon.svg"), self)
         self.ui.tray_icon.setToolTip("PyQtPass")
