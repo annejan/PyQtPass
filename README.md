@@ -1,10 +1,8 @@
 # PyQtPass: Python Port of QtPass
 
-<div>
-
-<img src="artwork/icon.png" style="float: right; width: 30%; margin-left: 10px;" alt="Python QtPass icon">
-
 ## Introduction
+
+<img align="right" src="artwork/icon.png" width="30%" />
 
 Welcome to PyQtPass, an experimental and early-stage Python port of the renowned QtPass, originally developed in C++.
 This initiative aims to leverage the versatility and simplicity of Python to enhance maintainability and extend the functionality of QtPass, a user-friendly GUI for `pass`, the standard Unix password manager.
@@ -20,8 +18,6 @@ This means that while it encompasses the core functionalities of the original Qt
 
 We are actively developing PyQtPass and working towards a more stable and feature-rich version.
 Your feedback and contributions during this phase are invaluable and will help shape the future of this project.
-
-</div>
 
 ## Features
 
