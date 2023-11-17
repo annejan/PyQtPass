@@ -168,6 +168,16 @@ class UiContainer:
         self.proxy_model.setFilterRegularExpression(text)
 
 
+def set_widgets_enabled(container, enabled):
+    """
+    Enable or disable widget elements
+    :param container: widget container
+    :param enabled: bool:
+    """
+    for widget in container.findChildren(QWidget):
+        widget.setEnabled(enabled)
+
+
 class QtPassGUI(QMainWindow):
     """
     PyQt GUI class for the passpy password store.
@@ -243,6 +253,7 @@ class QtPassGUI(QMainWindow):
         # Get the item from the source model
         item = self.ui.tree_model.itemFromIndex(source_index)
         path = get_item_full_path(item)
+        set_widgets_enabled(self, False)
         try:
             password = self.store.get_key(path)
             self.ui.text_edit.setText(password)
@@ -251,6 +262,7 @@ class QtPassGUI(QMainWindow):
             self.verbose_print(
                 f"Cannot retrieve key for a directory or non-existent key: {path}"
             )
+        set_widgets_enabled(self, True)
 
     def on_selection_changed(self, selected, _deselected):
         """
