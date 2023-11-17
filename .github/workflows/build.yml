@@ -2,7 +2,6 @@ name: Build and Release
 
 on:
   push:
-    branches: [ main ]
     tags:
       - 'v*'
 
@@ -64,5 +63,5 @@ jobs:
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
       with:
-        name: PyQtPass-Ubuntu
+        name: PyQtPass-Linux
         path: dist/
