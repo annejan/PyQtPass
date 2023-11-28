@@ -29,7 +29,9 @@ class UiContainer(QWidget):
         self.filter_text_box = QLineEdit()
         self.proxy_model = QSortFilterProxyModel()
 
-        self.filter_text_box.setPlaceholderText(self.tr("Type here to filter passwords..."))
+        self.filter_text_box.setPlaceholderText(
+            self.tr("Type here to filter passwords...")
+        )
         self.filter_text_box.textChanged.connect(self.filter_tree_view)
 
     def setup_ui(self, splitter):
