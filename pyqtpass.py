@@ -14,17 +14,12 @@ import os
 import sys
 
 import passpy
-from PyQt5.QtCore import Qt, QSortFilterProxyModel, QByteArray, QTimer
-from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon
+from PyQt5.QtCore import Qt, QByteArray, QTimer
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (
     QApplication,
     QMainWindow,
     QSplitter,
-    QTreeView,
-    QTextEdit,
-    QVBoxLayout,
-    QWidget,
-    QLineEdit,
     QSystemTrayIcon,
     QMenu,
     QAction,
@@ -32,171 +27,16 @@ from PyQt5.QtWidgets import (
     QInputDialog,
 )
 
-from settingsmanager import SettingsManager
-from configdialog import ConfigDialog
-
-PLATFORM_ICONS = {
-    "win32": "artwork/icon.ico",
-    "darwin": "artwork/icon.icns",
-    "default": "artwork/icon.svg",
-}
-
-
-def get_icon_path():
-    """
-    Get correct icon path for platform.
-
-    :return: str path of icon.
-    """
-    platform = sys.platform if sys.platform in PLATFORM_ICONS else "default"
-    icon_path = PLATFORM_ICONS[platform]
-    return os.path.join(os.path.dirname(__file__), icon_path)
-
-
-def create_tree_model(store):
-    """
-    Create a tree model from the password store.
-
-    :param store: The password store instance from passpy.
-    :return: QStandardItemModel populated with the directories and entries.
-    """
-    model = QStandardItemModel()
-
-    def add_items(parent, path):
-        """
-        Recursively add items to the tree model.
-
-        :param parent: The parent item in the tree model.
-        :param path: The current path of items being added.
-        """
-        try:
-            directories, entries = store.list_dir(path)
-            for directory in directories:
-                dir_name = os.path.basename(directory)
-                dir_item = QStandardItem(dir_name)
-                dir_item.setFlags(dir_item.flags() & ~Qt.ItemIsEditable)
-                dir_item.setIcon(QIcon.fromTheme("folder"))
-                parent.appendRow(dir_item)
-                add_items(
-                    dir_item, os.path.join(path, directory) if path else directory
-                )
-
-            for entry in entries:
-                entry_name = os.path.basename(entry)
-                entry_item = QStandardItem(entry_name)
-                entry_item.setFlags(entry_item.flags() & ~Qt.ItemIsEditable)
-                entry_item.setIcon(QIcon(get_icon_path()))
-                parent.appendRow(entry_item)
-        except (FileNotFoundError, PermissionError) as e:
-            print(f"Error accessing {path}: {e}")
-
-    add_items(model.invisibleRootItem(), "")
-    return model
-
-
-def get_item_folder(item):
-    """
-    Find the folder for a given item in the tree.
-
-    :param item: The item in the tree.
-    :return: Full path as a string.
-    """
-    path = get_item_full_path(item)
-    if item.rowCount() == 0:  # get folder for leaf node
-        path = path[: -len(item.text())]
-    if not path.endswith("/"):
-        return path + "/"
-    return path
-
-
-def get_item_full_path(item):
-    """
-    Construct the full path for a given item in the tree.
-
-    :param item: The item in the tree.
-    :return: Full path as a string.
-    """
-    path_list = [item.text()]
-    while item.parent():
-        item = item.parent()
-        path_list.insert(0, item.text())
-    return "/".join(path_list)
-
-
-class UiContainer:
-    """
-    User Interface Container Class
-    """
-
-    def __init__(self):
-        self.tree_model = None
-
-        self.text_edit = None
-        self.tree_view = None
-        self.tray_icon = None
-
-        self.central_widget = QWidget()
-        self.filter_text_box = QLineEdit()
-        self.proxy_model = QSortFilterProxyModel()
-
-        self.filter_text_box.setPlaceholderText("Type here to filter passwords...")
-        self.filter_text_box.textChanged.connect(self.filter_tree_view)
-
-    def setup_ui(self, splitter):
-        """
-        Set up the User Interface items
-        :param splitter:
-        """
-        if not self.tree_model:
-            print("No tree nodel")
-            sys.exit(1)
-        self.proxy_model.setSourceModel(self.tree_model)
-        self.proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
-        self.proxy_model.setRecursiveFilteringEnabled(True)  # Requires PyQt5 >= 5.10
-
-        self.tree_view = QTreeView()
-        self.tree_view.setHeaderHidden(True)
-        self.tree_view.setModel(self.proxy_model)
-        self.tree_view.setContextMenuPolicy(Qt.CustomContextMenu)
-
-        top_layout = QVBoxLayout()
-        top_layout.addWidget(self.filter_text_box)
-        top_layout.addWidget(self.tree_view)
-
-        top_widget = QWidget()
-        top_widget.setLayout(top_layout)
-
-        self.text_edit = QTextEdit()
-        self.text_edit.setReadOnly(True)
-
-        splitter.addWidget(top_widget)
-        splitter.addWidget(self.text_edit)
-
-        splitter.setSizes([200, 400])  # Adjust these values as needed
-
-        vbox = QVBoxLayout()
-        vbox.addWidget(splitter)
-        self.central_widget.setLayout(vbox)
-
-    def filter_tree_view(self, text):
-        """
-        Filter the tree view based on the text input in the filter text box.
-        Uses a regular expression to filter the tree view.
-
-        :param text: Text to filter the tree view.
-        """
-        #
-        self.proxy_model.setFilterRegularExpression(text)
-
-
-def set_widgets_enabled(container, enabled):
-    """
-    Enable or disable widget elements
-    :param container: widget container
-    :param enabled: bool:
-    """
-    for widget in container.findChildren(QWidget):
-        widget.setEnabled(enabled)
+from settings_manager import SettingsManager
+from config_dialog import ConfigDialog
+from ui_container import UiContainer
+from utilities import (
+    get_icon_path,
+    create_tree_model,
+    get_item_folder,
+    get_item_full_path,
+    set_widgets_enabled,
+)
 
 
 class QtPassGUI(QMainWindow):
@@ -351,6 +191,12 @@ class QtPassGUI(QMainWindow):
         tray_menu.addAction(exit_action)
         self.ui.tray_icon.setContextMenu(tray_menu)
 
+    def refresh_tree(self):
+        """Refresh the tree_view"""
+        self.ui.tree_model = create_tree_model(self.store)
+        self.ui.proxy_model.setSourceModel(self.ui.tree_model)
+        self.ui.tree_view.setModel(self.ui.proxy_model)
+
     def open_config_dialog(self):
         """
         Opens the configuration dialog.
@@ -451,12 +297,6 @@ class QtPassGUI(QMainWindow):
             self.refresh_tree()
         else:
             self.verbose_print("Rename cancelled")
-
-    def refresh_tree(self):
-        """Refresh the tree_view"""
-        self.ui.tree_model = create_tree_model(self.store)
-        self.ui.proxy_model.setSourceModel(self.ui.tree_model)
-        self.ui.tree_view.setModel(self.ui.proxy_model)
 
     def delete_item(self, index):
         """Delete item"""

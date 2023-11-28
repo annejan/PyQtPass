@@ -17,7 +17,7 @@ from PyQt5.QtWidgets import (
     QDialog,
 )
 
-from settingsmanager import SettingsManager
+from settings_manager import SettingsManager
 
 
 def init_clipboard_group(layout):
