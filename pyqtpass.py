@@ -106,6 +106,7 @@ def get_item_folder(item):
         path = path[: -len(item.text())]
     if not path.endswith("/"):
         return path + "/"
+    return path
 
 
 def get_item_full_path(item):
