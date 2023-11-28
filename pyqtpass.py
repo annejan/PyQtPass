@@ -13,7 +13,11 @@ import argparse
 import sys
 
 import passpy
-from PyQt5.QtCore import Qt, QByteArray, QTimer
+from PyQt5.QtCore import (
+    Qt,
+    QByteArray,
+    QTimer,
+)
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (
     QApplication,
@@ -31,6 +35,7 @@ from config_dialog import ConfigDialog
 from ui_container import UiContainer
 from utilities import (
     get_icon_path,
+    set_locale,
     create_tree_model,
     get_item_folder,
     get_item_full_path,
@@ -45,6 +50,7 @@ class QtPassGUI(QMainWindow):
 
     def __init__(self, verbose=False):
         super().__init__()
+        set_locale()
         self.splitter = None
         self.ui = UiContainer()
         self.verbose = verbose
@@ -52,7 +58,7 @@ class QtPassGUI(QMainWindow):
             self.store = passpy.Store()
             self.ui.tree_model = create_tree_model(self.store)
         except passpy.StoreNotInitialisedError as e:
-            print(f"Error initializing passpy store: {e}")
+            print(self.tr("Error initializing passpy store: {}").format(e))
             sys.exit(1)
         self.settings = SettingsManager()
         self.init_ui()
@@ -178,11 +184,11 @@ class QtPassGUI(QMainWindow):
         Setup and enable trayicon
         """
         self.ui.tray_icon = QSystemTrayIcon(QIcon(get_icon_path()), self)
-        self.ui.tray_icon.setToolTip("PyQtPass")
+        self.ui.tray_icon.setToolTip(self.tr("PyQtPass"))
         self.ui.tray_icon.activated.connect(self.on_tray_icon_clicked)
 
         tray_menu = QMenu()
-        open_action = QAction("Open PyQtPass", self)
+        open_action = QAction(self.tr("Open PyQtPass"), self)
         open_action.triggered.connect(self.show)
         exit_action = QAction("Exit", self)
         exit_action.triggered.connect(self.exit)
@@ -216,7 +222,7 @@ class QtPassGUI(QMainWindow):
         """Create context menu"""
         context_menu = QMenu(self.ui.tree_view)
 
-        add_action = context_menu.addAction("Add")
+        add_action = context_menu.addAction(self.tr("Add"))
         add_action.triggered.connect(lambda: self.add_item(index))
 
         index = self.ui.tree_view.indexAt(position)
@@ -224,10 +230,10 @@ class QtPassGUI(QMainWindow):
             context_menu.exec_(self.ui.tree_view.mapToGlobal(position))
             return  # No item under the cursor, might need to add New or something there?
 
-        open_action = context_menu.addAction("Open")
-        edit_action = context_menu.addAction("Edit")
-        rename_action = context_menu.addAction("Rename")
-        delete_action = context_menu.addAction("Delete")
+        open_action = context_menu.addAction(self.tr("Open"))
+        edit_action = context_menu.addAction(self.tr("Edit"))
+        rename_action = context_menu.addAction(self.tr("Rename"))
+        delete_action = context_menu.addAction(self.tr("Delete"))
 
         open_action.triggered.connect(lambda: self.on_item_double_clicked(index))
         edit_action.triggered.connect(lambda: self.edit_item(index))
@@ -247,19 +253,23 @@ class QtPassGUI(QMainWindow):
         if folder.startswith("/"):
             folder = folder[1:]
 
-        name, ok = QInputDialog.getText(self, "Item Name", "Enter name:")
+        name, ok = QInputDialog.getText(
+            self, self.tr("Item Name"), self.tr("Enter name:")
+        )
         if ok and name:
             try:
                 if self.store.get_key(folder + name):
                     QMessageBox.warning(
                         self,
-                        "Password exists",
-                        f"Password already exists at: {folder+name}",
+                        self.tr("Password exists"),
+                        self.tr("Password already exists at: {}").format(folder + name),
                     )
                     return
             except FileNotFoundError:
                 self.verbose_print("Password does not exists")
-            content, ok = QInputDialog.getText(self, "Item Content", "Enter content:")
+            content, ok = QInputDialog.getText(
+                self, self.tr("Item Content"), self.tr("Enter content:")
+            )
             if ok:
                 self.store.set_key(name, content)
                 self.refresh_tree()
@@ -273,7 +283,7 @@ class QtPassGUI(QMainWindow):
         try:
             password = self.store.get_key(path)
             new_content, ok = QInputDialog.getText(
-                self, "Update password", "New content:", text=password
+                self, self.tr("Update password"), self.tr("New content:"), text=password
             )
             if ok and new_content:
                 self.store.set_key(path, new_content)
@@ -290,7 +300,9 @@ class QtPassGUI(QMainWindow):
         source_index = self.ui.proxy_model.mapToSource(index)
         item = self.ui.tree_model.itemFromIndex(source_index)
         path = get_item_full_path(item)
-        new_path, ok = QInputDialog.getText(self, "Rename Item", "New Path:", text=path)
+        new_path, ok = QInputDialog.getText(
+            self, self.tr("Rename Item"), self.tr("New Path:"), text=path
+        )
         if ok and new_path:
             self.store.move_path(path, new_path)
             self.refresh_tree()
@@ -305,8 +317,8 @@ class QtPassGUI(QMainWindow):
 
         reply = QMessageBox.question(
             self,
-            "Confirm Delete",
-            f"Are you sure you want to delete {path}?",
+            self.tr("Confirm Delete"),
+            self.tr("Are you sure you want to delete {}?").format(path),
             QMessageBox.Yes | QMessageBox.No,
             QMessageBox.No,
         )
@@ -334,21 +346,23 @@ class QtPassGUI(QMainWindow):
         self.ui.tree_view.customContextMenuRequested.connect(self.show_context_menu)
 
         self.ui.text_edit.setText(
-            "PyQtPass is a GUI for pass, the standard Unix password manager.\n\n"
-            "Please report any issues you might have with this software."
+            self.tr(
+                "PyQtPass is a GUI for pass, the standard Unix password manager.\n\n"
+                "Please report any issues you might have with this software."
+            )
         )
 
         self.setCentralWidget(self.ui.central_widget)
 
         self.setGeometry(300, 300, 768, 596)
-        self.setWindowTitle("PyQtPass Experimental")
+        self.setWindowTitle(self.tr("PyQtPass Experimental"))
 
         menubar = self.menuBar()
-        settings_menu = menubar.addMenu("System")
-        settings_action = QAction("Configuration", self)
+        settings_menu = menubar.addMenu(self.tr("System"))
+        settings_action = QAction(self.tr("Configuration"), self)
         settings_action.triggered.connect(self.open_config_dialog)
         settings_menu.addAction(settings_action)
-        quit_action = QAction("Quit", self)
+        quit_action = QAction(self.tr("Quit"), self)
         quit_action.triggered.connect(self.exit)
         settings_menu.addAction(quit_action)
 

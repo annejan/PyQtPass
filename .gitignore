@@ -2,3 +2,4 @@ venv
 dist
 build
 __pycache__
+pyqtpass.pro.user

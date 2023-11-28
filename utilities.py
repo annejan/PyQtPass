@@ -5,7 +5,7 @@ Simple functionality not directly / only used for PyQtPass
 import os
 import sys
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QLocale, QTranslator, QCoreApplication, QLibraryInfo
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon
 from PyQt5.QtWidgets import QWidget
 
@@ -25,6 +25,18 @@ def get_icon_path():
     platform = sys.platform if sys.platform in PLATFORM_ICONS else "default"
     icon_path = PLATFORM_ICONS[platform]
     return os.path.join(os.path.dirname(__file__), icon_path)
+
+
+def set_locale():
+    """Do the Qt magic localization things based on system locale"""
+    system_locale = QLocale.system()
+    language_code = system_locale.name()
+    qt_translator = QTranslator()
+    qt_translator.load(
+        f"localization/localization_{language_code}",
+        QLibraryInfo.location(QLibraryInfo.TranslationsPath),
+    )
+    QCoreApplication.installTranslator(qt_translator)
 
 
 def create_tree_model(store):
