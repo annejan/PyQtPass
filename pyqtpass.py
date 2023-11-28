@@ -10,7 +10,6 @@ Dependencies:
 """
 
 import argparse
-import os
 import sys
 
 import passpy

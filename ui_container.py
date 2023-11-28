@@ -1,10 +1,10 @@
 """
-This module defines the UiContainer class, which serves as a container for the user interface (UI) components
-of the PyQtPass application. The class encapsulates the functionality for initializing and managing the
-different UI elements such as tree views, text edits, and filter text boxes. It is designed to abstract the
-complexity of UI setup and interactions, thereby promoting a cleaner and more modular design in the PyQtPass
-application. UiContainer facilitates the creation and configuration of UI elements, ensuring a consistent and
-efficient UI setup process.
+This module defines the UiContainer class, which serves as a container for the user interface
+components of the PyQtPass application.
+The class encapsulates the functionality for initializing and managing the different UI elements
+such as tree views, text edits, and filter text boxes. It is designed to abstract
+the complexity of UI setup and interactions, thereby promoting a cleaner and more
+modular design in the PyQtPass application.
 """
 
 import sys
