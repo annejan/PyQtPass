@@ -20,52 +20,6 @@ from PyQt5.QtWidgets import (
 from settings_manager import SettingsManager
 
 
-def init_clipboard_group(layout):
-    """TODO Static for now"""
-    clipboard_group = QGroupBox("Clipboard behavior:")
-    clipboard_layout = QFormLayout()
-    clipboard_group.setLayout(clipboard_layout)
-    copy_to_clipboard = QCheckBox("Always copy to clipboard")
-    copy_to_clipboard.setDisabled(True)
-    clipboard_layout.addRow(copy_to_clipboard)
-    layout.addWidget(clipboard_group)
-
-
-def init_password_generation_group(layout):
-    """TODO Static for now"""
-    password_group = QGroupBox("Password Generation:")
-    password_layout = QFormLayout()
-    password_group.setLayout(password_layout)
-    spin_password_length = QSpinBox()
-    spin_password_length.setValue(8)
-    spin_password_length.setDisabled(True)
-    spin_password_length.setReadOnly(True)
-    password_layout.addRow("Password Length:", spin_password_length)
-    layout.addWidget(password_group)
-
-
-def init_git_group(layout):
-    """TODO Static for now"""
-    git_group = QGroupBox("Git:")
-    git_layout = QFormLayout()
-    git_group.setLayout(git_layout)
-    use_git = QCheckBox("Use Git")
-    use_git.setDisabled(True)
-    git_layout.addRow(use_git)
-    layout.addWidget(git_group)
-
-
-def init_content_panel_group(layout):
-    """TODO Static for now"""
-    content_panel_group = QGroupBox("Content panel behavior:")
-    content_panel_layout = QFormLayout()
-    content_panel_group.setLayout(content_panel_layout)
-    hide_content = QCheckBox("Hide content")
-    hide_content.setDisabled(True)
-    content_panel_layout.addRow(hide_content)
-    layout.addWidget(content_panel_group)
-
-
 class ConfigDialog(QDialog):
     """
     A configuration dialog class that inherits from QDialog.
@@ -92,36 +46,78 @@ class ConfigDialog(QDialog):
         """
         Sets up the user interface for the configuration dialog.
         """
-        self.setWindowTitle("Configuration")
+        self.setWindowTitle(self.tr("Configuration"))
         self.resize(500, 400)
         layout = QVBoxLayout()
         self.init_treeview_group(layout)
-        init_clipboard_group(layout)
-        init_content_panel_group(layout)
-        init_password_generation_group(layout)
-        init_git_group(layout)
+        self.init_clipboard_group(layout)
+        self.init_content_panel_group(layout)
+        self.init_password_generation_group(layout)
+        self.init_git_group(layout)
         self.init_system_group(layout)
         self.init_buttons(layout)
         self.setLayout(layout)
 
+    def init_clipboard_group(self, layout):
+        """TODO Static for now"""
+        clipboard_group = QGroupBox(self.tr("Clipboard behavior:"))
+        clipboard_layout = QFormLayout()
+        clipboard_group.setLayout(clipboard_layout)
+        copy_to_clipboard = QCheckBox(self.tr("Always copy to clipboard"))
+        copy_to_clipboard.setDisabled(True)
+        clipboard_layout.addRow(copy_to_clipboard)
+        layout.addWidget(clipboard_group)
+
+    def init_password_generation_group(self, layout):
+        """TODO Static for now"""
+        password_group = QGroupBox(self.tr("Password Generation:"))
+        password_layout = QFormLayout()
+        password_group.setLayout(password_layout)
+        spin_password_length = QSpinBox()
+        spin_password_length.setValue(8)
+        spin_password_length.setDisabled(True)
+        spin_password_length.setReadOnly(True)
+        password_layout.addRow(self.tr("Password Length:"), spin_password_length)
+        layout.addWidget(password_group)
+
+    def init_git_group(self, layout):
+        """TODO Static for now"""
+        git_group = QGroupBox("Git:")
+        git_layout = QFormLayout()
+        git_group.setLayout(git_layout)
+        use_git = QCheckBox("Use Git")
+        use_git.setDisabled(True)
+        git_layout.addRow(use_git)
+        layout.addWidget(git_group)
+
+    def init_content_panel_group(self, layout):
+        """TODO Static for now"""
+        content_panel_group = QGroupBox(self.tr("Content panel behavior:"))
+        content_panel_layout = QFormLayout()
+        content_panel_group.setLayout(content_panel_layout)
+        hide_content = QCheckBox(self.tr("Hide content"))
+        hide_content.setDisabled(True)
+        content_panel_layout.addRow(hide_content)
+        layout.addWidget(content_panel_group)
+
     def init_treeview_group(self, layout):
         """Setup treeview group"""
-        treeview_group = QGroupBox("Tree view behavior:")
+        treeview_group = QGroupBox(self.tr("Tree view behavior:"))
         treeview_layout = QFormLayout()
         treeview_group.setLayout(treeview_layout)
-        self.select_is_open = QCheckBox("Select is open")
+        self.select_is_open = QCheckBox(self.tr("Select is open"))
         treeview_layout.addRow(self.select_is_open)
         layout.addWidget(treeview_group)
 
     def init_system_group(self, layout):
         """Setup system group"""
-        system_group = QGroupBox("System:")
+        system_group = QGroupBox(self.tr("System:"))
         system_layout = QHBoxLayout()
         system_group.setLayout(system_layout)
-        self.use_tray_icon = QCheckBox("Use Tray icon")
-        self.start_minimized = QCheckBox("Start minimized")
-        self.close_is_hide = QCheckBox("Hide on close")
-        self.always_on_top = QCheckBox("Always on top")
+        self.use_tray_icon = QCheckBox(self.tr("Use Tray icon"))
+        self.start_minimized = QCheckBox(self.tr("Start minimized"))
+        self.close_is_hide = QCheckBox(self.tr("Hide on close"))
+        self.always_on_top = QCheckBox(self.tr("Always on top"))
         system_layout.addWidget(self.use_tray_icon)
         system_layout.addWidget(self.start_minimized)
         system_layout.addWidget(self.close_is_hide)
@@ -131,9 +127,9 @@ class ConfigDialog(QDialog):
     def init_buttons(self, layout):
         """OK and Cancel buttons"""
         buttons_layout = QHBoxLayout()
-        btn_ok = QPushButton("OK")
+        btn_ok = QPushButton(self.tr("OK"))
         btn_ok.clicked.connect(self.save_settings)
-        btn_cancel = QPushButton("Cancel")
+        btn_cancel = QPushButton(self.tr("Cancel"))
         btn_cancel.clicked.connect(self.close)
         buttons_layout.addWidget(btn_ok)
         buttons_layout.addWidget(btn_cancel)

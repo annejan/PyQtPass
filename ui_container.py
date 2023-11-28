@@ -12,12 +12,13 @@ from PyQt5.QtCore import Qt, QSortFilterProxyModel
 from PyQt5.QtWidgets import QTreeView, QTextEdit, QVBoxLayout, QLineEdit, QWidget
 
 
-class UiContainer:
+class UiContainer(QWidget):
     """
     User Interface Container Class
     """
 
     def __init__(self):
+        super().__init__()
         self.tree_model = None
 
         self.text_edit = None
@@ -28,7 +29,7 @@ class UiContainer:
         self.filter_text_box = QLineEdit()
         self.proxy_model = QSortFilterProxyModel()
 
-        self.filter_text_box.setPlaceholderText("Type here to filter passwords...")
+        self.filter_text_box.setPlaceholderText(self.tr("Type here to filter passwords..."))
         self.filter_text_box.textChanged.connect(self.filter_tree_view)
 
     def setup_ui(self, splitter):
