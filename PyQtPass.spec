@@ -5,7 +5,7 @@ a = Analysis(
     ['pyqtpass.py'],
     pathex=[],
     binaries=[],
-    datas=[('artwork', 'artwork')],
+    datas=[('artwork', 'artwork'), ('localization', 'localization')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
