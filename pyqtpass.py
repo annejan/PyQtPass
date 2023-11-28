@@ -382,9 +382,15 @@ class QtPassGUI(QMainWindow):
         new_path, ok = QInputDialog.getText(self, "Rename Item", "New Path:", text=path)
         if ok and new_path:
             self.store.move_path(path, new_path)
-            item.setText(new_path)  ## TODO move ?
+            self.refresh_tree()
         else:
             self.verbose_print("Rename cancelled")
+
+    def refresh_tree(self):
+        """Refresh the tree_view"""
+        self.ui.tree_model = create_tree_model(self.store)
+        self.ui.proxy_model.setSourceModel(self.ui.tree_model)
+        self.ui.tree_view.setModel(self.ui.proxy_model)
 
     def delete_item(self, index):
         """Delete item"""
