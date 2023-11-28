@@ -94,6 +94,20 @@ def create_tree_model(store):
     return model
 
 
+def get_item_folder(item):
+    """
+    Find the folder for a given item in the tree.
+
+    :param item: The item in the tree.
+    :return: Full path as a string.
+    """
+    path = get_item_full_path(item)
+    if item.rowCount() == 0:  # get folder for leaf node
+        path = path[: -len(item.text())]
+    if not path.endswith("/"):
+        return path + "/"
+
+
 def get_item_full_path(item):
     """
     Construct the full path for a given item in the tree.
@@ -356,8 +370,12 @@ class QtPassGUI(QMainWindow):
         """Create context menu"""
         context_menu = QMenu(self.ui.tree_view)
 
+        add_action = context_menu.addAction("Add")
+        add_action.triggered.connect(lambda: self.add_item(index))
+
         index = self.ui.tree_view.indexAt(position)
         if not index.isValid():
+            context_menu.exec_(self.ui.tree_view.mapToGlobal(position))
             return  # No item under the cursor, might need to add New or something there?
 
         open_action = context_menu.addAction("Open")
@@ -372,9 +390,54 @@ class QtPassGUI(QMainWindow):
 
         context_menu.exec_(self.ui.tree_view.mapToGlobal(position))
 
+    def add_item(self, index):
+        """Add item"""
+        folder = ""
+        if index:
+            source_index = self.ui.proxy_model.mapToSource(index)
+            item = self.ui.tree_model.itemFromIndex(source_index)
+            if item:
+                folder = get_item_folder(item)
+        if folder.startswith("/"):
+            folder = folder[1:]
+
+        name, ok = QInputDialog.getText(self, "Item Name", "Enter name:")
+        if ok and name:
+            try:
+                if self.store.get_key(folder + name):
+                    QMessageBox.warning(
+                        self,
+                        "Password exists",
+                        f"Password already exists at: {folder+name}",
+                    )
+                    return
+            except FileNotFoundError:
+                self.verbose_print("Password does not exists")
+            content, ok = QInputDialog.getText(self, "Item Content", "Enter content:")
+            if ok:
+                self.store.set_key(name, content)
+                self.refresh_tree()
+
     def edit_item(self, index):
-        """TODO Edit item"""
-        self.on_item_double_clicked(index)
+        """Edit item"""
+        source_index = self.ui.proxy_model.mapToSource(index)
+        item = self.ui.tree_model.itemFromIndex(source_index)
+        path = get_item_full_path(item)
+        set_widgets_enabled(self, False)
+        try:
+            password = self.store.get_key(path)
+            new_content, ok = QInputDialog.getText(
+                self, "Update password", "New content:", text=password
+            )
+            if ok and new_content:
+                self.store.set_key(path, new_content)
+            else:
+                self.verbose_print("Update password cancelled")
+        except FileNotFoundError:
+            self.verbose_print(
+                f"Cannot retrieve key for a directory or non-existent key: {path}"
+            )
+        set_widgets_enabled(self, True)
 
     def rename_item(self, index):
         """Rename item"""
