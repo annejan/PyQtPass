@@ -18,6 +18,12 @@ jobs:
       run: |
         pip install -r requirements.txt
         pip install pyinstaller
+    - name: Setup Qt environment
+      uses: jurplel/install-qt-action@v2
+      with:
+        version: '5.15.2'
+    - name: Run lrelease
+      run: lrelease-pro pyqtpass.pro
     - name: Build with PyInstaller
       run: pyinstaller PyQtPass.spec
     - name: Upload Artifact
@@ -47,6 +53,12 @@ jobs:
       run: |
         pip install -r requirements.txt
         pip install pyinstaller
+    - name: Setup Qt environment
+      uses: jurplel/install-qt-action@v2
+      with:
+        version: '5.15.2'
+    - name: Run lrelease
+      run: lrelease-pro pyqtpass.pro
     - name: Build with PyInstaller
       run: pyinstaller PyQtPass.spec
     - name: Upload Artifact
@@ -74,6 +86,12 @@ jobs:
         pip install -r requirements.txt
         pip install pyinstaller
         brew install create-dmg
+    - name: Setup Qt environment
+      uses: jurplel/install-qt-action@v2
+      with:
+        version: '5.15.2'
+    - name: Run lrelease
+      run: lrelease-pro pyqtpass.pro
     - name: Build with PyInstaller
       run: pyinstaller PyQtPass.spec
     - name: Create DMG
@@ -102,6 +120,12 @@ jobs:
       run: |
         pip install -r requirements.txt
         pip install pyinstaller
+    - name: Setup Qt environment
+      uses: jurplel/install-qt-action@v2
+      with:
+        version: '5.15.2'
+    - name: Run lrelease
+      run: lrelease-pro pyqtpass.pro
     - name: Build with PyInstaller
       run: pyinstaller PyQtPass.spec
     - name: Upload Artifact
