@@ -75,6 +75,7 @@ def create_tree_model(store):
                 dir_name = os.path.basename(directory)
                 dir_item = QStandardItem(dir_name)
                 dir_item.setFlags(dir_item.flags() & ~Qt.ItemIsEditable)
+                dir_item.setIcon(QIcon.fromTheme("folder"))
                 parent.appendRow(dir_item)
                 add_items(
                     dir_item, os.path.join(path, directory) if path else directory
@@ -84,6 +85,7 @@ def create_tree_model(store):
                 entry_name = os.path.basename(entry)
                 entry_item = QStandardItem(entry_name)
                 entry_item.setFlags(entry_item.flags() & ~Qt.ItemIsEditable)
+                entry_item.setIcon(QIcon(get_icon_path()))
                 parent.appendRow(entry_item)
         except (FileNotFoundError, PermissionError) as e:
             print(f"Error accessing {path}: {e}")
