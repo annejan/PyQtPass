@@ -26,7 +26,7 @@ jobs:
       run: lrelease-pro pyqtpass.pro
     - name: Install UPX
       run: |
-        Invoke-WebRequest -Uri "https://github.com/upx/upx/releases/download/v3.96/upx-3.96-win64.zip" -OutFile "upx.zip"
+        Invoke-WebRequest -Uri "https://github.com/upx/upx/releases/download/v4.2.1/upx-4.2.1-win32.zip" -OutFile "upx.zip"
         Expand-Archive "upx.zip" -DestinationPath "upx"
         echo "${{ github.workspace }}\upx" >> $env:GITHUB_PATH
     - name: Build with PyInstaller
@@ -64,6 +64,11 @@ jobs:
         version: '5.15.2'
     - name: Run lrelease
       run: lrelease-pro pyqtpass.pro
+    - name: Install UPX
+      run: |
+        Invoke-WebRequest -Uri "https://github.com/upx/upx/releases/download/v4.2.1/upx-4.2.1-win64.zip" -OutFile "upx.zip"
+        Expand-Archive "upx.zip" -DestinationPath "upx"
+        echo "${{ github.workspace }}\upx" >> $env:GITHUB_PATH
     - name: Build with PyInstaller
       run: pyinstaller PyQtPass.spec
     - name: Upload Artifact
