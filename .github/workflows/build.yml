@@ -9,9 +9,9 @@ jobs:
   build-windows32:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: '3.x'
     - name: Install dependencies
@@ -19,7 +19,7 @@ jobs:
         pip install -r requirements.txt
         pip install pyinstaller
     - name: Setup Qt environment
-      uses: jurplel/install-qt-action@v2
+      uses: jurplel/install-qt-action@v3
       with:
         version: '5.15.2'
     - name: Run lrelease
@@ -32,7 +32,7 @@ jobs:
     - name: Build with PyInstaller
       run: pyinstaller PyQtPass.spec
     - name: Upload Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: PyQtPass-Windows32
         path: dist/
@@ -48,9 +48,9 @@ jobs:
   build-windows64:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: '3.x'
         architecture: 'x64'
@@ -59,7 +59,7 @@ jobs:
         pip install -r requirements.txt
         pip install pyinstaller
     - name: Setup Qt environment
-      uses: jurplel/install-qt-action@v2
+      uses: jurplel/install-qt-action@v3
       with:
         version: '5.15.2'
     - name: Run lrelease
@@ -72,7 +72,7 @@ jobs:
     - name: Build with PyInstaller
       run: pyinstaller PyQtPass.spec
     - name: Upload Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: PyQtPass-Windows64
         path: dist/
@@ -86,9 +86,9 @@ jobs:
   build-mac:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: '3.x'
     - name: Install dependencies
@@ -97,7 +97,7 @@ jobs:
         pip install pyinstaller
         brew install create-dmg
     - name: Setup Qt environment
-      uses: jurplel/install-qt-action@v2
+      uses: jurplel/install-qt-action@v3
       with:
         version: '5.15.2'
     - name: Run lrelease
@@ -107,7 +107,7 @@ jobs:
     - name: Create DMG
       run: create-dmg dist/PyQtPass.dmg dist/PyQtPass.app
     - name: Upload Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: PyQtPass-macOS
         path: dist/
@@ -121,9 +121,9 @@ jobs:
   build-linux:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: '3.x'
     - name: Install dependencies
@@ -131,7 +131,7 @@ jobs:
         pip install -r requirements.txt
         pip install pyinstaller
     - name: Setup Qt environment
-      uses: jurplel/install-qt-action@v2
+      uses: jurplel/install-qt-action@v3
       with:
         version: '5.15.2'
     - name: Run lrelease
@@ -139,7 +139,7 @@ jobs:
     - name: Build with PyInstaller
       run: pyinstaller PyQtPass.spec
     - name: Upload Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: PyQtPass-Linux
         path: dist/
