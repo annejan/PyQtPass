@@ -87,102 +87,102 @@
 <context>
     <name>QtPassGUI</name>
     <message>
-        <location filename="../pyqtpass.py" line="61"/>
+        <location filename="../pyqtpass.py" line="63"/>
         <source>Error initializing passpy store: {}</source>
         <translation>Error initialising passpy store: {}</translation>
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="187"/>
+        <location filename="../pyqtpass.py" line="192"/>
         <source>PyQtPass</source>
         <translation>PyQtPass</translation>
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="191"/>
+        <location filename="../pyqtpass.py" line="196"/>
         <source>Open PyQtPass</source>
         <translation>Open PyQtPass</translation>
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="225"/>
+        <location filename="../pyqtpass.py" line="230"/>
         <source>Add</source>
         <translation>Add</translation>
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="233"/>
+        <location filename="../pyqtpass.py" line="238"/>
         <source>Open</source>
         <translation>Open</translation>
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="234"/>
+        <location filename="../pyqtpass.py" line="239"/>
         <source>Edit</source>
         <translation>Edit</translation>
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="235"/>
+        <location filename="../pyqtpass.py" line="240"/>
         <source>Rename</source>
         <translation>Rename</translation>
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="236"/>
+        <location filename="../pyqtpass.py" line="241"/>
         <source>Delete</source>
         <translation>Delete</translation>
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="256"/>
+        <location filename="../pyqtpass.py" line="261"/>
         <source>Item Name</source>
         <translation>Item Name</translation>
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="256"/>
+        <location filename="../pyqtpass.py" line="261"/>
         <source>Enter name:</source>
         <translation>Enter name:</translation>
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="262"/>
+        <location filename="../pyqtpass.py" line="267"/>
         <source>Password exists</source>
         <translation>Password exists</translation>
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="262"/>
+        <location filename="../pyqtpass.py" line="267"/>
         <source>Password already exists at: {}</source>
         <translation>Password already exists at: {}</translation>
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="270"/>
+        <location filename="../pyqtpass.py" line="275"/>
         <source>Item Content</source>
         <translation>Item Content</translation>
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="270"/>
+        <location filename="../pyqtpass.py" line="275"/>
         <source>Enter content:</source>
         <translation>Enter content:</translation>
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="285"/>
+        <location filename="../pyqtpass.py" line="290"/>
         <source>Update password</source>
         <translation>Update password</translation>
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="285"/>
+        <location filename="../pyqtpass.py" line="290"/>
         <source>New content:</source>
         <translation>New content:</translation>
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="303"/>
+        <location filename="../pyqtpass.py" line="308"/>
         <source>Rename Item</source>
         <translation>Rename Item</translation>
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="303"/>
+        <location filename="../pyqtpass.py" line="308"/>
         <source>New Path:</source>
         <translation>New Path:</translation>
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="318"/>
+        <location filename="../pyqtpass.py" line="323"/>
         <source>Confirm Delete</source>
         <translation>Confirm Delete</translation>
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="318"/>
+        <location filename="../pyqtpass.py" line="323"/>
         <source>Are you sure you want to delete {}?</source>
         <translation>Are you sure you want to delete {}?</translation>
     </message>
@@ -191,35 +191,50 @@
         <source>PyQtPass is a GUI for pass, the standard Unix password manager.
 
 Please report any issues you might have with this software.</source>
-        <translation>PyQtPass is a GUI for pass, the standard Unix password manager.
+        <translation type="obsolete">PyQtPass is a GUI for pass, the standard Unix password manager.
 
 Please report any issues you might have with this software.</translation>
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="358"/>
+        <location filename="../pyqtpass.py" line="383"/>
         <source>PyQtPass Experimental</source>
         <translation>PyQtPass Experimental</translation>
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="361"/>
+        <location filename="../pyqtpass.py" line="386"/>
         <source>System</source>
         <translation>System</translation>
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="362"/>
+        <location filename="../pyqtpass.py" line="387"/>
         <source>Configuration</source>
         <translation>Configuration</translation>
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="365"/>
+        <location filename="../pyqtpass.py" line="390"/>
         <source>Quit</source>
         <translation>Quit</translation>
+    </message>
+    <message>
+        <location filename="../pyqtpass.py" line="361"/>
+        <source># Welcome to PyQtPass!
+
+PyQtPass is your password manager. With it, managing passwords is a breeze.
+
+- Generate secure passwords
+- Manage passwords with ease
+- Clipboard integration for quick access
+- Supports multiple password stores
+
+Check out the [documentation](https://github.com/annejan/PyQtPass/) for more info.
+</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>UiContainer</name>
     <message>
-        <location filename="../ui_container.py" line="32"/>
+        <location filename="../ui_container.py" line="39"/>
         <source>Type here to filter passwords...</source>
         <translation>Type here to filter passwords...</translation>
     </message>

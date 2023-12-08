@@ -14,46 +14,22 @@ import sys
 
 import passpy
 import markdown
-
-try:
-    from PyQt6.QtCore import (
-        Qt,
-        QByteArray,
-        QTimer,
-    )
-    from PyQt6.QtGui import QIcon, QFontDatabase, QFont
-    from PyQt6.QtWidgets import (
-        QApplication,
-        QMainWindow,
-        QSplitter,
-        QSystemTrayIcon,
-        QMenu,
-        QAction,
-        QMessageBox,
-        QInputDialog,
-    )
-
-    QT_VERSION = 6
-except ImportError:
-    from PyQt5.QtCore import (
-        Qt,
-        QByteArray,
-        QTimer,
-    )
-    from PyQt5.QtGui import QIcon, QFontDatabase, QFont
-    from PyQt5.QtWidgets import (
-        QApplication,
-        QMainWindow,
-        QSplitter,
-        QSystemTrayIcon,
-        QMenu,
-        QAction,
-        QMessageBox,
-        QInputDialog,
-    )
-
-    QT_VERSION = 5
-
+from PyQt5.QtCore import (
+    Qt,
+    QByteArray,
+    QTimer,
+)
+from PyQt5.QtGui import QIcon, QFontDatabase, QFont
+from PyQt5.QtWidgets import (
+    QApplication,
+    QMainWindow,
+    QSplitter,
+    QSystemTrayIcon,
+    QMenu,
+    QAction,
+    QMessageBox,
+    QInputDialog,
+)
 
 from settings_manager import SettingsManager
 from config_dialog import ConfigDialog

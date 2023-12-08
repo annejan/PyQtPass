@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['pyqtpass.py'],
+    ['pyqtpass.py',"ui_container.py"],
     pathex=[],
     binaries=[],
     datas=[('artwork', 'artwork'), ('localization', 'localization')],
