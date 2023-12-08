@@ -27,6 +27,13 @@ def get_icon_path():
     return os.path.join(os.path.dirname(__file__), icon_path)
 
 
+def get_lato_font_path():
+    """
+    :return: str path of Lato TrueType Font file
+    """
+    return os.path.join(os.path.dirname(__file__), "artwork/fonts/Lato-Regular.ttf")
+
+
 def set_locale():
     """Do the Qt magic localization things based on system locale"""
     system_locale = QLocale.system()

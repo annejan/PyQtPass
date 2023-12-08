@@ -13,28 +13,53 @@ import argparse
 import sys
 
 import passpy
-from PyQt5.QtCore import (
-    Qt,
-    QByteArray,
-    QTimer,
-)
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import (
-    QApplication,
-    QMainWindow,
-    QSplitter,
-    QSystemTrayIcon,
-    QMenu,
-    QAction,
-    QMessageBox,
-    QInputDialog,
-)
+
+try:
+    from PyQt6.QtCore import (
+        Qt,
+        QByteArray,
+        QTimer,
+    )
+    from PyQt6.QtGui import QIcon, QFontDatabase, QFont
+    from PyQt6.QtWidgets import (
+        QApplication,
+        QMainWindow,
+        QSplitter,
+        QSystemTrayIcon,
+        QMenu,
+        QAction,
+        QMessageBox,
+        QInputDialog,
+    )
+
+    QT_VERSION = 6
+except ImportError:
+    from PyQt5.QtCore import (
+        Qt,
+        QByteArray,
+        QTimer,
+    )
+    from PyQt5.QtGui import QIcon, QFontDatabase, QFont
+    from PyQt5.QtWidgets import (
+        QApplication,
+        QMainWindow,
+        QSplitter,
+        QSystemTrayIcon,
+        QMenu,
+        QAction,
+        QMessageBox,
+        QInputDialog,
+    )
+
+    QT_VERSION = 5
+
 
 from settings_manager import SettingsManager
 from config_dialog import ConfigDialog
 from ui_container import UiContainer
 from utilities import (
     get_icon_path,
+    get_lato_font_path,
     set_locale,
     create_tree_model,
     get_item_folder,
@@ -123,6 +148,9 @@ class QtPassGUI(QMainWindow):
         try:
             password = self.store.get_key(path)
             self.ui.text_edit.setText(password)
+            fixed_font = QFont("monospace", 10, QFont.Normal)
+            fixed_font.setFixedPitch(True)
+            self.ui.text_edit.setFont(fixed_font)
             self.verbose_print(f"Double-clicked on: {path}")
         except FileNotFoundError:
             self.verbose_print(
@@ -337,6 +365,14 @@ class QtPassGUI(QMainWindow):
         """
         Initialize the user interface.
         """
+        font_id = QFontDatabase.addApplicationFont(
+            get_lato_font_path()
+        )  # Update the path to the font file
+        if font_id == -1:
+            print("Failed to load font. Check the file path.")
+        else:
+            lato = QFontDatabase.applicationFontFamilies(font_id)[0]
+
         self.splitter = QSplitter(self)
         self.ui.setup_ui(self.splitter)
         self.ui.tree_view.doubleClicked.connect(self.on_item_double_clicked)
@@ -351,6 +387,7 @@ class QtPassGUI(QMainWindow):
                 "Please report any issues you might have with this software."
             )
         )
+        self.ui.text_edit.setFont(QFont(lato, 16))
 
         self.setCentralWidget(self.ui.central_widget)
 

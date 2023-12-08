@@ -12,6 +12,7 @@ This repository contains a Bash script for converting and resizing an SVG image 
 - [SVGO (SVG Optimizer)](https://github.com/svg/svgo)
 - [OptiPNG](http://optipng.sourceforge.net/)
 - [ImageMagick](https://imagemagick.org/)
+- [libicns](https://icns.sourceforge.io/)
 
 Ensure these tools are installed on your system before running the script.
 
@@ -29,5 +30,7 @@ Feel free to fork this repository and contribute by submitting a pull request.
 ## License
 
 The PyQtPass logo currently in flux and licensed under the WTFPL
+
+The Lato font by Lukasz Dziedzic is released under the SIL Open Font License
 
 The ./updateicons.sh script is EUPL 1.2 Licensed
