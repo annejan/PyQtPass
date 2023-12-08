@@ -1,3 +1,9 @@
+#!/usr/bin/env bash
+
+# SPDX-License-Identifier: EUPL-1.2
+# This script is licensed under the European Union Public License 1.2
+# Copyright (C) 2023 IJHack
+
 svgo icon.svg
 inkscape -z -o icon.png -w 512 -h 512 icon.svg
 inkscape -z -o icon@2x.png -w 1024 -h 1024 icon.svg
