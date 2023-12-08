@@ -13,6 +13,7 @@ import argparse
 import sys
 
 import passpy
+import markdown
 
 try:
     from PyQt6.QtCore import (
@@ -382,9 +383,20 @@ class QtPassGUI(QMainWindow):
         self.ui.tree_view.customContextMenuRequested.connect(self.show_context_menu)
 
         self.ui.text_edit.setText(
-            self.tr(
-                "PyQtPass is a GUI for pass, the standard Unix password manager.\n\n"
-                "Please report any issues you might have with this software."
+            markdown.markdown(
+                self.tr(
+                    """# Welcome to PyQtPass!
+
+PyQtPass is your password manager. With it, managing passwords is a breeze.
+
+- Generate secure passwords
+- Manage passwords with ease
+- Clipboard integration for quick access
+- Supports multiple password stores
+
+Check out the [documentation](https://github.com/annejan/PyQtPass/) for more info.
+"""
+                )
             )
         )
         self.ui.text_edit.setFont(QFont(lato, 16))

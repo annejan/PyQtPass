@@ -9,7 +9,14 @@ modular design in the PyQtPass application.
 
 import sys
 from PyQt5.QtCore import Qt, QSortFilterProxyModel
-from PyQt5.QtWidgets import QTreeView, QTextEdit, QVBoxLayout, QLineEdit, QWidget
+from PyQt5.QtWidgets import (
+    QTreeView,
+    QVBoxLayout,
+    QLineEdit,
+    QWidget,
+    QTextBrowser,
+)
+from PyQt5.QtGui import QDesktopServices
 
 
 class UiContainer(QWidget):
@@ -58,8 +65,11 @@ class UiContainer(QWidget):
         top_widget = QWidget()
         top_widget.setLayout(top_layout)
 
-        self.text_edit = QTextEdit()
+        self.text_edit = QTextBrowser()
         self.text_edit.setReadOnly(True)
+        self.text_edit.setTextInteractionFlags(Qt.TextBrowserInteraction)
+        self.text_edit.anchorClicked.connect(QDesktopServices.openUrl)
+        self.text_edit.setOpenLinks(False)
 
         splitter.addWidget(top_widget)
         splitter.addWidget(self.text_edit)
