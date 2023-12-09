@@ -34,6 +34,7 @@ from PyQt5.QtWidgets import (
 from settings_manager import SettingsManager
 from config_dialog import ConfigDialog
 from ui_container import UiContainer
+from edit_password_window import EditPasswordDialog
 from utilities import (
     get_icon_path,
     get_lato_font_path,
@@ -110,7 +111,7 @@ class QtPassGUI(QMainWindow):
             self.restoreGeometry(geometry)
         self.splitter.setSizes(self.settings.get("splitter_sizes"))
 
-    def on_item_double_clicked(self, index):
+    def open_item(self, index):
         """
         Handle the double click event on an item in the tree view.
 
@@ -121,6 +122,7 @@ class QtPassGUI(QMainWindow):
         # Get the item from the source model
         item = self.ui.tree_model.itemFromIndex(source_index)
         path = get_item_full_path(item)
+
         set_widgets_enabled(self, False)
         try:
             password = self.store.get_key(path)
@@ -135,6 +137,20 @@ class QtPassGUI(QMainWindow):
             )
         set_widgets_enabled(self, True)
 
+    def on_item_double_clicked(self, index):
+        """
+        Handle the double click event on an item in the tree view.
+
+        :param index: The index of the double-clicked item in the proxy model.
+        """
+        # Map the index from the proxy model to the source model
+        source_index = self.ui.proxy_model.mapToSource(index)
+        # Get the item from the source model
+        item = self.ui.tree_model.itemFromIndex(source_index)
+        path = get_item_full_path(item)
+        password_dialog = EditPasswordDialog(self.store, path, item.text())
+        password_dialog.exec()
+
     def on_selection_changed(self, selected, _deselected):
         """
         Handle the selection change event in the tree view.
@@ -148,7 +164,7 @@ class QtPassGUI(QMainWindow):
             item = self.ui.tree_model.itemFromIndex(source_index)
             self.verbose_print(f"Selected: {get_item_full_path(item)}")
             if self.settings.get("select_is_open"):
-                self.on_item_double_clicked(indexes[0])
+                self.open_item(indexes[0])
 
     def on_tray_icon_clicked(self, reason):
         """

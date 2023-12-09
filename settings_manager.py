@@ -31,6 +31,7 @@ class SettingsManager:
             "always_on_top": False,
             "use_tray_icon": True,
             "start_minimized": False,
+            "password_length": 16,
         }
         self.load()
 

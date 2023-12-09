@@ -38,6 +38,7 @@ class ConfigDialog(QDialog):
         self.use_tray_icon = None
         self.select_is_open = None
         self.close_is_hide = None
+        self.password_length = None
         self.settings_manager = SettingsManager()
         self.init_ui()
         self.load_settings()
@@ -47,7 +48,6 @@ class ConfigDialog(QDialog):
         Sets up the user interface for the configuration dialog.
         """
         self.setWindowTitle(self.tr("Configuration"))
-        self.resize(500, 400)
         layout = QVBoxLayout()
         self.init_treeview_group(layout)
         self.init_clipboard_group(layout)
@@ -69,15 +69,12 @@ class ConfigDialog(QDialog):
         layout.addWidget(clipboard_group)
 
     def init_password_generation_group(self, layout):
-        """TODO Static for now"""
+        """Setup password generation block"""
         password_group = QGroupBox(self.tr("Password Generation:"))
         password_layout = QFormLayout()
         password_group.setLayout(password_layout)
-        spin_password_length = QSpinBox()
-        spin_password_length.setValue(8)
-        spin_password_length.setDisabled(True)
-        spin_password_length.setReadOnly(True)
-        password_layout.addRow(self.tr("Password Length:"), spin_password_length)
+        self.password_length = QSpinBox()
+        password_layout.addRow(self.tr("Password Length:"), self.password_length)
         layout.addWidget(password_group)
 
     def init_git_group(self, layout):
@@ -127,6 +124,7 @@ class ConfigDialog(QDialog):
     def init_buttons(self, layout):
         """OK and Cancel buttons"""
         buttons_layout = QHBoxLayout()
+        buttons_layout.addStretch(1)
         btn_ok = QPushButton(self.tr("OK"))
         btn_ok.clicked.connect(self.save_settings)
         btn_cancel = QPushButton(self.tr("Cancel"))
@@ -144,6 +142,8 @@ class ConfigDialog(QDialog):
             if widget:
                 if isinstance(widget, QCheckBox):
                     widget.setChecked(self.settings_manager.get(key))
+                elif isinstance(widget, QSpinBox):
+                    widget.setValue(int(self.settings_manager.get(key)))
                 else:
                     widget.setValue(self.settings_manager.get(key))
 
@@ -159,6 +159,8 @@ class ConfigDialog(QDialog):
             if widget:
                 if isinstance(widget, QCheckBox):
                     self.settings_manager.set(key, widget.isChecked())
+                elif isinstance(widget, QSpinBox):
+                    self.settings_manager.set(key, widget.value())
                 else:
                     self.settings_manager.set(key, widget.getValue())
         self.settings_manager.save()
