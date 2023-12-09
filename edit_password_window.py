@@ -39,7 +39,7 @@ class EditPasswordDialog(QDialog):
         self.show_password_checkbox = None
         self.store = store
         self.path = path
-        self.setWindowTitle(f"Password {name}")
+        self.setWindowTitle(self.tr("Password {}").format(name))
         self.init_ui()
 
     def init_ui(self):
@@ -56,18 +56,18 @@ class EditPasswordDialog(QDialog):
         self.password_edit = QLineEdit(self)
         self.password_edit.setText(password)
         self.password_edit.setEchoMode(QLineEdit.Password)  # Hides the password
-        generate_button = QPushButton("Generate", self)
+        generate_button = QPushButton(self.tr("Generate"), self)
         password_layout = QHBoxLayout()
         password_layout.addWidget(self.password_edit)
         password_layout.addWidget(generate_button)
         layout.addLayout(password_layout)
 
-        self.show_password_checkbox = QCheckBox("Show password", self)
+        self.show_password_checkbox = QCheckBox(self.tr("Show password"), self)
         self.charset_combo_box = QComboBox(self)
         self.charset_combo_box.addItems(
-            ["All characters", "Letters only", "Numbers only"]
+            [self.tr("All characters"), self.tr("Letters only"), self.tr("Numbers only")]
         )
-        length_label = QLabel("Length:", self)
+        length_label = QLabel(self.tr("Length:"), self)
         self.length_edit = QSpinBox(self)
         self.length_edit.setRange(8, 4096)
         settings = SettingsManager()
@@ -84,7 +84,7 @@ class EditPasswordDialog(QDialog):
         self.info_text_edit.setText(information)
         layout.addWidget(self.info_text_edit)
 
-        ok_button = QPushButton("OK", self)
+        ok_button = QPushButton(self.tr("OK"), self)
         ok_button.clicked.connect(self.save)
         cancel_button = QPushButton(self.tr("Cancel"))
         cancel_button.clicked.connect(self.close)
