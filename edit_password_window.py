@@ -65,7 +65,11 @@ class EditPasswordDialog(QDialog):
         self.show_password_checkbox = QCheckBox(self.tr("Show password"), self)
         self.charset_combo_box = QComboBox(self)
         self.charset_combo_box.addItems(
-            [self.tr("All characters"), self.tr("Letters only"), self.tr("Numbers only")]
+            [
+                self.tr("All characters"),
+                self.tr("Letters only"),
+                self.tr("Numbers only"),
+            ]
         )
         length_label = QLabel(self.tr("Length:"), self)
         self.length_edit = QSpinBox(self)
