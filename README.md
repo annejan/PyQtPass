@@ -36,7 +36,7 @@ Before running PyQtPass, ensure you have `pass` and `gpg` properly set up on you
 1. Install the required Python packages:
 
    ```sh
-   pip install PyQt5 passpy
+   pip install PyQt5 passpy Markdown
    ```
 
 2. Clone this repository:
@@ -49,7 +49,7 @@ Before running PyQtPass, ensure you have `pass` and `gpg` properly set up on you
 
    ```sh
    cd PyQtPass
-   python main.py
+   python pyqtpass.py
    ```
 
 ## Usage
