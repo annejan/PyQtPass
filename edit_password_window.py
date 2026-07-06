@@ -7,6 +7,7 @@ This is the main window for password generation, changes etc.
 import secrets
 import string
 
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
     QDialog,
     QPushButton,
@@ -18,9 +19,32 @@ from PyQt5.QtWidgets import (
     QCheckBox,
     QComboBox,
     QSpinBox,
+    QMessageBox,
 )
 
 from settings_manager import SettingsManager
+
+CHARACTER_SETS = [
+    string.ascii_letters + string.digits + string.punctuation,
+    string.ascii_letters + string.digits,
+    string.ascii_letters,
+    string.digits,
+]
+
+
+def random_password(charset_index, length):
+    """
+    Generate a random password.
+
+    :param charset_index: Index into CHARACTER_SETS.
+    :param length: Number of characters to generate.
+    :return: The generated password string.
+    """
+    if 0 <= charset_index < len(CHARACTER_SETS):
+        characters = CHARACTER_SETS[charset_index]
+    else:
+        characters = CHARACTER_SETS[0]
+    return "".join(secrets.choice(characters) for _ in range(length))
 
 
 class EditPasswordDialog(QDialog):
@@ -30,8 +54,10 @@ class EditPasswordDialog(QDialog):
     This dialog allows users to edit and create passwords.
     """
 
-    def __init__(self, store, path, name):
-        super().__init__()
+    # pylint: disable=too-many-instance-attributes
+
+    def __init__(self, store, path, name, create=False, parent=None):
+        super().__init__(parent)
         self.info_text_edit = None
         self.length_edit = None
         self.charset_combo_box = None
@@ -39,7 +65,11 @@ class EditPasswordDialog(QDialog):
         self.show_password_checkbox = None
         self.store = store
         self.path = path
-        self.setWindowTitle(self.tr("Password {}").format(name))
+        self.create = create
+        if create:
+            self.setWindowTitle(self.tr("New password {}").format(name))
+        else:
+            self.setWindowTitle(self.tr("Password {}").format(name))
         self.init_ui()
 
     def init_ui(self):
@@ -48,10 +78,16 @@ class EditPasswordDialog(QDialog):
         """
         layout = QVBoxLayout(self)
 
-        data = self.store.get_key(self.path)
-        lines = data.splitlines(True)  # 'True' keeps the newline characters
-        password = lines[0].rstrip("\n")  # Remove the newline character
-        information = "".join(lines[1:])
+        password = ""
+        information = ""
+        if not self.create:
+            data = self.store.get_key(self.path)
+            lines = data.splitlines(True)  # 'True' keeps the newline characters
+            if lines:
+                password = lines[0].rstrip("\n")
+                information = "".join(lines[1:])
+
+        settings = SettingsManager()
 
         self.password_edit = QLineEdit(self)
         self.password_edit.setText(password)
@@ -67,14 +103,15 @@ class EditPasswordDialog(QDialog):
         self.charset_combo_box.addItems(
             [
                 self.tr("All characters"),
+                self.tr("Letters and numbers"),
                 self.tr("Letters only"),
                 self.tr("Numbers only"),
             ]
         )
+        self.charset_combo_box.setCurrentIndex(int(settings.get("password_charset")))
         length_label = QLabel(self.tr("Length:"), self)
         self.length_edit = QSpinBox(self)
-        self.length_edit.setRange(8, 4096)
-        settings = SettingsManager()
+        self.length_edit.setRange(1, 4096)
         self.length_edit.setValue(int(settings.get("password_length")))
         settings_layout = QHBoxLayout()
         settings_layout.addWidget(self.show_password_checkbox)
@@ -91,7 +128,7 @@ class EditPasswordDialog(QDialog):
         ok_button = QPushButton(self.tr("OK"), self)
         ok_button.clicked.connect(self.save)
         cancel_button = QPushButton(self.tr("Cancel"))
-        cancel_button.clicked.connect(self.close)
+        cancel_button.clicked.connect(self.reject)
         buttons_layout = QHBoxLayout()
         buttons_layout.addStretch(1)
         buttons_layout.addWidget(ok_button)
@@ -108,29 +145,28 @@ class EditPasswordDialog(QDialog):
 
     def toggle_password_visibility(self, state):
         """Show or hide password"""
-        if state == self.show_password_checkbox.isChecked():
-            self.password_edit.setEchoMode(QLineEdit.Password)
-        else:
+        if state == Qt.Checked:
             self.password_edit.setEchoMode(QLineEdit.Normal)
+        else:
+            self.password_edit.setEchoMode(QLineEdit.Password)
 
     def generate_password(self):
         """Generate a password"""
-        if self.charset_combo_box.currentIndex() == 1:
-            characters = string.ascii_letters
-        elif self.charset_combo_box.currentIndex() == 2:
-            characters = string.digits
-        else:
-            characters = string.ascii_letters + string.digits + string.punctuation
-        password = "".join(
-            secrets.choice(characters) for i in range(self.length_edit.value())
+        password = random_password(
+            self.charset_combo_box.currentIndex(), self.length_edit.value()
         )
         self.password_edit.setText(password)
 
     def save(self):
         """Save the password"""
-        self.store.set_key(
-            self.path,
-            self.password_edit.text() + "\n" + self.info_text_edit.toPlainText(),
-            True,
-        )
-        self.close()
+        data = self.password_edit.text() + "\n" + self.info_text_edit.toPlainText()
+        try:
+            self.store.set_key(self.path, data, force=not self.create)
+        except FileExistsError:
+            QMessageBox.warning(
+                self,
+                self.tr("Password exists"),
+                self.tr("Password already exists at: {}").format(self.path),
+            )
+            return
+        self.accept()

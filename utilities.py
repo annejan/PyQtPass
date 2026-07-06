@@ -2,7 +2,9 @@
 Simple functionality not directly / only used for PyQtPass
 """
 
+import html
 import os
+import re
 import sys
 
 from PyQt5.QtCore import Qt, QLocale, QTranslator, QCoreApplication, QLibraryInfo
@@ -114,6 +116,30 @@ def get_item_full_path(item):
         item = item.parent()
         path_list.insert(0, item.text())
     return "/".join(path_list)
+
+
+URL_PATTERN = re.compile(r"(https?://[^\s<]+)")
+HIDDEN_PASSWORD = "●" * 8
+
+
+def format_key_html(key_data, hide_password=False):
+    """
+    Format decrypted password data as HTML for the content panel.
+
+    The first line (the password) can be hidden and URLs are turned into
+    clickable links, like QtPass does.
+
+    :param key_data: The decrypted contents of a password entry.
+    :param hide_password: When True, replace the first line with dots.
+    :return: HTML string for display in a QTextBrowser.
+    """
+    lines = key_data.rstrip("\n").split("\n")
+    if lines and hide_password:
+        lines[0] = HIDDEN_PASSWORD
+    escaped_lines = [
+        URL_PATTERN.sub(r'<a href="\1">\1</a>', html.escape(line)) for line in lines
+    ]
+    return "<br>".join(escaped_lines)
 
 
 def set_widgets_enabled(container, enabled):
