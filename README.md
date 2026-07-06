@@ -24,9 +24,15 @@ Your feedback and contributions during this phase are invaluable and will help s
 As of now, PyQtPass provides the following features:
 
 - Graphical interface to interact with the `pass` password store.
-- Tree view for password navigation.
-- Password retrieval and display with a simple double-click action.
-- Basic filtering capabilities to easily find specific passwords.
+- Tree view for password navigation with filtering to easily find specific passwords.
+- Password display in the content panel, with clickable links and optional hiding of the password and/or content.
+- Adding, editing, renaming and deleting of passwords and folders.
+- Configurable random password generation.
+- Clipboard integration: copy on demand or automatically, with automatic clearing of the clipboard after a configurable timeout.
+- Git synchronisation: pull and push from the toolbar, update on startup and automatic pushing of local changes.
+- GPG user management: select the keys a store or folder is encrypted for and re-encrypt the affected passwords, like `pass init`.
+- Multiple password store profiles that can be switched from the toolbar.
+- System tray icon with start minimized and hide on close behavior.
 - Cross-platform compatibility, thanks to the Python and PyQt5 combination.
 
 ## Installation

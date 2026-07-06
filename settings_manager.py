@@ -22,6 +22,9 @@ class SettingsManager:
         return cls._instance
 
     def __init__(self):
+        if getattr(self, "initialized", False):
+            return
+        self.initialized = True
         self.settings = QSettings("IJHack", "PyQtPass")
         self.options = {
             "select_is_open": True,
@@ -31,7 +34,20 @@ class SettingsManager:
             "always_on_top": False,
             "use_tray_icon": True,
             "start_minimized": False,
+            "always_copy_to_clipboard": False,
+            "autoclear_clipboard": True,
+            "clipboard_timeout": 45,
+            "hide_password": False,
+            "hide_content": False,
+            "autoclear_panel": False,
+            "panel_timeout": 10,
             "password_length": 16,
+            "password_charset": 0,
+            "use_git": True,
+            "auto_push": True,
+            "git_pull_on_start": False,
+            "profiles": {},
+            "current_profile": "",
         }
         self.load()
 
@@ -63,15 +79,26 @@ class SettingsManager:
         ]
 
     def load(self):
-        """Load settings"""
-        for key, value in self.options.items():
-            settings_value = self.settings.value(key)
-            if not settings_value:
+        """Load settings, coercing stored values back to their default types."""
+        for key, default in self.options.items():
+            value = self.settings.value(key)
+            if value is None:
                 continue
-            if isinstance(value, bool) and not isinstance(settings_value, bool):
-                self.options[key] = settings_value.lower() in ("true", "1")
+            if isinstance(default, bool):
+                if isinstance(value, bool):
+                    self.options[key] = value
+                else:
+                    self.options[key] = str(value).lower() in ("true", "1")
+            elif isinstance(default, int):
+                try:
+                    self.options[key] = int(value)
+                except (TypeError, ValueError):
+                    pass
+            elif isinstance(default, dict):
+                if isinstance(value, dict):
+                    self.options[key] = value
             else:
-                self.options[key] = settings_value
+                self.options[key] = value
 
     def save(self):
         """Save settings"""
