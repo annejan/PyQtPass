@@ -1,12 +1,12 @@
 """
-This module defines the ConfigDialog class, a PyQt5 QDialog subclass.
+This module defines the ConfigDialog class, a PyQt6 QDialog subclass.
 
 The ConfigDialog provides a graphical user interface for users to change
 application settings, grouped in tabs like the QtPass configuration dialog.
 It interacts with a SettingsManager to persist these settings.
 """
 
-from PyQt5.QtWidgets import (
+from PyQt6.QtWidgets import (
     QCheckBox,
     QComboBox,
     QDialog,

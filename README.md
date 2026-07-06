@@ -33,7 +33,7 @@ As of now, PyQtPass provides the following features:
 - GPG user management: select the keys a store or folder is encrypted for and re-encrypt the affected passwords, like `pass init`.
 - Multiple password store profiles that can be switched from the toolbar.
 - System tray icon with start minimized and hide on close behavior.
-- Cross-platform compatibility, thanks to the Python and PyQt5 combination.
+- Cross-platform compatibility, thanks to the Python and PyQt6 combination.
 
 ## Installation
 
@@ -42,7 +42,7 @@ Before running PyQtPass, ensure you have `pass` and `gpg` properly set up on you
 1. Install the required Python packages:
 
    ```sh
-   pip install PyQt5 passpy Markdown
+   pip install PyQt6 passpy Markdown
    ```
 
 2. Clone this repository:
@@ -87,7 +87,7 @@ Should you encounter any issues or have feature suggestions, please feel free to
 ## Acknowledgments
 
 - `pass`: The standard Unix password manager. For more information, visit [passwordstore.org](https://www.passwordstore.org/).
-- `Qt Framework`: PyQtPass utilizes the Qt Framework, specifically Qt 5, a comprehensive set of C++ libraries and development tools that enable the creation of cross-platform applications.
+- `Qt Framework`: PyQtPass utilizes the Qt Framework, specifically Qt 6, a comprehensive set of C++ libraries and development tools that enable the creation of cross-platform applications.
   Discover more about the Qt Framework at [qt.io](https://www.qt.io/).
 - `QtPass`: Qt GUI for Pass, written in C++, can be found at [qtpass.org](https://qtpass.org/).
 - Co-Authorship: This project includes code and documentation co-written with the assistance of ChatGPT from OpenAI.

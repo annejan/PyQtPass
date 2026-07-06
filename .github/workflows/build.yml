@@ -21,7 +21,7 @@ jobs:
     - name: Setup Qt environment
       uses: jurplel/install-qt-action@v3
       with:
-        version: '5.15.2'
+        version: '6.5.3'
     - name: Run lrelease
       run: lrelease-pro pyqtpass.pro
     - name: Install UPX
@@ -61,7 +61,7 @@ jobs:
     - name: Setup Qt environment
       uses: jurplel/install-qt-action@v3
       with:
-        version: '5.15.2'
+        version: '6.5.3'
     - name: Run lrelease
       run: lrelease-pro pyqtpass.pro
     - name: Install UPX
@@ -99,7 +99,7 @@ jobs:
     - name: Setup Qt environment
       uses: jurplel/install-qt-action@v3
       with:
-        version: '5.15.2'
+        version: '6.5.3'
     - name: Run lrelease
       run: lrelease-pro pyqtpass.pro
     - name: Build with PyInstaller
@@ -133,7 +133,7 @@ jobs:
     - name: Setup Qt environment
       uses: jurplel/install-qt-action@v3
       with:
-        version: '5.15.2'
+        version: '6.5.3'
     - name: Run lrelease
       run: lrelease-pro pyqtpass.pro
     - name: Build with PyInstaller
