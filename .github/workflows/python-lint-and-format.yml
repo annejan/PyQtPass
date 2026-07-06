@@ -20,6 +20,12 @@ jobs:
       with:
         python-version: '3.x'
 
+    - name: Install system libraries for PyQt6
+      run: |
+        # PyQt6 needs libEGL present for pylint to import it and introspect.
+        sudo apt-get update
+        sudo apt-get install -y libegl1 libgl1
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
