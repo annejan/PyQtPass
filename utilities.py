@@ -7,9 +7,9 @@ import os
 import re
 import sys
 
-from PyQt5.QtCore import Qt, QLocale, QTranslator, QCoreApplication, QLibraryInfo
-from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon
-from PyQt5.QtWidgets import QWidget
+from PyQt6.QtCore import Qt, QLocale, QTranslator, QCoreApplication, QLibraryInfo
+from PyQt6.QtGui import QStandardItemModel, QStandardItem, QIcon
+from PyQt6.QtWidgets import QWidget
 
 PLATFORM_ICONS = {
     "win32": "artwork/icon.ico",
@@ -43,7 +43,7 @@ def set_locale():
     qt_translator = QTranslator()
     qt_translator.load(
         f"localization/localization_{language_code}",
-        QLibraryInfo.location(QLibraryInfo.TranslationsPath),
+        QLibraryInfo.path(QLibraryInfo.LibraryPath.TranslationsPath),
     )
     QCoreApplication.installTranslator(qt_translator)
 
@@ -69,7 +69,7 @@ def create_tree_model(store):
             for directory in directories:
                 dir_name = os.path.basename(directory)
                 dir_item = QStandardItem(dir_name)
-                dir_item.setFlags(dir_item.flags() & ~Qt.ItemIsEditable)
+                dir_item.setFlags(dir_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
                 dir_item.setIcon(QIcon.fromTheme("folder"))
                 parent.appendRow(dir_item)
                 add_items(
@@ -79,7 +79,7 @@ def create_tree_model(store):
             for entry in entries:
                 entry_name = os.path.basename(entry)
                 entry_item = QStandardItem(entry_name)
-                entry_item.setFlags(entry_item.flags() & ~Qt.ItemIsEditable)
+                entry_item.setFlags(entry_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
                 entry_item.setIcon(QIcon(get_icon_path()))
                 parent.appendRow(entry_item)
         except (FileNotFoundError, PermissionError) as e:

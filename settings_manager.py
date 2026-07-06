@@ -1,11 +1,11 @@
 """
 This module provides a SettingsManager class to manage application settings
-using the QSettings interface from the PyQt5.QtCore module. It allows for storing
+using the QSettings interface from the PyQt6.QtCore module. It allows for storing
 and retrieving various settings such as window geometry, splitter sizes, and
 boolean flags for application behavior.
 """
 
-from PyQt5.QtCore import QSettings, QByteArray
+from PyQt6.QtCore import QSettings, QByteArray
 
 
 class SettingsManager:
