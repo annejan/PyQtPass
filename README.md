@@ -91,3 +91,4 @@ Should you encounter any issues or have feature suggestions, please feel free to
   Discover more about the Qt Framework at [qt.io](https://www.qt.io/).
 - `QtPass`: Qt GUI for Pass, written in C++, can be found at [qtpass.org](https://qtpass.org/).
 - Co-Authorship: This project includes code and documentation co-written with the assistance of ChatGPT from OpenAI.
+- Co-Authorship: The QtPass feature-parity work (clipboard, content panel, git sync, GPG user management and profiles) was co-written with the assistance of Claude from Anthropic.
