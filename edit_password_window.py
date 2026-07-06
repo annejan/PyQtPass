@@ -1,5 +1,5 @@
 """
-This module defines the EditPasswordDialog class, a PyQt5 QDialog subclass.
+This module defines the EditPasswordDialog class, a PyQt6 QDialog subclass.
 
 This is the main window for password generation, changes etc.
 """
@@ -7,8 +7,7 @@ This is the main window for password generation, changes etc.
 import secrets
 import string
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (
+from PyQt6.QtWidgets import (
     QDialog,
     QPushButton,
     QVBoxLayout,
@@ -91,7 +90,9 @@ class EditPasswordDialog(QDialog):
 
         self.password_edit = QLineEdit(self)
         self.password_edit.setText(password)
-        self.password_edit.setEchoMode(QLineEdit.Password)  # Hides the password
+        self.password_edit.setEchoMode(
+            QLineEdit.EchoMode.Password
+        )  # Hides the password
         generate_button = QPushButton(self.tr("Generate"), self)
         password_layout = QHBoxLayout()
         password_layout.addWidget(self.password_edit)
@@ -143,12 +144,12 @@ class EditPasswordDialog(QDialog):
 
         self.setLayout(layout)
 
-    def toggle_password_visibility(self, state):
+    def toggle_password_visibility(self, _state):
         """Show or hide password"""
-        if state == Qt.Checked:
-            self.password_edit.setEchoMode(QLineEdit.Normal)
+        if self.show_password_checkbox.isChecked():
+            self.password_edit.setEchoMode(QLineEdit.EchoMode.Normal)
         else:
-            self.password_edit.setEchoMode(QLineEdit.Password)
+            self.password_edit.setEchoMode(QLineEdit.EchoMode.Password)
 
     def generate_password(self):
         """Generate a password"""

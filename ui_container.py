@@ -8,15 +8,15 @@ modular design in the PyQtPass application.
 """
 
 import sys
-from PyQt5.QtCore import Qt, QSortFilterProxyModel
-from PyQt5.QtWidgets import (
+from PyQt6.QtCore import Qt, QSortFilterProxyModel
+from PyQt6.QtWidgets import (
     QTreeView,
     QVBoxLayout,
     QLineEdit,
     QWidget,
     QTextBrowser,
 )
-from PyQt5.QtGui import QDesktopServices
+from PyQt6.QtGui import QDesktopServices
 
 
 class UiContainer(QWidget):
@@ -50,13 +50,13 @@ class UiContainer(QWidget):
             print("No tree nodel")
             sys.exit(1)
         self.proxy_model.setSourceModel(self.tree_model)
-        self.proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
-        self.proxy_model.setRecursiveFilteringEnabled(True)  # Requires PyQt5 >= 5.10
+        self.proxy_model.setFilterCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+        self.proxy_model.setRecursiveFilteringEnabled(True)  # Requires PyQt6
 
         self.tree_view = QTreeView()
         self.tree_view.setHeaderHidden(True)
         self.tree_view.setModel(self.proxy_model)
-        self.tree_view.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.tree_view.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
 
         top_layout = QVBoxLayout()
         top_layout.addWidget(self.filter_text_box)
@@ -67,7 +67,9 @@ class UiContainer(QWidget):
 
         self.text_edit = QTextBrowser()
         self.text_edit.setReadOnly(True)
-        self.text_edit.setTextInteractionFlags(Qt.TextBrowserInteraction)
+        self.text_edit.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextBrowserInteraction
+        )
         self.text_edit.anchorClicked.connect(QDesktopServices.openUrl)
         self.text_edit.setOpenLinks(False)
 

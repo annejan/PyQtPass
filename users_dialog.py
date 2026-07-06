@@ -1,5 +1,5 @@
 """
-This module defines the UsersDialog class, a PyQt5 QDialog subclass.
+This module defines the UsersDialog class, a PyQt6 QDialog subclass.
 
 The UsersDialog shows the GPG keys in the user's keyring and lets them
 select which keys the password store (or a folder inside it) should be
@@ -7,8 +7,8 @@ encrypted for, like the users dialog in QtPass. Applying the selection
 rewrites the .gpg-id file and re-encrypts the affected passwords.
 """
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import (
     QDialog,
     QHBoxLayout,
     QLabel,
@@ -75,10 +75,12 @@ class UsersDialog(QDialog):
             if key["id"] not in secret_ids:
                 label += self.tr(" [no private key]")
             item = QListWidgetItem(label)
-            item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
+            item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
             checked = any(key_matches_id(key, gpg_id) for gpg_id in current_ids)
-            item.setCheckState(Qt.Checked if checked else Qt.Unchecked)
-            item.setData(Qt.UserRole, key["id"])
+            item.setCheckState(
+                Qt.CheckState.Checked if checked else Qt.CheckState.Unchecked
+            )
+            item.setData(Qt.ItemDataRole.UserRole, key["id"])
             self.key_list.addItem(item)
 
     def selected_key_ids(self):
@@ -86,9 +88,9 @@ class UsersDialog(QDialog):
         :return: List of the key ids of all checked keys.
         """
         return [
-            self.key_list.item(row).data(Qt.UserRole)
+            self.key_list.item(row).data(Qt.ItemDataRole.UserRole)
             for row in range(self.key_list.count())
-            if self.key_list.item(row).checkState() == Qt.Checked
+            if self.key_list.item(row).checkState() == Qt.CheckState.Checked
         ]
 
     def save(self):

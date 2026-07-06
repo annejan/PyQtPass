@@ -1,11 +1,11 @@
 """
-This module provides a PyQt5 GUI for interfacing with the passpy library, which is a Python
+This module provides a PyQt6 GUI for interfacing with the passpy library, which is a Python
 wrapper for the standard Unix password manager 'pass'. It allows users to interact with their
 password store through a graphical interface, displaying passwords in a tree view and allowing
 password retrieval by double-clicking on a password entry.
 
 Dependencies:
-    - PyQt5
+    - PyQt6
     - passpy
 """
 
@@ -15,13 +15,13 @@ import sys
 
 import passpy
 import markdown
-from PyQt5.QtCore import (
+from PyQt6.QtCore import (
     Qt,
     QByteArray,
     QTimer,
 )
-from PyQt5.QtGui import QIcon, QFontDatabase, QFont
-from PyQt5.QtWidgets import (
+from PyQt6.QtGui import QAction, QIcon, QFontDatabase, QFont
+from PyQt6.QtWidgets import (
     QApplication,
     QComboBox,
     QDialog,
@@ -30,7 +30,6 @@ from PyQt5.QtWidgets import (
     QStyle,
     QSystemTrayIcon,
     QMenu,
-    QAction,
     QMessageBox,
     QInputDialog,
 )
@@ -118,7 +117,7 @@ class QtPassGUI(QMainWindow):
         This method is overridden to control the behavior of the application on window close.
         Depending on the 'close_is_hide' setting, the window will either be hidden or closed.
 
-        Note: The method name 'closeEvent' is a Qt5 convention and does not follow the PEP8
+        Note: The method name 'closeEvent' is a Qt convention and does not follow the PEP8
         snake_case naming style. The Pylint warning for the method name is disabled for this reason.
 
         Args:
@@ -210,7 +209,7 @@ class QtPassGUI(QMainWindow):
             hidden = self.tr("Content hidden")
             self.ui.text_edit.setHtml(f"<i>{hidden}</i>")
         else:
-            fixed_font = QFont("monospace", 10, QFont.Normal)
+            fixed_font = QFont("monospace", 10, QFont.Weight.Normal)
             fixed_font.setFixedPitch(True)
             self.ui.text_edit.setFont(fixed_font)
             self.ui.text_edit.setHtml(
@@ -305,7 +304,10 @@ class QtPassGUI(QMainWindow):
         :param reason: The reason for the trigger, indicating the type of interaction
                        (e.g., single click, double click).
         """
-        if reason in (QSystemTrayIcon.Trigger, QSystemTrayIcon.DoubleClick):
+        if reason in (
+            QSystemTrayIcon.ActivationReason.Trigger,
+            QSystemTrayIcon.ActivationReason.DoubleClick,
+        ):
             if self.isVisible():
                 self.hide()
             else:
@@ -428,7 +430,7 @@ class QtPassGUI(QMainWindow):
         Opens the configuration dialog.
         """
         dialog = ConfigDialog(self)
-        if dialog.exec_() == QDialog.Accepted:
+        if dialog.exec() == QDialog.DialogCode.Accepted:
             self.apply_settings()
 
     def apply_settings(self):
@@ -442,9 +444,9 @@ class QtPassGUI(QMainWindow):
 
         flags = self.windowFlags()
         if self.settings.get("always_on_top"):
-            flags |= Qt.WindowStaysOnTopHint
+            flags |= Qt.WindowType.WindowStaysOnTopHint
         else:
-            flags &= ~Qt.WindowStaysOnTopHint
+            flags &= ~Qt.WindowType.WindowStaysOnTopHint
         if flags != self.windowFlags():
             self.setWindowFlags(flags)
             self.show()
@@ -465,7 +467,7 @@ class QtPassGUI(QMainWindow):
         if index is not None:
             folder = get_item_folder(self.item_from_index(index)).strip("/")
         dialog = UsersDialog(self.store, folder, self)
-        if dialog.exec_() == QDialog.Accepted:
+        if dialog.exec() == QDialog.DialogCode.Accepted:
             self.refresh_tree()
             self.show_status(
                 self.tr("Re-encrypted passwords in {}").format(folder or "/")
@@ -484,7 +486,7 @@ class QtPassGUI(QMainWindow):
             index = None
             users_action = context_menu.addAction(self.tr("Users"))
             users_action.triggered.connect(lambda: self.open_users_dialog(None))
-            context_menu.exec_(self.ui.tree_view.mapToGlobal(position))
+            context_menu.exec(self.ui.tree_view.mapToGlobal(position))
             return
 
         copy_action = context_menu.addAction(self.tr("Copy password"))
@@ -501,7 +503,7 @@ class QtPassGUI(QMainWindow):
         delete_action.triggered.connect(lambda: self.delete_item(index))
         users_action.triggered.connect(lambda: self.open_users_dialog(index))
 
-        context_menu.exec_(self.ui.tree_view.mapToGlobal(position))
+        context_menu.exec(self.ui.tree_view.mapToGlobal(position))
 
     def add_item(self, index=None):
         """Add item"""
@@ -520,7 +522,7 @@ class QtPassGUI(QMainWindow):
         if not ok or not name or name.endswith("/"):
             return
         dialog = EditPasswordDialog(self.store, name, name.split("/")[-1], create=True)
-        if dialog.exec_() == QDialog.Accepted:
+        if dialog.exec() == QDialog.DialogCode.Accepted:
             self.refresh_tree()
             self.show_status(self.tr("Added password {}").format(name))
             self.auto_push()
@@ -541,7 +543,7 @@ class QtPassGUI(QMainWindow):
                 f"Cannot retrieve key for a directory or non-existent key: {path}"
             )
             return
-        if dialog.exec_() == QDialog.Accepted:
+        if dialog.exec() == QDialog.DialogCode.Accepted:
             if self.settings.get("select_is_open") and index == self.current_index():
                 self.open_item(index)
             self.show_status(self.tr("Saved password {}").format(path))
@@ -585,10 +587,10 @@ class QtPassGUI(QMainWindow):
             self,
             self.tr("Confirm Delete"),
             self.tr("Are you sure you want to delete {}?").format(path),
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No,
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
         )
-        if reply == QMessageBox.Yes:
+        if reply == QMessageBox.StandardButton.Yes:
             self.verbose_print(f"Deleting {path}")
             try:
                 self.store.remove_path(path, True)
@@ -665,7 +667,7 @@ class QtPassGUI(QMainWindow):
         action.triggered.connect(slot)
         if shortcut:
             action.setShortcut(shortcut)
-            action.setShortcutContext(Qt.WidgetWithChildrenShortcut)
+            action.setShortcutContext(Qt.ShortcutContext.WidgetWithChildrenShortcut)
             self.ui.tree_view.addAction(action)
         return action
 
@@ -675,47 +677,47 @@ class QtPassGUI(QMainWindow):
         """
         self.actions["add"] = self.make_action(
             self.tr("Add password"),
-            ("list-add", QStyle.SP_FileDialogNewFolder),
+            ("list-add", QStyle.StandardPixmap.SP_FileDialogNewFolder),
             self.add_item,
             "Ctrl+N",
         )
         self.actions["edit"] = self.make_action(
             self.tr("Edit password"),
-            ("document-edit", QStyle.SP_FileDialogDetailedView),
+            ("document-edit", QStyle.StandardPixmap.SP_FileDialogDetailedView),
             self.edit_item,
             "Ctrl+E",
         )
         self.actions["delete"] = self.make_action(
             self.tr("Delete password"),
-            ("edit-delete", QStyle.SP_TrashIcon),
+            ("edit-delete", QStyle.StandardPixmap.SP_TrashIcon),
             self.delete_item,
             "Del",
         )
         self.actions["copy"] = self.make_action(
             self.tr("Copy password to clipboard"),
-            ("edit-copy", QStyle.SP_FileDialogContentsView),
+            ("edit-copy", QStyle.StandardPixmap.SP_FileDialogContentsView),
             self.copy_password,
             "Ctrl+C",
         )
         self.actions["users"] = self.make_action(
             self.tr("Users"),
-            ("system-users", QStyle.SP_FileDialogInfoView),
+            ("system-users", QStyle.StandardPixmap.SP_FileDialogInfoView),
             self.open_users_dialog,
         )
         self.actions["git_pull"] = self.make_action(
             self.tr("Update from git remote"),
-            ("go-down", QStyle.SP_ArrowDown),
+            ("go-down", QStyle.StandardPixmap.SP_ArrowDown),
             self.on_git_pull,
             "F5",
         )
         self.actions["git_push"] = self.make_action(
             self.tr("Push to git remote"),
-            ("go-up", QStyle.SP_ArrowUp),
+            ("go-up", QStyle.StandardPixmap.SP_ArrowUp),
             self.on_git_push,
         )
         self.actions["config"] = self.make_action(
             self.tr("Configuration"),
-            ("preferences-system", QStyle.SP_ComputerIcon),
+            ("preferences-system", QStyle.StandardPixmap.SP_ComputerIcon),
             self.open_config_dialog,
         )
 
@@ -835,7 +837,7 @@ Check out the [documentation](https://github.com/annejan/PyQtPass/) for more inf
             QTimer.singleShot(0, self.hide)
 
         if self.settings.get("always_on_top"):
-            self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
+            self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
 
 
 def main():
@@ -858,7 +860,7 @@ def main():
     app.setWindowIcon(QIcon(get_icon_path()))
     ex = QtPassGUI(verbose=args.verbose)
     ex.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
 
 
 if __name__ == "__main__":
