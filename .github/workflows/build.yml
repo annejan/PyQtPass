@@ -43,7 +43,7 @@ jobs:
     - name: Rename to PyQtPass-32.exe
       run: mv dist/PyQtPass.exe dist/PyQtPass-32.exe
     - name: Upload Release Asset
-      uses: softprops/action-gh-release@v2
+      uses: softprops/action-gh-release@v3
       with:
         files: ./dist/PyQtPass-32.exe
       env:
@@ -81,7 +81,7 @@ jobs:
         name: PyQtPass-Windows64
         path: dist/
     - name: Upload Release Asset
-      uses: softprops/action-gh-release@v2
+      uses: softprops/action-gh-release@v3
       with:
         files: ./dist/PyQtPass.exe
       env:
@@ -116,7 +116,7 @@ jobs:
         name: PyQtPass-macOS
         path: dist/
     - name: Upload Release Asset
-      uses: softprops/action-gh-release@v2
+      uses: softprops/action-gh-release@v3
       with:
         files: ./dist/PyQtPass.dmg
       env:
@@ -150,7 +150,7 @@ jobs:
     - name: Rename to PyQtPass-linux
       run: mv dist/PyQtPass dist/PyQtPass-linux
     - name: Upload Release Asset
-      uses: softprops/action-gh-release@v2
+      uses: softprops/action-gh-release@v3
       with:
         files: ./dist/PyQtPass-linux
       env:
