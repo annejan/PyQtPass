@@ -267,7 +267,7 @@ class ConfigDialog(QDialog):
         auto_pull = QCheckBox(self.tr("Automatically pull"))
         auto_pull.setToolTip(
             self.tr(
-                "Pull on startup, before editing a password and before " "re-encrypting"
+                "Pull on startup, before editing a password and before re-encrypting"
             )
         )
         git_layout.addRow(self.add_field("git_pull_on_start", auto_pull))
