@@ -101,3 +101,10 @@ placeholders of its source text.
 
 4. Publish the draft. A published release's files are never replaced by a
    workflow re-run.
+5. Publishing the release runs the PyPI workflow, which builds the sdist and
+   the wheel from the tag and uploads them to PyPI with trusted publishing
+   (no token; the `pypi` environment must approve it if it has reviewers).
+   To try a version on TestPyPI first, or to retry an upload, run the PyPI
+   workflow by hand with the version and `testpypi` or `pypi`.
+
+The PyPI workflow also builds and checks the package on every pull request.

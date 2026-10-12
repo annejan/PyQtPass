@@ -1,0 +1,127 @@
+name: PyPI
+
+# Every pull request and push to main builds the package and checks it, so a
+# packaging mistake shows up before a release. Publishing the GitHub release
+# (after the maintainer has signed its files) uploads the same build to PyPI.
+# A manual run can upload a tag to TestPyPI first.
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ published ]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Released version to upload, like v0.4.1'
+        required: true
+      repository:
+        description: 'Where to upload it'
+        type: choice
+        options: [ testpypi, pypi ]
+        default: testpypi
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pypi-${{ inputs.version || github.ref }}
+  cancel-in-progress: false
+
+# Every action is pinned to a commit; the comment names its release.
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        ref: ${{ inputs.version && format('refs/tags/{0}', inputs.version) || github.ref }}
+        persist-credentials: false
+    - name: Set up Python
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      with:
+        python-version: '3.13'
+    - name: Install the tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y qt6-l10n-tools
+        python -m pip install --upgrade pip
+        pip install build==1.6.1 twine==7.0.0
+    - name: Check the version
+      id: version
+      env:
+        TAG: ${{ inputs.version || (github.event_name == 'release' && github.ref_name) || '' }}
+      run: |
+        CODE_VERSION=$(sed -n 's/^__version__ = "\(.*\)"$/\1/p' pyqtpass/__init__.py)
+        if [ -n "$TAG" ] && [ "v$CODE_VERSION" != "$TAG" ]; then
+          echo "::error::pyqtpass/__init__.py says $CODE_VERSION, not ${TAG#v}"
+          exit 1
+        fi
+        echo "version=$CODE_VERSION" >> "$GITHUB_OUTPUT"
+    # By hand, PyPI only gets a version whose signed release is public; the
+    # release event itself only fires once it is.
+    - name: Check that the release is published
+      if: ${{ inputs.repository == 'pypi' }}
+      env:
+        GH_TOKEN: ${{ github.token }}
+        GH_REPO: ${{ github.repository }}
+        TAG: ${{ inputs.version }}
+      run: |
+        if [ "$(gh release view "$TAG" --json isDraft --jq .isDraft)" != "false" ]; then
+          echo "::error::$TAG has no published release; publish it first"
+          exit 1
+        fi
+    - name: Compile translations
+      run: /usr/lib/qt6/bin/lrelease -silent pyqtpass/localization/*.ts
+    - name: Build the sdist and the wheel
+      run: python -m build
+    - name: Check the package
+      env:
+        VERSION: ${{ steps.version.outputs.version }}
+      run: |
+        twine check --strict dist/*
+        ls dist/pyqtpass-"$VERSION".tar.gz dist/pyqtpass-"$VERSION"-py3-none-any.whl
+        # The translations are built here, not kept in git; a wheel without
+        # them would quietly ship an English-only program.
+        TS=$(ls pyqtpass/localization/*.ts | wc -l)
+        QM=$(python -m zipfile -l dist/*.whl | grep -c '\.qm ')
+        if [ "$QM" -ne "$TS" ]; then
+          echo "::error::the wheel has $QM compiled translations, not $TS"
+          exit 1
+        fi
+    - name: Install the wheel and import it
+      env:
+        QT_QPA_PLATFORM: offscreen
+      run: |
+        sudo apt-get install -y libegl1 libgl1 libxkbcommon0 libdbus-1-3 libglib2.0-0 libfontconfig1
+        python -m venv /tmp/check
+        /tmp/check/bin/pip install dist/*.whl
+        cd /tmp && /tmp/check/bin/python -c 'import pyqtpass.main_window, pyqtpass; print(pyqtpass.__version__)'
+    - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: python-package
+        path: dist/
+
+  # Trusted publishing: PyPI accepts the upload because it comes from this
+  # workflow in this repository and this environment; there is no token.
+  publish:
+    needs: build
+    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.repository || 'pypi' }}
+      url: ${{ (inputs.repository == 'testpypi' && 'https://test.pypi.org') || 'https://pypi.org' }}/project/pyqtpass/${{ needs.build.outputs.version }}/
+    permissions:
+      id-token: write
+    steps:
+    - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+      with:
+        name: python-package
+        path: dist/
+    - name: Upload to ${{ inputs.repository || 'pypi' }}
+      uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+      with:
+        repository-url: ${{ (inputs.repository == 'testpypi' && 'https://test.pypi.org/legacy/') || 'https://upload.pypi.org/legacy/' }}
