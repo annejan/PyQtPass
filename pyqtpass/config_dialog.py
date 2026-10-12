@@ -6,6 +6,8 @@ application settings, grouped in tabs like the QtPass configuration dialog.
 It interacts with a SettingsManager to persist these settings.
 """
 
+import shutil
+
 from PyQt6.QtCore import QByteArray
 from PyQt6.QtWidgets import (
     QCheckBox,
@@ -31,6 +33,31 @@ from pyqtpass.edit_password_window import CUSTOM_CHARSET, charset_names
 from pyqtpass.gpgid_trust import is_fingerprint
 from pyqtpass.profiles_editor import ProfilesEditor
 from pyqtpass.settings_manager import SettingsManager
+
+# The program settings the Autodetect button fills in, and the names to
+# look for in the PATH, in order of preference (gpg2 first, like pass).
+PROGRAMS = {
+    "gpg_executable": ("gpg2", "gpg"),
+    "git_executable": ("git",),
+    "pass_executable": ("pass",),
+    "pwgen_executable": ("pwgen",),
+    "qrencode_executable": ("qrencode",),
+}
+
+
+def detect_programs():
+    """
+    :return: Dict of program setting to the full path found in the PATH,
+             for the programs that were found.
+    """
+    found = {}
+    for key, names in PROGRAMS.items():
+        for name in names:
+            path = shutil.which(name)
+            if path:
+                found[key] = path
+                break
+    return found
 
 
 class ConfigDialog(QDialog):
@@ -357,9 +384,20 @@ class ConfigDialog(QDialog):
         )
         programs_layout.addRow(self.add_field("use_pass", use_pass))
         programs_layout.addRow(self.tr("pass:"), self.path_row("pass_executable"))
+        autodetect = QPushButton(self.tr("Autodetect"), self)
+        autodetect.setToolTip(
+            self.tr("Look up gpg, git, pass, pwgen and qrencode in the PATH")
+        )
+        autodetect.clicked.connect(self.autodetect_programs)
+        programs_layout.addRow(autodetect)
         layout.addWidget(programs_group)
         layout.addStretch(1)
         return tab
+
+    def autodetect_programs(self):
+        """Fill in the programs found in the PATH, like QtPass's Autodetect."""
+        for key, path in detect_programs().items():
+            self.fields[key].setText(path)
 
     def path_row(self, key, directory=False):
         """

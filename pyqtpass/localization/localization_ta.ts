@@ -4,364 +4,374 @@
 <context>
     <name>ConfigDialog</name>
     <message>
-        <location filename="../config_dialog.py" line="447" />
-        <location filename="../config_dialog.py" line="61" />
+        <location filename="../config_dialog.py" line="485" />
+        <location filename="../config_dialog.py" line="88" />
         <source>Configuration</source>
         <translation>உள்ளமைவு</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="64" />
+        <location filename="../config_dialog.py" line="91" />
         <source>Behaviour</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="65" />
+        <location filename="../config_dialog.py" line="92" />
         <source>Password Generation</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="66" />
+        <location filename="../config_dialog.py" line="93" />
         <source>Templates</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="67" />
+        <location filename="../config_dialog.py" line="94" />
         <source>Git</source>
         <translation>கிட்</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="68" />
+        <location filename="../config_dialog.py" line="95" />
         <source>Profiles</source>
         <translation>சுயவிவரங்கள்</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="69" />
+        <location filename="../config_dialog.py" line="96" />
         <source>System</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="101" />
+        <location filename="../config_dialog.py" line="128" />
         <source>Tree view behavior:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="104" />
+        <location filename="../config_dialog.py" line="131" />
         <source>Select is open</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="106" />
+        <location filename="../config_dialog.py" line="133" />
         <source>Search the content of passwords too</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="108" />
+        <location filename="../config_dialog.py" line="135" />
         <source>Pressing Enter in the search box decrypts every entry and shows the ones whose content matches the regular expression</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="116" />
+        <location filename="../config_dialog.py" line="143" />
         <source>Content panel behavior:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="119" />
+        <location filename="../config_dialog.py" line="146" />
         <source>Hide content</source>
         <translation>உள்ளடக்கத்தை மறைக்கவும்</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="122" />
+        <location filename="../config_dialog.py" line="149" />
         <source>Hide password</source>
         <translation>கடவுச்சொல்லை மறைக்கவும்</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="125" />
+        <location filename="../config_dialog.py" line="152" />
         <source>Use monospace font</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="128" />
+        <location filename="../config_dialog.py" line="155" />
         <source>Display content as is</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="131" />
+        <location filename="../config_dialog.py" line="158" />
         <source>No line wrapping</source>
         <translation>வரி மடக்குதல் இல்லை</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="135" />
+        <location filename="../config_dialog.py" line="162" />
         <source>Show one-time passwords (TOTP)</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="141" />
+        <location filename="../config_dialog.py" line="168" />
         <source>Offer QR codes (needs qrencode)</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="146" />
+        <location filename="../config_dialog.py" line="173" />
         <source>Autoclear panel after:</source>
         <translation>பலகம் தானாக அழிக்கப்படும் நேரம்:</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="152" />
+        <location filename="../config_dialog.py" line="179" />
         <source>Clipboard behavior:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="158" />
+        <location filename="../config_dialog.py" line="185" />
         <source>No clipboard</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="159" />
+        <location filename="../config_dialog.py" line="186" />
         <source>Always copy to clipboard</source>
         <translation>எப்போதும் இடைநிலைப்பலகைக்கு நகலெடுக்கவும்</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="160" />
+        <location filename="../config_dialog.py" line="187" />
         <source>On-demand copy to clipboard</source>
         <translation>இடைநிலைப்பலகைக்கு ஆன்-டிமாண்ட் நகல்</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="167" />
+        <location filename="../config_dialog.py" line="194" />
         <source>Also copy to the selection (middle click)</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="172" />
+        <location filename="../config_dialog.py" line="199" />
         <source>Autoclear clipboard after:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="186" />
+        <location filename="../config_dialog.py" line="213" />
         <source> seconds</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="193" />
+        <location filename="../config_dialog.py" line="220" />
         <source>Password Generation:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="198" />
+        <location filename="../config_dialog.py" line="225" />
         <source>Password Length:</source>
         <translation>கடவுச்சொல் நீளம்:</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="204" />
+        <location filename="../config_dialog.py" line="231" />
         <source>Characters:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="213" />
+        <location filename="../config_dialog.py" line="240" />
         <source>Custom characters:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="225" />
+        <location filename="../config_dialog.py" line="252" />
         <source>Use pwgen</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="229" />
+        <location filename="../config_dialog.py" line="256" />
         <source>pwgen:</source>
         <translation>pwgen:</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="231" />
+        <location filename="../config_dialog.py" line="258" />
         <source>Avoid capital letters</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="232" />
+        <location filename="../config_dialog.py" line="259" />
         <source>Avoid numbers</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="233" />
+        <location filename="../config_dialog.py" line="260" />
         <source>Include special symbols</source>
         <translation>சிறப்பு சின்னங்களைச் சேர்க்கவும்</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="234" />
+        <location filename="../config_dialog.py" line="261" />
         <source>Generate easy to memorize but less secure</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="244" />
+        <location filename="../config_dialog.py" line="271" />
         <source>Use a template</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="247" />
+        <location filename="../config_dialog.py" line="274" />
         <source>Field names, one per line. Template fields get their own input in the password dialog and their own row, with a copy button, in the content panel.</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="260" />
+        <location filename="../config_dialog.py" line="287" />
         <source>Show all 'name: value' lines as fields</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="347" />
-        <location filename="../config_dialog.py" line="269" />
+        <location filename="../config_dialog.py" line="374" />
+        <location filename="../config_dialog.py" line="296" />
         <source>Git:</source>
         <translation>git:</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="271" />
+        <location filename="../config_dialog.py" line="298" />
         <source>Use Git</source>
         <translation>கிட்டைப் பயன்படுத்தவும்</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="274" />
+        <location filename="../config_dialog.py" line="301" />
         <source>Automatically add .gpg-id files</source>
         <translation>.Gpg-id கோப்புகளை தானாக சேர்க்கவும்</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="279" />
+        <location filename="../config_dialog.py" line="306" />
         <source>Automatically push local changes</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="282" />
+        <location filename="../config_dialog.py" line="309" />
         <source>Automatically pull</source>
         <translation>தானாக இழுக்கவும்</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="284" />
+        <location filename="../config_dialog.py" line="311" />
         <source>Pull on startup, before editing a password and before re-encrypting</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="301" />
+        <location filename="../config_dialog.py" line="328" />
         <source>System:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="304" />
+        <location filename="../config_dialog.py" line="331" />
         <source>Use Tray icon</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="307" />
+        <location filename="../config_dialog.py" line="334" />
         <source>Start minimized</source>
         <translation>குறைக்கத் தொடங்குங்கள்</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="310" />
+        <location filename="../config_dialog.py" line="337" />
         <source>Hide on close</source>
         <translation>மூடும்போது மறை</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="313" />
+        <location filename="../config_dialog.py" line="340" />
         <source>Always on top</source>
         <translation>எப்போதும் மேலே</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="317" />
+        <location filename="../config_dialog.py" line="344" />
         <source>Locations:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="320" />
+        <location filename="../config_dialog.py" line="347" />
         <source>Password store:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="324" />
+        <location filename="../config_dialog.py" line="351" />
         <source>No signing</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="326" />
+        <location filename="../config_dialog.py" line="353" />
         <source>Full fingerprints of the keys that sign .gpg-id files, like PASSWORD_STORE_SIGNING_KEY; nothing is encrypted to a list whose signature does not verify</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="332" />
+        <location filename="../config_dialog.py" line="359" />
         <source>Signing key:</source>
         <translation>கையொப்பமிடும் விசை:</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="333" />
+        <location filename="../config_dialog.py" line="360" />
         <source>GnuPG:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="335" />
+        <location filename="../config_dialog.py" line="362" />
         <source>GnuPG home:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="337" />
+        <location filename="../config_dialog.py" line="364" />
         <source>Default</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="339" />
+        <location filename="../config_dialog.py" line="366" />
         <source>SSH agent socket:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="342" />
+        <location filename="../config_dialog.py" line="369" />
         <source>Used for Git over SSH when the session has no SSH_AUTH_SOCK; when empty, the ssh socket of a running gpg-agent is used</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="349" />
+        <location filename="../config_dialog.py" line="376" />
         <source>qrencode:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="351" />
+        <location filename="../config_dialog.py" line="378" />
         <source>Use the pass command-line tool</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="353" />
+        <location filename="../config_dialog.py" line="380" />
         <source>Run the pass script for every change instead of gpg and git directly, for pass extensions and hooks</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="359" />
+        <location filename="../config_dialog.py" line="386" />
         <source>pass:</source>
         <translation>கணவாய்:</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="374" />
+        <location filename="../config_dialog.py" line="387" />
+        <source>Autodetect</source>
+        <translation>ஆட்டோடெடெக்ட்</translation>
+    </message>
+    <message>
+        <location filename="../config_dialog.py" line="389" />
+        <source>Look up gpg, git, pass, pwgen and qrencode in the PATH</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../config_dialog.py" line="412" />
         <source>Found automatically</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="377" />
+        <location filename="../config_dialog.py" line="415" />
         <source>Browse</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="381" />
+        <location filename="../config_dialog.py" line="419" />
         <source>Select folder</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="384" />
+        <location filename="../config_dialog.py" line="422" />
         <source>Select executable</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="399" />
+        <location filename="../config_dialog.py" line="437" />
         <source>OK</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="401" />
+        <location filename="../config_dialog.py" line="439" />
         <source>Cancel</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="414" />
+        <location filename="../config_dialog.py" line="452" />
         <source>The signing key must be full fingerprints (40 or 64 hexadecimal digits), separated by spaces.</source>
         <translation type="unfinished" />
     </message>
