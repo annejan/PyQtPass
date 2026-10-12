@@ -2,7 +2,7 @@
 
 # pylint: disable=missing-function-docstring
 
-from entry import build_entry, parse_entry
+from pyqtpass.entry import build_entry, parse_entry
 
 
 def test_template_fields():
@@ -41,9 +41,14 @@ def test_round_trip():
 
 def test_field_rows_keep_duplicates():
     """Repeated fields each get an input, template fields come first."""
-    from edit_password_window import (  # pylint: disable=import-outside-toplevel
+    from pyqtpass.fields_editor import (  # pylint: disable=import-outside-toplevel
         field_rows,
     )
 
     rows = field_rows(["login", "url"], [("url", "a"), ("note", "n"), ("url", "b")])
-    assert rows == [("login", ""), ("url", "a"), ("note", "n"), ("url", "b")]
+    assert rows == [
+        ("login", "", True),
+        ("url", "a", True),
+        ("note", "n", False),
+        ("url", "b", False),
+    ]

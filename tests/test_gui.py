@@ -1,6 +1,6 @@
 """Offscreen smoke tests of the main window and dialogs."""
 
-# pylint: disable=missing-function-docstring,redefined-outer-name,unused-argument
+# pylint: disable=missing-function-docstring,redefined-outer-name,unused-argument,import-outside-toplevel
 
 import os
 import time
@@ -24,7 +24,9 @@ def wait_until(app, condition, timeout=10):
 
 @pytest.fixture
 def window(qapp, settings, store):
-    from pyqtpass import QtPassGUI  # pylint: disable=import-outside-toplevel
+    from pyqtpass.main_window import (
+        QtPassGUI,
+    )  # pylint: disable=import-outside-toplevel
 
     settings.set("pass_store", store.store_dir)
     settings.set("use_template", True)
@@ -39,7 +41,7 @@ def window(qapp, settings, store):
 
 
 def find_index(gui, path):
-    from utilities import PATH_ROLE  # pylint: disable=import-outside-toplevel
+    from pyqtpass.utilities import PATH_ROLE  # pylint: disable=import-outside-toplevel
 
     model = gui.ui.proxy_model
     pending = [model.index(row, 0) for row in range(model.rowCount())]
@@ -86,7 +88,7 @@ def test_filter_and_content_search(qapp, window):
 
 
 def wait_for_tasks(app):
-    import tasks  # pylint: disable=import-outside-toplevel
+    from pyqtpass import tasks  # pylint: disable=import-outside-toplevel
 
     wait_until(app, lambda: not tasks.running())
 
@@ -104,11 +106,11 @@ def test_move_folder_and_delete(qapp, window, store, monkeypatch):
 
 def test_dialogs_construct(qapp, window, store):
     # pylint: disable=import-outside-toplevel
-    from config_dialog import ConfigDialog
-    from edit_password_window import EditPasswordDialog
-    from first_run_wizard import FirstRunWizard
-    from keygen_dialog import ExportPublicKeyDialog, KeyGenDialog
-    from users_dialog import UsersDialog
+    from pyqtpass.config_dialog import ConfigDialog
+    from pyqtpass.edit_password_window import EditPasswordDialog
+    from pyqtpass.first_run_wizard import FirstRunWizard
+    from pyqtpass.keygen_dialog import ExportPublicKeyDialog, KeyGenDialog
+    from pyqtpass.users_dialog import UsersDialog
 
     ConfigDialog(window).save_settings()
     edit = EditPasswordDialog(store, "web/site", "site", parent=window)
@@ -129,11 +131,11 @@ def test_dialogs_construct(qapp, window, store):
 
 
 def test_reencrypt_in_background(qapp, window, store, key_id, monkeypatch):
-    import tasks  # pylint: disable=import-outside-toplevel
+    from pyqtpass import tasks  # pylint: disable=import-outside-toplevel
 
     failures = []
     monkeypatch.setattr(
-        "store_actions.QMessageBox.critical",
+        "pyqtpass.store_actions.QMessageBox.critical",
         lambda _parent, _title, text: failures.append(text),
     )
     store.create_folder("team")
@@ -164,7 +166,9 @@ def test_menu_bar_toggle_and_peek(qapp, window):
 
 
 def test_signed_profile_store(qapp, window, settings, key_id):
-    from store_setup import make_store  # pylint: disable=import-outside-toplevel
+    from pyqtpass.store_setup import (
+        make_store,
+    )  # pylint: disable=import-outside-toplevel
 
     settings.set("pass_signing_key", key_id)
     store = make_store(settings)
@@ -178,7 +182,7 @@ def test_signed_profile_store(qapp, window, settings, key_id):
 
 
 def test_unchanged_edit_is_not_saved(qapp, window, store):
-    from edit_password_window import (  # pylint: disable=import-outside-toplevel
+    from pyqtpass.edit_password_window import (  # pylint: disable=import-outside-toplevel
         EditPasswordDialog,
     )
 

@@ -23,6 +23,7 @@ import sys
 import xml.etree.ElementTree as ET
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PACKAGE = os.path.join(ROOT, "pyqtpass")
 PLACEHOLDER = re.compile(r"%(\d+)")
 
 
@@ -171,17 +172,17 @@ def main():
     parser.add_argument("qtpass", help="path to a QtPass checkout")
     args = parser.parse_args()
     sources = sorted(
-        os.path.basename(path) for path in glob.glob(os.path.join(ROOT, "*.py"))
+        os.path.basename(path) for path in glob.glob(os.path.join(PACKAGE, "*.py"))
     )
     total = 0
     for qtpass_ts in sorted(
         glob.glob(os.path.join(args.qtpass, "localization", "*.ts"))
     ):
         name = os.path.basename(qtpass_ts)
-        ours = os.path.join(ROOT, "localization", name)
+        ours = os.path.join(PACKAGE, "localization", name)
         subprocess.run(
             ["pylupdate6", "--ts", ours, *sources],
-            cwd=ROOT,
+            cwd=PACKAGE,
             check=True,
             capture_output=True,
         )

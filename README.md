@@ -55,34 +55,39 @@ PyQtPass follows the feature set of [QtPass 2.0](https://github.com/IJHack/QtPas
 
 ## Installation
 
-PyQtPass needs Python 3.11 or newer and GnuPG (`gpg` or `gpg2`) with a graphical pinentry.
-Git is optional (for synchronisation) and so is `qrencode` (for QR codes). Then:
+PyQtPass needs GnuPG (`gpg` or `gpg2`) with a graphical pinentry. Git is optional
+(for synchronisation) and so is `qrencode` (for QR codes).
 
-1. Clone this repository:
+### Ready-made builds
 
-   ```sh
-   git clone https://github.com/annejan/PyQtPass.git
-   cd PyQtPass
-   ```
+Each [release](https://github.com/annejan/PyQtPass/releases) has:
 
-2. Install the required Python packages:
+- `PyQtPass-<version>-windows-x64.exe` for Windows;
+- `PyQtPass-<version>-macos-arm64.dmg` for macOS (not signed: right-click the app and choose Open the first time);
+- `PyQtPass-<version>-x86_64.AppImage` and a single-file `PyQtPass-<version>-linux-x86_64` for Linux.
 
-   ```sh
-   pip install -r requirements.txt
-   ```
+`SHA256SUMS` lists their checksums, and a signed build provenance attestation records which
+workflow run and commit built them: `gh attestation verify <file> --repo annejan/PyQtPass`.
 
-3. Optionally compile the translations (Qt's `lrelease`, e.g. from the
-   `qt6-l10n-tools` package; release builds include them):
+### From source
 
-   ```sh
-   lrelease localization/*.ts
-   ```
+PyQtPass needs Python 3.11 or newer.
 
-4. Run the application:
+```sh
+git clone https://github.com/annejan/PyQtPass.git
+cd PyQtPass
+pip install .          # installs the pyqtpass command
+pyqtpass
+```
 
-   ```sh
-   python pyqtpass.py
-   ```
+Or run it without installing: `pip install -r requirements.txt`, then `python -m pyqtpass`.
+
+Translations are compiled with Qt's `lrelease` (for example from the `qt6-l10n-tools` package);
+release builds include them:
+
+```sh
+lrelease pyqtpass/localization/*.ts
+```
 
 When no password store exists yet, a wizard helps you set one up.
 
@@ -94,6 +99,21 @@ You can filter the entries using the search box above the tree view.
 
 Fields are `name: value` lines below the password. Add a line like
 `otpauth://totp/Example?secret=JBSWY3DPEHPK3PXP` (or `otp: JBSWY3DPEHPK3PXP`) to an entry to get one-time passwords.
+
+Templates decide which fields the password dialog always shows. Set one in the
+settings, or share them with everyone using the store, like QtPass does: a
+`.templates` file in the store root lists named templates, and a
+`.default_template` file in a folder names the one its entries use.
+
+```ini
+[website]
+login
+url
+
+[server]
+user
+host
+```
 
 ## Security notes
 
@@ -110,14 +130,15 @@ Fields are `name: value` lines below the password. Add a line like
 pip install -r requirements-dev.txt
 pylint $(git ls-files '*.py')
 black --check .
-QT_QPA_PLATFORM=offscreen python -m pytest
+QT_QPA_PLATFORM=offscreen python -m pytest --cov=pyqtpass
 ```
 
 The tests create a throwaway GnuPG home and key, so they never touch your own keyring or store.
 
 ## Contributions and Feedback
 
-We warmly welcome contributions, be it in the form of code, bug reports, suggestions, or documentation.
+We warmly welcome contributions, be it in the form of code, translations, bug reports, suggestions, or documentation.
+[CONTRIBUTING.md](CONTRIBUTING.md) explains how to run the checks and how to translate PyQtPass.
 
 Since PyQtPass is in its experimental stage, your input is crucial for its refinement and progression.
 

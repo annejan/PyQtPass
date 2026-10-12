@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=PyQtPass
+GenericName=Password Manager
+Comment=Manage passwords stored with pass, the standard Unix password manager
+Exec=pyqtpass
+Icon=pyqtpass
+Terminal=false
+Categories=Utility;Security;Qt;
+Keywords=password;pass;gpg;totp;otp;
+StartupWMClass=PyQtPass

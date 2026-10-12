@@ -4,5 +4,7 @@ build
 __pycache__
 .pytest_cache
 pyqtpass.pro.user
-localization/*.qm
+pyqtpass/localization/*.qm
 .venv
+*.egg-info
+.coverage

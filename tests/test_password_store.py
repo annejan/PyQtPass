@@ -1,15 +1,15 @@
 """Tests for the native password store backend."""
 
-# pylint: disable=missing-function-docstring
+# pylint: disable=missing-function-docstring,import-outside-toplevel
 
 import os
 import re
 
 import pytest
 
-import git_utils
-import gpg_utils
-from password_store import PasswordStore, StoreError
+from pyqtpass import git_utils
+from pyqtpass import gpg_utils
+from pyqtpass.password_store import PasswordStore, StoreError
 
 
 def test_set_and_get(store):
@@ -254,7 +254,9 @@ def test_move_is_undone_when_encryption_fails(store):
 
 
 def test_failed_commit_is_a_commit_error(tmp_path, key_id):
-    from password_store import CommitError  # pylint: disable=import-outside-toplevel
+    from pyqtpass.password_store import (
+        CommitError,
+    )  # pylint: disable=import-outside-toplevel
 
     repo = str(tmp_path / "locked")
     make_repo(repo)
@@ -302,13 +304,15 @@ def recipients_of(path):
 
 
 def gpg_run(args):
-    import executor  # pylint: disable=import-outside-toplevel
+    from pyqtpass import executor  # pylint: disable=import-outside-toplevel
 
     return executor.run([gpg_utils.which_gpg(), *args], timeout=60)
 
 
 def test_init_with_failing_commit_still_reencrypts(tmp_path, key_id, second_key):
-    from password_store import CommitError  # pylint: disable=import-outside-toplevel
+    from pyqtpass.password_store import (
+        CommitError,
+    )  # pylint: disable=import-outside-toplevel
 
     repo = str(tmp_path / "lockinit")
     make_repo(repo)

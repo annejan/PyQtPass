@@ -11,7 +11,7 @@ import xml.etree.ElementTree as ET
 import pytest
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-TS_FILES = sorted(glob.glob(os.path.join(ROOT, "localization", "*.ts")))
+TS_FILES = sorted(glob.glob(os.path.join(ROOT, "pyqtpass", "localization", "*.ts")))
 
 
 def placeholders(text):
