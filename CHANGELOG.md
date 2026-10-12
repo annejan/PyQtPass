@@ -1,6 +1,11 @@
 # Changelog
 
-## Unreleased
+## 0.6.0
+
+The rest of QtPass's small features: three clipboard modes, a search that
+shows the matching lines and works from the command line, pulling before
+every change, key generation's Expert mode and store setup for a new
+profile.
 
 ### Small things from QtPass
 
@@ -37,6 +42,15 @@
   When PyQtPass is already running, the text goes to that window, which
   comes to the front and searches; this makes launchers and global hotkeys
   work (#49).
+
+### Git
+
+- "Update (git pull) on startup" is now "Automatically pull": besides on
+  startup, PyQtPass pulls before editing a password and before
+  re-encrypting (setting recipients or re-encrypting a folder), like
+  QtPass's autoPull, so a change starts from the latest state of a shared
+  store. When the remote can't be reached the change goes on; when the pull
+  stops in a merge conflict, nothing is written on top of it (#46).
 
 ### Clipboard
 
