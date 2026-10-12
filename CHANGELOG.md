@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- PyQtPass is published on PyPI: `pipx install pyqtpass`. Publishing a
+  release uploads its sdist and wheel, with the translations, using trusted
+  publishing; every pull request builds and checks the package.
+- The package metadata names the supported Python versions and platforms,
+  and the README's picture and links work on PyPI too.
+
 ## 0.4.1
 
 Fixes from the review of 0.3.0 and 0.4.0 (#30), and releases made like
