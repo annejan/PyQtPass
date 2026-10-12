@@ -84,6 +84,7 @@ class SettingsManager:
             "use_symbols": False,
             "use_git": True,
             "auto_push": True,
+            "add_gpg_id": True,
             "git_pull_on_start": False,
             "profiles": {},
             "current_profile": "",

@@ -18,6 +18,7 @@ import shutil
 
 from pyqtpass import executor
 from pyqtpass import git_utils
+from pyqtpass.i18n import translate
 from pyqtpass.gpg_utils import parse_gpg_id_lines, which_gpg
 from pyqtpass.gpgid_trust import (
     GpgIdSigner,
@@ -49,8 +50,14 @@ class PasswordStore(TransferMixin):
     # pylint: disable=too-many-public-methods
 
     def __init__(
-        self, store_dir, gpg_bin=None, use_git=True, signing_keys=(), record=None
-    ):
+        self,
+        store_dir,
+        gpg_bin=None,
+        use_git=True,
+        signing_keys=(),
+        record=None,
+        add_gpg_id=True,
+    ):  # pylint: disable=too-many-arguments,too-many-positional-arguments
         """
         :param store_dir: Root directory of the store, may contain '~'.
         :param gpg_bin: The gpg executable, found automatically when None.
@@ -58,10 +65,15 @@ class PasswordStore(TransferMixin):
         :param signing_keys: Fingerprints that sign the .gpg-id files, like
                              PASSWORD_STORE_SIGNING_KEY; empty to not sign.
         :param record: The GenerationRecord used with signing keys.
+        :param add_gpg_id: Commit the .gpg-id files init writes, like
+                           QtPass's addGPGId; when False they are left out
+                           of git and only the re-encrypted entries are
+                           committed.
         """
         self.store_dir = os.path.abspath(os.path.expanduser(store_dir))
         self.gpg_bin = gpg_bin or which_gpg()
         self.use_git = use_git
+        self.add_gpg_id = add_gpg_id
         self.signer = GpgIdSigner(signing_keys, self.gpg_bin, record)
         if self.signer.enabled and record is None:
             raise ValueError("Signing keys need a generation record")
@@ -100,7 +112,11 @@ class PasswordStore(TransferMixin):
             if part in ("", "."):
                 continue
             if part == "..":
-                raise StoreError(f"{path} would resolve outside the password store")
+                raise StoreError(
+                    translate(
+                        "PasswordStore", "{} would resolve outside the password store"
+                    ).format(path)
+                )
             parts.append(part)
         return "/".join(parts)
 
@@ -116,8 +132,11 @@ class PasswordStore(TransferMixin):
             current = os.path.join(current, part)
             if is_link(current):
                 raise StoreError(
-                    f"{clean} is, or lies behind, a symbolic link; "
-                    "links inside the password store are not followed"
+                    translate(
+                        "PasswordStore",
+                        "{} is, or lies behind, a symbolic link; "
+                        "links inside the password store are not followed",
+                    ).format(clean)
                 )
         return current
 
@@ -128,7 +147,7 @@ class PasswordStore(TransferMixin):
         """
         clean = self.clean_path(path)
         if not clean:
-            raise StoreError("An entry needs a name")
+            raise StoreError(translate("PasswordStore", "An entry needs a name"))
         absolute = self.absolute(clean + GPG_EXT)
         return absolute
 
@@ -246,10 +265,13 @@ class PasswordStore(TransferMixin):
                     # A link is not the folder's list: the parent's applies.
                     return None
                 raise StoreError(
-                    f"The recipient list of {label} is a link or not a file. "
-                    "While a signing key is configured the folder does not "
-                    "fall back to its parent's list; a holder of the signing "
-                    "key saves the recipients in Users again."
+                    translate(
+                        "PasswordStore",
+                        "The recipient list of {} is a link or not a file. "
+                        "While a signing key is configured the folder does not "
+                        "fall back to its parent's list; a holder of the signing "
+                        "key saves the recipients in Users again.",
+                    ).format(label)
                 )
             with open(candidate, "rb") as gpg_id_file:
                 contents = gpg_id_file.read()
@@ -261,7 +283,11 @@ class PasswordStore(TransferMixin):
             ids = parse_gpg_id_lines(contents.decode("utf-8", errors="replace"))
             if not ids:
                 # pass refuses such a folder too ("No user ID").
-                raise StoreError(f"The recipient list of {label} names no key.")
+                raise StoreError(
+                    translate(
+                        "PasswordStore", "The recipient list of {} names no key."
+                    ).format(label)
+                )
             return ids
         if self.signer.enabled:
             try:
@@ -270,10 +296,13 @@ class PasswordStore(TransferMixin):
                 raise StoreError(str(error)) from error
             if remembered:
                 raise StoreError(
-                    f"The signed recipient list of {label} was removed; its "
-                    "passwords are not encrypted to the parent folder's keys "
-                    "instead. A holder of the signing key saves the "
-                    "recipients in Users again."
+                    translate(
+                        "PasswordStore",
+                        "The signed recipient list of {} was removed; its "
+                        "passwords are not encrypted to the parent folder's keys "
+                        "instead. A holder of the signing key saves the "
+                        "recipients in Users again.",
+                    ).format(label)
                 )
         return None
 
@@ -294,8 +323,11 @@ class PasswordStore(TransferMixin):
                 return ids, list_folder
             if not parts:
                 raise StoreError(
-                    "You must initialise the password store first "
-                    "(no .gpg-id file found)"
+                    translate(
+                        "PasswordStore",
+                        "You must initialise the password store first "
+                        "(no .gpg-id file found)",
+                    )
                 )
             parts.pop()
 
@@ -350,7 +382,8 @@ class PasswordStore(TransferMixin):
         )
         if returncode != 0:
             raise StoreError(
-                stderr.decode(errors="replace").strip() or "gpg failed to decrypt"
+                stderr.decode(errors="replace").strip()
+                or translate("PasswordStore", "gpg failed to decrypt")
             )
         return stdout
 
@@ -381,7 +414,8 @@ class PasswordStore(TransferMixin):
         returncode, stdout, stderr = executor.run(args, input_data=data, timeout=300)
         if returncode != 0 or not stdout:
             raise StoreError(
-                stderr.decode(errors="replace").strip() or "gpg failed to encrypt"
+                stderr.decode(errors="replace").strip()
+                or translate("PasswordStore", "gpg failed to encrypt")
             )
         atomic_write(absolute, stdout)
 
@@ -398,7 +432,11 @@ class PasswordStore(TransferMixin):
         """
         absolute = self.entry_file(path)
         if not os.path.isfile(absolute):
-            raise FileNotFoundError(f"{path} is not in the password store")
+            raise FileNotFoundError(
+                translate("PasswordStore", "{} is not in the password store").format(
+                    path
+                )
+            )
         return self.decrypt_file(absolute)
 
     @locked
@@ -416,7 +454,9 @@ class PasswordStore(TransferMixin):
         absolute = self.entry_file(clean)
         exists = os.path.exists(absolute)
         if exists and not force:
-            raise FileExistsError(f"{clean} already exists")
+            raise FileExistsError(
+                translate("PasswordStore", "{} already exists").format(clean)
+            )
         if not key_data.endswith("\n"):
             key_data += "\n"
         recipients = self.recipients(self._folder_of(clean))
@@ -437,7 +477,9 @@ class PasswordStore(TransferMixin):
         """
         absolute = self.absolute(path)
         if os.path.exists(absolute):
-            raise FileExistsError(f"{path} already exists")
+            raise FileExistsError(
+                translate("PasswordStore", "{} already exists").format(path)
+            )
         os.makedirs(absolute)
 
     def _own_lists(self, folder_abs):
@@ -490,7 +532,9 @@ class PasswordStore(TransferMixin):
             os.unlink(link)
         elif os.path.isdir(folder) and clean:
             if not recursive and os.listdir(folder):
-                raise StoreError(f"{clean} is not empty")
+                raise StoreError(
+                    translate("PasswordStore", "{} is not empty").format(clean)
+                )
             keys = []
             if self.signer.enabled:
                 keys = self._list_keys(folder, self._own_lists(folder))
@@ -501,7 +545,11 @@ class PasswordStore(TransferMixin):
             os.remove(entry)
             staged = clean + GPG_EXT
         else:
-            raise FileNotFoundError(f"{clean} is not in the password store")
+            raise FileNotFoundError(
+                translate("PasswordStore", "{} is not in the password store").format(
+                    clean
+                )
+            )
         self.git_commit([staged], f"Remove {clean} from store.")
 
     def _forget(self, keys):
@@ -542,14 +590,16 @@ class PasswordStore(TransferMixin):
                           re-encrypting; what was done is committed.
         """
         if not gpg_ids:
-            raise StoreError("At least one key is needed")
+            raise StoreError(translate("PasswordStore", "At least one key is needed"))
         clean = self.clean_path(folder)
         absolute = self.absolute(clean)
         gpg_id_path = os.path.join(absolute, GPG_ID)
         relative_id = f"{clean}/{GPG_ID}" if clean else GPG_ID
         for path in (gpg_id_path, gpg_id_path + ".sig"):
             if is_link(path):
-                raise StoreError(f"{path} is a symbolic link")
+                raise StoreError(
+                    translate("PasswordStore", "{} is a symbolic link").format(path)
+                )
         has_entries = (
             os.path.isdir(absolute) and next(self.iter_entries(clean), None) is not None
         )
@@ -560,12 +610,12 @@ class PasswordStore(TransferMixin):
             self.write_gpg_id(gpg_id_path, clean, gpg_ids)
         except TrustError as error:
             raise StoreError(str(error)) from error
-        changed = [relative_id, relative_id + ".sig"]
+        changed = [relative_id, relative_id + ".sig"] if self.add_gpg_id else []
         failure = None
         if has_entries:
             try:
                 if not self._reencrypt_entries(clean, changed, progress, cancelled):
-                    failure = StoreError("it was cancelled")
+                    failure = StoreError(translate("PasswordStore", "it was cancelled"))
             except (OSError, StoreError) as error:
                 failure = error
         joined = ", ".join(gpg_ids)
@@ -574,19 +624,28 @@ class PasswordStore(TransferMixin):
         except CommitError as error:
             if failure is not None:
                 raise StoreError(
-                    f"The recipients were changed, but re-encrypting stopped: "
-                    f"{failure}. Committing what was done failed too: {error.output}"
+                    translate(
+                        "PasswordStore",
+                        "The recipients were changed, but re-encrypting stopped: "
+                        "{0}. Committing what was done failed too: {1}",
+                    ).format(failure, error.output)
                 ) from failure
             raise CommitError(
-                "The recipients were changed and every password was "
-                f"re-encrypted for them, but git commit failed: {error.output}",
+                translate(
+                    "PasswordStore",
+                    "The recipients were changed and every password was "
+                    "re-encrypted for them, but git commit failed: {}",
+                ).format(error.output),
                 error.output,
             ) from error
         if failure is not None:
             raise StoreError(
-                f"The recipients were changed, but re-encrypting stopped: "
-                f"{failure}. Some passwords still use the old keys; use "
-                "Re-encrypt once this is fixed."
+                translate(
+                    "PasswordStore",
+                    "The recipients were changed, but re-encrypting stopped: "
+                    "{}. Some passwords still use the old keys; use "
+                    "Re-encrypt once this is fixed.",
+                ).format(failure)
             ) from failure
 
     def write_gpg_id(self, gpg_id_path, folder, gpg_ids, record_path=None):
@@ -605,11 +664,14 @@ class PasswordStore(TransferMixin):
         if not self.signer.enabled:
             if os.path.lexists(signature):
                 raise StoreError(
-                    f"The recipient list of /{folder} is signed. Configure the "
-                    "signing key (Settings, the profile, or "
-                    "PASSWORD_STORE_SIGNING_KEY) to change its recipients; "
-                    "an unsigned list would break the folder for everyone "
-                    "who verifies it."
+                    translate(
+                        "PasswordStore",
+                        "The recipient list of /{} is signed. Configure the "
+                        "signing key (Settings, the profile, or "
+                        "PASSWORD_STORE_SIGNING_KEY) to change its recipients; "
+                        "an unsigned list would break the folder for everyone "
+                        "who verifies it.",
+                    ).format(folder)
                 )
             atomic_write(gpg_id_path, ("\n".join(gpg_ids) + "\n").encode("utf-8"))
             return
@@ -743,7 +805,10 @@ class PasswordStore(TransferMixin):
         success, output = git_utils.git_commit_paths(self.store_dir, paths, message)
         if not success:
             raise CommitError(
-                f"The change was made, but git commit failed: {output}", output
+                translate(
+                    "PasswordStore", "The change was made, but git commit failed: {}"
+                ).format(output),
+                output,
             )
 
     @locked
@@ -774,5 +839,7 @@ class PasswordStore(TransferMixin):
         """
         success, output = git_utils.git_init(self.store_dir)
         if not success:
-            raise StoreError(f"git init failed: {output}")
+            raise StoreError(
+                translate("PasswordStore", "git init failed: {}").format(output)
+            )
         self.git_commit(["."], "Add current contents of password store.")

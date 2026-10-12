@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Translations and settings
+
+- The messages of the password store, the signed recipient lists, gpg and
+  the GnuPG home are translatable now; they were English in every language.
+  QtPass's translations fill in the ones the projects share, and Dutch has
+  all of them.
+- Settings, Git has "Automatically add .gpg-id files", like QtPass's
+  addGPGId. It is on by default, as before; turned off, setting the
+  recipients commits the re-encrypted passwords but leaves the `.gpg-id`
+  files out of git.
+
 ### Release builds
 
 - A workflow run no longer replaces the files of a draft release that already

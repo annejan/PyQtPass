@@ -1,6 +1,6 @@
 """Checks that every translation can be used where its source is."""
 
-# pylint: disable=missing-function-docstring
+# pylint: disable=missing-function-docstring,import-outside-toplevel
 
 import glob
 import os
@@ -39,3 +39,23 @@ def test_translations_format_like_their_source(path):
                 source,
                 translation.text,
             )
+
+
+def test_store_messages_go_through_the_translator(qapp, tmp_path):
+    from PyQt6.QtCore import QTranslator
+
+    from pyqtpass.password_store import PasswordStore
+
+    class Shouting(QTranslator):
+        """Translates the store's messages into upper case."""
+
+        def translate(self, context, source, *_args):
+            return source.upper() if context == "PasswordStore" else ""
+
+    translator = Shouting()
+    qapp.installTranslator(translator)
+    try:
+        with pytest.raises(FileNotFoundError, match="IS NOT IN THE PASSWORD STORE"):
+            PasswordStore(str(tmp_path)).get_key("missing")
+    finally:
+        qapp.removeTranslator(translator)

@@ -30,6 +30,7 @@ import time
 
 from pyqtpass import executor
 from pyqtpass.fs_utils import is_link
+from pyqtpass.i18n import translate
 
 OUR_COMMENT = "# QtPass-GpgId-"
 GENERATION_PREFIX = "# QtPass-GpgId-Generation: "
@@ -103,21 +104,43 @@ def parse_header(text):
             continue
         if line.startswith(GENERATION_PREFIX):
             if generation is not None:
-                raise TrustError("The list carries more than one generation line.")
+                raise TrustError(
+                    translate(
+                        "GpgIdTrust", "The list carries more than one generation line."
+                    )
+                )
             digits = line[len(GENERATION_PREFIX) :]
             if not digits.isdigit() or not digits.isascii() or len(digits) > 18:
-                raise TrustError(f"The generation line is malformed: {line}")
+                raise TrustError(
+                    translate(
+                        "GpgIdTrust", "The generation line is malformed: {}"
+                    ).format(line)
+                )
             generation = int(digits)
         elif line.startswith(FOLDER_PREFIX):
             if folder is not None:
-                raise TrustError("The list carries more than one folder line.")
+                raise TrustError(
+                    translate(
+                        "GpgIdTrust", "The list carries more than one folder line."
+                    )
+                )
             folder = line[len(FOLDER_PREFIX) :]
             if not folder:
-                raise TrustError(f"The folder line is malformed: {line}")
+                raise TrustError(
+                    translate("GpgIdTrust", "The folder line is malformed: {}").format(
+                        line
+                    )
+                )
         else:
-            raise TrustError(f"The header line is malformed: {line}")
+            raise TrustError(
+                translate("GpgIdTrust", "The header line is malformed: {}").format(line)
+            )
     if generation is not None and folder is None:
-        raise TrustError("The list carries a generation line but no folder line.")
+        raise TrustError(
+            translate(
+                "GpgIdTrust", "The list carries a generation line but no folder line."
+            )
+        )
     return generation or 0, folder
 
 
@@ -190,15 +213,19 @@ class GenerationRecord:  # pylint: disable=too-few-public-methods
             descriptor = os.open(lock_path, os.O_CREAT | os.O_RDWR, 0o600)
         except OSError as error:
             raise TrustError(
-                f"The generation record {self.path} cannot be locked: {error}"
+                translate(
+                    "GpgIdTrust", "The generation record {0} cannot be locked: {1}"
+                ).format(self.path, error)
             ) from error
         try:
             deadline = time.time() + LOCK_TIMEOUT
             while not _try_lock(descriptor):
                 if time.time() > deadline:
                     raise TrustError(
-                        f"The generation record {self.path} is locked by "
-                        "another process."
+                        translate(
+                            "GpgIdTrust",
+                            "The generation record {} is locked by another process.",
+                        ).format(self.path)
                     )
                 time.sleep(0.05)
             try:
@@ -220,10 +247,16 @@ class GenerationRecord:  # pylint: disable=too-few-public-methods
                 data = json.load(record_file)
         except (OSError, ValueError) as error:
             raise TrustError(
-                f"The generation record {self.path} cannot be read: {error}"
+                translate(
+                    "GpgIdTrust", "The generation record {0} cannot be read: {1}"
+                ).format(self.path, error)
             ) from error
         if not isinstance(data, dict):
-            raise TrustError(f"The generation record {self.path} is malformed.")
+            raise TrustError(
+                translate(
+                    "GpgIdTrust", "The generation record {} is malformed."
+                ).format(self.path)
+            )
         return data
 
     def _write(self, entries):
@@ -239,16 +272,19 @@ class GenerationRecord:  # pylint: disable=too-few-public-methods
             with contextlib.suppress(OSError):
                 os.remove(temporary)
             raise TrustError(
-                f"The generation record {self.path} cannot be written: {error}"
+                translate(
+                    "GpgIdTrust", "The generation record {0} cannot be written: {1}"
+                ).format(self.path, error)
             ) from error
 
 
 def _way_through(last, record_path):
-    return (
+    return translate(
+        "GpgIdTrust",
         "A holder of the signing key gets through by opening Users on the "
-        f"folder and saving the recipients, which writes generation {last + 1}. "
-        f"Removing {record_path} forgets what this device accepted before."
-    )
+        "folder and saving the recipients, which writes generation {0}. "
+        "Removing {1} forgets what this device accepted before.",
+    ).format(last + 1, record_path)
 
 
 class GpgIdSigner:
@@ -303,8 +339,10 @@ class GpgIdSigner:
         )
         if returncode != 0 or not stdout:
             raise TrustError(
-                "Signing the recipient list failed: "
-                + (stderr.decode(errors="replace").strip() or "gpg wrote nothing")
+                translate("GpgIdTrust", "Signing the recipient list failed: {}").format(
+                    stderr.decode(errors="replace").strip()
+                    or translate("GpgIdTrust", "gpg wrote nothing")
+                )
             )
         with tempfile.TemporaryDirectory() as scratch:
             signature = os.path.join(scratch, "list.sig")
@@ -312,8 +350,11 @@ class GpgIdSigner:
                 handle.write(stdout)
             if not self._signed_by_us(signature, contents):
                 raise TrustError(
-                    "gpg did not sign the recipient list with the signing key "
-                    f"{self.keys[0]}; is its secret key available?"
+                    translate(
+                        "GpgIdTrust",
+                        "gpg did not sign the recipient list with the signing key "
+                        "{}; is its secret key available?",
+                    ).format(self.keys[0])
                 )
         return stdout
 
@@ -347,13 +388,19 @@ class GpgIdSigner:
         signature = gpg_id_file + ".sig"
         if is_link(signature) or not os.path.isfile(signature):
             raise TrustError(
-                f"The recipient list {gpg_id_file} has no signature, while a "
-                "signing key is configured."
+                translate(
+                    "GpgIdTrust",
+                    "The recipient list {} has no signature, while a "
+                    "signing key is configured.",
+                ).format(gpg_id_file)
             )
         if not self._signed_by_us(signature, contents):
             raise TrustError(
-                f"The signature of the recipient list {gpg_id_file} does not "
-                "verify with the signing key."
+                translate(
+                    "GpgIdTrust",
+                    "The signature of the recipient list {} does not "
+                    "verify with the signing key.",
+                ).format(gpg_id_file)
             )
 
     def accept(self, gpg_id_file, contents, folder):
@@ -370,15 +417,20 @@ class GpgIdSigner:
             generation, written_for = parse_header(contents.decode("utf-8"))
         except (TrustError, UnicodeDecodeError) as error:
             raise TrustError(
-                f"The signed recipient list {gpg_id_file} is not one to trust: "
-                f"{error}"
+                translate(
+                    "GpgIdTrust",
+                    "The signed recipient list {0} is not one to trust: {1}",
+                ).format(gpg_id_file, error)
             ) from error
         if written_for is not None and written_for != folder_label(folder):
             raise TrustError(
-                f"The signed recipient list {gpg_id_file} was written for the "
-                f'folder "{written_for}", not for "{folder_label(folder)}", and '
-                "is not used. If the folder was moved or renamed, a holder of "
-                "the signing key saves the recipients in Users again."
+                translate(
+                    "GpgIdTrust",
+                    "The signed recipient list {0} was written for the "
+                    'folder "{1}", not for "{2}", and '
+                    "is not used. If the folder was moved or renamed, a holder of "
+                    "the signing key saves the recipients in Users again.",
+                ).format(gpg_id_file, written_for, folder_label(folder))
             )
         key = list_key(gpg_id_file)
         with self.record.transaction() as entries:
@@ -388,26 +440,43 @@ class GpgIdSigner:
             if generation < last:
                 if written_for is None:
                     raise TrustError(
-                        f"The signed recipient list {gpg_id_file} carries no "
-                        f"generation line, while generation {last} was accepted "
-                        "here before. " + _way_through(last, self.record.path)
+                        translate(
+                            "GpgIdTrust",
+                            "The signed recipient list {0} carries no "
+                            "generation line, while generation {1} was accepted "
+                            "here before. {2}",
+                        ).format(
+                            gpg_id_file, last, _way_through(last, self.record.path)
+                        )
                     )
                 raise TrustError(
-                    f"The signed recipient list {gpg_id_file} is generation "
-                    f"{generation}, older than generation {last}, the last one "
-                    "accepted here. It may have been put back by someone else. "
-                    + _way_through(last, self.record.path)
+                    translate(
+                        "GpgIdTrust",
+                        "The signed recipient list {0} is generation "
+                        "{1}, older than generation {2}, the last one "
+                        "accepted here. It may have been put back by someone else. "
+                        "{3}",
+                    ).format(
+                        gpg_id_file,
+                        generation,
+                        last,
+                        _way_through(last, self.record.path),
+                    )
                 )
             if generation == 0:
                 return
             this_digest = digest(contents)
             if generation == last and known and known != this_digest:
                 raise TrustError(
-                    f"The signed recipient list {gpg_id_file} is generation "
-                    f"{generation}, like a different list this device accepted "
-                    "before: two devices saved recipients at the same time, or "
-                    "an authentic list was swapped in. "
-                    + _way_through(last, self.record.path)
+                    translate(
+                        "GpgIdTrust",
+                        "The signed recipient list {0} is generation "
+                        "{1}, like a different list this device accepted "
+                        "before: two devices saved recipients at the same time, or "
+                        "an authentic list was swapped in. {2}",
+                    ).format(
+                        gpg_id_file, generation, _way_through(last, self.record.path)
+                    )
                 )
             entries[key] = {"generation": str(generation), "digest": this_digest}
 
@@ -468,8 +537,11 @@ class GpgIdSigner:
         base = max(last, on_disk_generation)
         if base >= MAX_GENERATION:
             raise TrustError(
-                f"The recipient list {gpg_id_file} has reached the highest "
-                "generation; it cannot be written."
+                translate(
+                    "GpgIdTrust",
+                    "The recipient list {} has reached the highest "
+                    "generation; it cannot be written.",
+                ).format(gpg_id_file)
             )
         return base + 1
 
@@ -491,9 +563,12 @@ class GpgIdSigner:
             last = int(entries.get(key, {}).get("generation", "0"))
             if last >= generation:
                 raise TrustError(
-                    f"The generation record {self.record.path} has moved on to "
-                    f"generation {last} while generation {generation} of "
-                    f"{gpg_id_file} was being written; nothing was written."
+                    translate(
+                        "GpgIdTrust",
+                        "The generation record {0} has moved on to "
+                        "generation {1} while generation {2} of "
+                        "{3} was being written; nothing was written.",
+                    ).format(self.record.path, last, generation, gpg_id_file)
                 )
             write()
             entries[key] = {"generation": str(generation), "digest": digest(contents)}

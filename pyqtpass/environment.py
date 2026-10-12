@@ -18,6 +18,8 @@ import stat
 import subprocess
 import sys
 
+from pyqtpass.i18n import translate
+
 # The values variables had before this module set them, so that clearing a
 # setting restores them instead of keeping the last configured one.
 _replaced = {}
@@ -58,7 +60,10 @@ def apply_gnupg_home(path):
         return ""
     if not os.path.isdir(path):
         _restore("GNUPGHOME")
-        return f"The GnuPG home folder {path} does not exist; using the default one."
+        return translate(
+            "Environment",
+            "The GnuPG home folder {} does not exist; using the default one.",
+        ).format(path)
     _set("GNUPGHOME", path)
     return ""
 

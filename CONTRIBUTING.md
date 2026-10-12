@@ -71,7 +71,10 @@ python scripts/import_qtpass_translations.py ../QtPass
 
 User-visible text goes through `self.tr()`, or through
 `QCoreApplication.translate("QtPassGUI", ...)` in the main window mixins so
-it stays in the main window's context. Update the `.ts` files with
+it stays in the main window's context. The modules that do not use Qt
+themselves, like the password store, use `translate()` from
+`pyqtpass/i18n.py`. Pass literal strings and fill in `{}` placeholders
+afterwards, so `pylupdate6` finds them. Update the `.ts` files with
 `pylupdate6` (which comes with PyQt6) from inside the package folder; the
 import script above does this too:
 

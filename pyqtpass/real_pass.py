@@ -13,6 +13,7 @@ import shutil
 
 from pyqtpass import executor
 from pyqtpass.fs_utils import is_link
+from pyqtpass.i18n import translate
 from pyqtpass.password_store import GPG_EXT, PasswordStore, StoreError, locked
 
 
@@ -54,14 +55,19 @@ class RealPassStore(PasswordStore):
         )
         if returncode != 0:
             raise StoreError(
-                stderr.decode(errors="replace").strip() or f"pass {args[0]} failed"
+                stderr.decode(errors="replace").strip()
+                or translate("PasswordStore", "pass {} failed").format(args[0])
             )
         return stdout.decode("utf-8", errors="replace")
 
     def get_key(self, path):
         clean = self.clean_path(path)
         if not os.path.isfile(self.entry_file(clean)):
-            raise FileNotFoundError(f"{path} is not in the password store")
+            raise FileNotFoundError(
+                translate("PasswordStore", "{} is not in the password store").format(
+                    path
+                )
+            )
         if self.signer.enabled:
             # Refuse an untrusted recipient list here too, like the native
             # backend does before encrypting anything.
@@ -73,7 +79,9 @@ class RealPassStore(PasswordStore):
         clean = self.clean_path(path)
         absolute = self.entry_file(clean)
         if os.path.exists(absolute) and not force:
-            raise FileExistsError(f"{clean} already exists")
+            raise FileExistsError(
+                translate("PasswordStore", "{} already exists").format(clean)
+            )
         self.recipients(self._folder_of(clean))
         self.absolute(self._folder_of(clean))
         if not key_data.endswith("\n"):
@@ -93,9 +101,15 @@ class RealPassStore(PasswordStore):
             return
         if os.path.isdir(folder):
             if not recursive and os.listdir(folder):
-                raise StoreError(f"{clean} is not empty")
+                raise StoreError(
+                    translate("PasswordStore", "{} is not empty").format(clean)
+                )
         elif not os.path.isfile(entry):
-            raise FileNotFoundError(f"{clean} is not in the password store")
+            raise FileNotFoundError(
+                translate("PasswordStore", "{} is not in the password store").format(
+                    clean
+                )
+            )
         self.run_pass("rm", "-r", "-f", "--", clean)
 
     def _pass_copy_move(self, command, old_path, new_path, force):
@@ -116,12 +130,16 @@ class RealPassStore(PasswordStore):
     @locked
     def init(self, gpg_ids, folder="", progress=None, cancelled=None):
         if not gpg_ids:
-            raise StoreError("At least one key is needed")
+            raise StoreError(translate("PasswordStore", "At least one key is needed"))
         clean = self.clean_path(folder)
         absolute = self.absolute(clean)
         for name in (".gpg-id", ".gpg-id.sig"):
             if is_link(os.path.join(absolute, name)):
-                raise StoreError(f"{name} in {clean or '/'} is a symbolic link")
+                raise StoreError(
+                    translate("PasswordStore", "{0} in {1} is a symbolic link").format(
+                        name, clean or "/"
+                    )
+                )
         args = ["init"]
         if clean:
             args += ["-p", clean]

@@ -199,6 +199,19 @@ def test_commit_leaves_other_staged_changes(tmp_path, key_id):
     assert staged == "notes.txt"
 
 
+def test_init_can_leave_the_recipient_list_out_of_git(tmp_path, key_id):
+    repo = str(tmp_path / "repo")
+    make_repo(repo)
+    git_store = PasswordStore(repo, add_gpg_id=False)
+    git_store.init([key_id])
+    git_store.set_key("entry", "pw")
+    git_store.init([key_id])
+    ok, tracked = git_utils.run_git(repo, "ls-files")
+    assert ok and tracked == "entry.gpg"
+    ok, status = git_utils.run_git(repo, "status", "--porcelain")
+    assert ok and status == "?? .gpg-id"
+
+
 def test_hooks_do_not_run_for_own_commits(tmp_path, key_id):
     repo = str(tmp_path / "hooked")
     make_repo(repo)

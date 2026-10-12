@@ -14,6 +14,7 @@ import threading
 import time
 
 from pyqtpass import environment
+from pyqtpass.i18n import translate
 
 _listeners = []
 
@@ -170,7 +171,9 @@ def run(
             for pipe in (process.stdin, process.stdout, process.stderr):
                 if pipe is not None:
                     pipe.close()
-        message = f"{args[0]} did not finish within {timeout} seconds"
+        message = translate("Executor", "{0} did not finish within {1} seconds").format(
+            args[0], timeout
+        )
         _notify(args, -1, message)
         return -1, b"", message.encode()
     finally:
