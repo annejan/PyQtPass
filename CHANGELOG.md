@@ -1,6 +1,9 @@
 # Changelog
 
-## Unreleased
+## 0.5.0
+
+Portable mode, translated store messages, QtPass's addGPGId setting, and
+the first release on PyPI.
 
 ### Portable mode
 
