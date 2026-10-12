@@ -102,6 +102,7 @@ class SettingsManager:
             "splitter_sizes": [200, 400],
             "window_geometry": QByteArray,
             "window_state": QByteArray,
+            "config_dialog_geometry": QByteArray,
             "always_on_top": False,
             "use_tray_icon": True,
             "start_minimized": False,

@@ -398,6 +398,13 @@ class QtPassGUI(
             else:
                 self.show_and_raise()
 
+    def keyPressEvent(self, event):  # pylint: disable=invalid-name
+        """Escape clears the search box, like QtPass."""
+        if event.key() == Qt.Key.Key_Escape:
+            self.ui.filter_text_box.clear()
+            return
+        super().keyPressEvent(event)
+
     def show_and_raise(self):
         """Show the window and bring it to the front."""
         self.show()
@@ -462,6 +469,17 @@ class QtPassGUI(
         exit_action = QAction(self.tr("Exit"), self)
         exit_action.triggered.connect(self.exit)
         tray_menu.addAction(open_action)
+        # Like the QtPass tray menu.
+        for text, slot in (
+            (self.tr("&Hide"), self.hide),
+            (self.tr("Mi&nimize"), self.showMinimized),
+            (self.tr("Ma&ximize"), self.showMaximized),
+            (self.tr("&Restore"), self.showNormal),
+        ):
+            action = QAction(text, self)
+            action.triggered.connect(slot)
+            tray_menu.addAction(action)
+        tray_menu.addSeparator()
         tray_menu.addAction(self.actions["add"])
         tray_menu.addAction(self.actions["show_menu_bar"])
         tray_menu.addSeparator()

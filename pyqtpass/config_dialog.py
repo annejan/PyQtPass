@@ -6,6 +6,7 @@ application settings, grouped in tabs like the QtPass configuration dialog.
 It interacts with a SettingsManager to persist these settings.
 """
 
+from PyQt6.QtCore import QByteArray
 from PyQt6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -70,6 +71,16 @@ class ConfigDialog(QDialog):
         self.init_buttons(layout)
         self.setLayout(layout)
         self.resize(560, 480)
+        # Its last size and position, like QtPass's dialog/geometry.
+        geometry = self.settings_manager.get("config_dialog_geometry")
+        if isinstance(geometry, QByteArray):
+            self.restoreGeometry(geometry)
+
+    def done(self, result):
+        """Remember the size and position however the dialog closes."""
+        self.settings_manager.set("config_dialog_geometry", self.saveGeometry())
+        self.settings_manager.save()
+        super().done(result)
 
     def add_field(self, key, widget):
         """

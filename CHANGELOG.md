@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Small things from QtPass
+
+- Escape clears the search box.
+- Help → FAQ (F1) opens the frequently asked questions on qtpass.org.
+- The configuration dialog opens with its last size and position.
+- The tray menu has Hide, Minimize, Maximize and Restore.
+
 ### Search
 
 - The content search lists the matching lines under each password, like

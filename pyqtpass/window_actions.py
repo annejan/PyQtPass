@@ -7,8 +7,8 @@ are translated in the context of the main window class.
 
 import sys
 
-from PyQt6.QtCore import QCoreApplication, QEvent, Qt, QTimer
-from PyQt6.QtGui import QAction, QFontDatabase, QIcon
+from PyQt6.QtCore import QCoreApplication, QEvent, Qt, QTimer, QUrl
+from PyQt6.QtGui import QAction, QDesktopServices, QFontDatabase, QIcon, QKeySequence
 from PyQt6.QtWidgets import (
     QApplication,
     QComboBox,
@@ -16,6 +16,9 @@ from PyQt6.QtWidgets import (
     QPlainTextEdit,
     QStyle,
 )
+
+# QtPass's FAQ: its questions about pass, GnuPG and git apply here too.
+FAQ_URL = "https://qtpass.org/faq"
 
 
 class WindowActionsMixin:
@@ -223,6 +226,15 @@ class WindowActionsMixin:
         settings_menu.addAction(self.actions["show_menu_bar"])
 
         help_menu = menubar.addMenu(QCoreApplication.translate("QtPassGUI", "&Help"))
+        faq_action = QAction(QCoreApplication.translate("QtPassGUI", "&FAQ"), self)
+        faq_action.setToolTip(
+            QCoreApplication.translate(
+                "QtPassGUI", "Open the frequently asked questions on qtpass.org"
+            )
+        )
+        faq_action.setShortcut(QKeySequence(QKeySequence.StandardKey.HelpContents))
+        faq_action.triggered.connect(lambda: QDesktopServices.openUrl(QUrl(FAQ_URL)))
+        help_menu.addAction(faq_action)
         about_action = QAction(
             QCoreApplication.translate("QtPassGUI", "About PyQtPass"), self
         )
