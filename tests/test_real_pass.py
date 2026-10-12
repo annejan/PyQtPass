@@ -7,8 +7,8 @@ import shutil
 
 import pytest
 
-from password_store import StoreError
-from real_pass import RealPassStore, find_pass
+from pyqtpass.password_store import StoreError
+from pyqtpass.real_pass import RealPassStore, find_pass
 
 
 @pytest.fixture

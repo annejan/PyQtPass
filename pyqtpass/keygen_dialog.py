@@ -20,8 +20,8 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
 )
 
-from gpg_utils import export_public_key, generate_key, list_gpg_keys
-from tasks import run_task
+from pyqtpass.gpg_utils import export_public_key, generate_key, list_gpg_keys
+from pyqtpass.tasks import run_task
 
 
 class KeyGenDialog(QDialog):

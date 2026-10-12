@@ -10,7 +10,7 @@ import os
 import re
 import shutil
 
-import executor
+from pyqtpass import executor
 
 _gpg_binary = {"path": ""}
 

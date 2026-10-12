@@ -24,10 +24,10 @@ from PyQt6.QtWidgets import (
     QWizardPage,
 )
 
-import git_utils
-from gpg_utils import key_problem, list_gpg_keys, which_gpg
-from keygen_dialog import KeyGenDialog
-from password_store import PasswordStore, StoreError
+from pyqtpass import git_utils
+from pyqtpass.gpg_utils import key_problem, list_gpg_keys, which_gpg
+from pyqtpass.keygen_dialog import KeyGenDialog
+from pyqtpass.password_store import PasswordStore, StoreError
 
 
 class IntroPage(QWizardPage):  # pylint: disable=too-few-public-methods

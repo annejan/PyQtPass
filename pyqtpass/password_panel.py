@@ -25,10 +25,10 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-import executor
-from tasks import run_task
-import otp
-from utilities import format_key_html, is_web_url
+from pyqtpass import executor
+from pyqtpass.tasks import run_task
+from pyqtpass import otp
+from pyqtpass.utilities import format_key_html, is_web_url
 
 
 def find_qrencode(configured=""):

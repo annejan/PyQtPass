@@ -7,7 +7,7 @@ import subprocess
 import sys
 import time
 
-import executor
+from pyqtpass import executor
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -16,8 +16,8 @@ import sys
 sys.path.insert(0, {root!r})
 from PyQt6.QtCore import QTimer
 from PyQt6.QtWidgets import QApplication
-import executor
-import tasks
+from pyqtpass import executor
+from pyqtpass import tasks
 
 app = QApplication([])
 app.aboutToQuit.connect(tasks.wait_for_all)
@@ -60,7 +60,7 @@ SECOND_START = """
 import sys
 sys.path.insert(0, {root!r})
 from PyQt6.QtWidgets import QApplication
-import single_instance
+from pyqtpass import single_instance
 
 app = QApplication([])
 app.setOrganizationName("IJHack")
@@ -75,7 +75,7 @@ def test_single_instance_answers_and_ignores_strangers(qapp, tmp_path, monkeypat
     from PyQt6.QtNetwork import QLocalServer
     from PyQt6.QtWidgets import QWidget
 
-    import single_instance
+    from pyqtpass import single_instance
 
     monkeypatch.setenv("XDG_RUNTIME_DIR", str(tmp_path))
     monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))

@@ -6,7 +6,7 @@ import base64
 
 import pytest
 
-import otp  # pylint: disable=wrong-import-order
+from pyqtpass import otp  # pylint: disable=wrong-import-order
 from conftest import TEST_OTP_SEED
 
 SEEDS = {

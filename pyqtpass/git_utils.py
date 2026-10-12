@@ -8,7 +8,7 @@ the password store can be versioned and synchronised with a remote repository.
 import os
 import shutil
 
-import executor
+from pyqtpass import executor
 
 _git_binary = {"path": ""}
 

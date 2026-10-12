@@ -24,8 +24,8 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from password_panel import PasswordPanel
-from utilities import IS_FOLDER_ROLE, PATH_ROLE, filter_pattern
+from pyqtpass.password_panel import PasswordPanel
+from pyqtpass.utilities import IS_FOLDER_ROLE, PATH_ROLE, filter_pattern
 
 
 class StoreFilterProxyModel(QSortFilterProxyModel):

@@ -26,10 +26,10 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from edit_password_window import CUSTOM_CHARSET, charset_names
-from gpgid_trust import is_fingerprint
-from profiles_editor import ProfilesEditor
-from settings_manager import SettingsManager
+from pyqtpass.edit_password_window import CUSTOM_CHARSET, charset_names
+from pyqtpass.gpgid_trust import is_fingerprint
+from pyqtpass.profiles_editor import ProfilesEditor
+from pyqtpass.settings_manager import SettingsManager
 
 
 class ConfigDialog(QDialog):

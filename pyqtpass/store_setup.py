@@ -5,13 +5,13 @@ settings, and setting it up with the first-run wizard when it is new.
 
 from PyQt6.QtWidgets import QDialog
 
-import git_utils
-import gpg_utils
-from first_run_wizard import FirstRunWizard
-from gpgid_trust import GenerationRecord
-from password_store import PasswordStore
-from real_pass import RealPassStore, find_pass
-from settings_manager import profile_options
+from pyqtpass import git_utils
+from pyqtpass import gpg_utils
+from pyqtpass.first_run_wizard import FirstRunWizard
+from pyqtpass.gpgid_trust import GenerationRecord
+from pyqtpass.password_store import PasswordStore
+from pyqtpass.real_pass import RealPassStore, find_pass
+from pyqtpass.settings_manager import profile_options
 
 
 def configured_store_dir(settings):

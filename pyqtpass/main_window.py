@@ -41,23 +41,23 @@ from PyQt6.QtWidgets import (
     QSystemTrayIcon,
 )
 
-import executor
-import otp
-from config_dialog import ConfigDialog
-from entry import parse_entry
-from settings_manager import SettingsManager
-from store_setup import (
+from pyqtpass import __version__, executor
+from pyqtpass import otp
+from pyqtpass.config_dialog import ConfigDialog
+from pyqtpass.entry import parse_entry
+from pyqtpass.settings_manager import SettingsManager
+from pyqtpass.store_setup import (
     apply_executables,
     configured_store_dir,
     ensure_store,
     make_store,
 )
-from single_instance import activate_running_instance, listen_for_instances
-from tasks import run_task, wait_for_all
-from store_actions import StoreActionsMixin
-from ui_container import UiContainer
-from window_actions import WindowActionsMixin
-from utilities import (
+from pyqtpass.single_instance import activate_running_instance, listen_for_instances
+from pyqtpass.tasks import run_task, wait_for_all
+from pyqtpass.store_actions import StoreActionsMixin
+from pyqtpass.ui_container import UiContainer
+from pyqtpass.window_actions import WindowActionsMixin
+from pyqtpass.utilities import (
     create_tree_model,
     get_icon_path,
     get_item_folder,
@@ -66,8 +66,6 @@ from utilities import (
     is_folder_item,
     set_locale,
 )
-
-__version__ = "0.3.0"
 
 # Clipboard formats that ask clipboard managers not to keep a copy.
 SECRET_CLIPBOARD_HINTS = {

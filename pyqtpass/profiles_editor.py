@@ -18,8 +18,8 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from gpgid_trust import is_fingerprint
-from settings_manager import PROFILE_OVERRIDES, profile_options
+from pyqtpass.gpgid_trust import is_fingerprint
+from pyqtpass.settings_manager import PROFILE_OVERRIDES, profile_options
 
 
 class ProfilesEditor(QWidget):

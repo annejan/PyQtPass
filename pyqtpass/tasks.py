@@ -8,7 +8,7 @@ import threading
 
 from PyQt6.QtCore import QObject, Qt, QThread, pyqtSignal, pyqtSlot
 
-import executor
+from pyqtpass import executor
 
 
 class _Worker(QObject):

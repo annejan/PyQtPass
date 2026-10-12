@@ -1,3 +1,44 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyqtpass"
+dynamic = ["version"]
+description = "A cross-platform GUI for pass, the standard Unix password manager; a Python port of QtPass"
+readme = "README.md"
+license = "GPL-3.0-or-later"
+requires-python = ">=3.11"
+dependencies = ["PyQt6>=6.8", "Markdown>=3.5"]
+classifiers = [
+    "Environment :: X11 Applications :: Qt",
+    "Programming Language :: Python :: 3",
+    "Topic :: Security :: Cryptography",
+]
+
+[project.urls]
+Homepage = "https://github.com/annejan/PyQtPass"
+Changelog = "https://github.com/annejan/PyQtPass/blob/main/CHANGELOG.md"
+
+[project.gui-scripts]
+pyqtpass = "pyqtpass.main_window:main"
+
+[tool.setuptools.dynamic]
+version = { attr = "pyqtpass.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["pyqtpass*"]
+
+[tool.setuptools.package-data]
+pyqtpass = [
+    "artwork/*.png",
+    "artwork/*.svg",
+    "artwork/*.ico",
+    "artwork/*.icns",
+    "artwork/fonts/*",
+    "localization/*.qm",
+]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 

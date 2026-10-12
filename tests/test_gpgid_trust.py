@@ -7,8 +7,8 @@ import shutil
 
 import pytest
 
-from gpgid_trust import GenerationRecord, TrustError, parse_header, with_header
-from password_store import PasswordStore, StoreError
+from pyqtpass.gpgid_trust import GenerationRecord, TrustError, parse_header, with_header
+from pyqtpass.password_store import PasswordStore, StoreError
 
 
 @pytest.fixture

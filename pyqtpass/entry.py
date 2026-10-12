@@ -11,7 +11,7 @@ the displayed text.
 
 from dataclasses import dataclass, field
 
-from otp import is_otp_field_name, is_otp_uri
+from pyqtpass.otp import is_otp_field_name, is_otp_uri
 
 
 @dataclass

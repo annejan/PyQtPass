@@ -2,8 +2,8 @@
 
 # pylint: disable=missing-function-docstring,redefined-outer-name,unused-argument
 
-from profiles_editor import ProfilesEditor
-from settings_manager import profile_options
+from pyqtpass.profiles_editor import ProfilesEditor
+from pyqtpass.settings_manager import profile_options
 
 FINGERPRINT = "A" * 40
 

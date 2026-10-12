@@ -15,8 +15,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 # pylint: disable=wrong-import-position
-import gpg_utils  # noqa: E402
-from password_store import PasswordStore  # noqa: E402
+from pyqtpass import gpg_utils  # noqa: E402
+from pyqtpass.password_store import PasswordStore  # noqa: E402
 
 TEST_UID = "PyQtPass Test <test@example.org>"
 
@@ -63,7 +63,7 @@ def second_key(gnupg_home):  # pylint: disable=redefined-outer-name,unused-argum
     A second key whose primary key only certifies and which signs with a
     subkey, a common layout.
     """
-    import executor  # pylint: disable=import-outside-toplevel
+    from pyqtpass import executor  # pylint: disable=import-outside-toplevel
 
     gpg = gpg_utils.which_gpg()
     uid = "Second Key <second@example.org>"
@@ -107,7 +107,7 @@ def settings(
     # pylint: disable=import-outside-toplevel
     from PyQt6.QtCore import QSettings
 
-    from settings_manager import SettingsManager
+    from pyqtpass.settings_manager import SettingsManager
 
     QSettings.setPath(
         QSettings.Format.NativeFormat, QSettings.Scope.UserScope, str(tmp_path)

@@ -11,9 +11,9 @@ before pass is asked anything.
 import os
 import shutil
 
-import executor
-from fs_utils import is_link
-from password_store import GPG_EXT, PasswordStore, StoreError, locked
+from pyqtpass import executor
+from pyqtpass.fs_utils import is_link
+from pyqtpass.password_store import GPG_EXT, PasswordStore, StoreError, locked
 
 
 def find_pass(configured=""):

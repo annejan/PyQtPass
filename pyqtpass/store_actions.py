@@ -17,12 +17,12 @@ from PyQt6.QtWidgets import (
     QProgressDialog,
 )
 
-from edit_password_window import EditPasswordDialog
-from keygen_dialog import ExportPublicKeyDialog
-from password_store import CommitError
-from tasks import run_task
-from users_dialog import UsersDialog
-from utilities import get_item_full_path, is_folder_item
+from pyqtpass.edit_password_window import EditPasswordDialog
+from pyqtpass.keygen_dialog import ExportPublicKeyDialog
+from pyqtpass.password_store import CommitError
+from pyqtpass.tasks import run_task
+from pyqtpass.users_dialog import UsersDialog
+from pyqtpass.utilities import get_item_full_path, is_folder_item
 
 
 class StoreActionsMixin:

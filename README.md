@@ -55,34 +55,39 @@ PyQtPass follows the feature set of [QtPass 2.0](https://github.com/IJHack/QtPas
 
 ## Installation
 
-PyQtPass needs Python 3.11 or newer and GnuPG (`gpg` or `gpg2`) with a graphical pinentry.
-Git is optional (for synchronisation) and so is `qrencode` (for QR codes). Then:
+PyQtPass needs GnuPG (`gpg` or `gpg2`) with a graphical pinentry. Git is optional
+(for synchronisation) and so is `qrencode` (for QR codes).
 
-1. Clone this repository:
+### Ready-made builds
 
-   ```sh
-   git clone https://github.com/annejan/PyQtPass.git
-   cd PyQtPass
-   ```
+Each [release](https://github.com/annejan/PyQtPass/releases) has:
 
-2. Install the required Python packages:
+- `PyQtPass-<version>-windows-x64.exe` for Windows;
+- `PyQtPass-<version>-macos-arm64.dmg` for macOS (not signed: right-click the app and choose Open the first time);
+- `PyQtPass-<version>-x86_64.AppImage` and a single-file `PyQtPass-<version>-linux-x86_64` for Linux.
 
-   ```sh
-   pip install -r requirements.txt
-   ```
+`SHA256SUMS` lists their checksums, and a signed build provenance attestation records which
+workflow run and commit built them: `gh attestation verify <file> --repo annejan/PyQtPass`.
 
-3. Optionally compile the translations (Qt's `lrelease`, e.g. from the
-   `qt6-l10n-tools` package; release builds include them):
+### From source
 
-   ```sh
-   lrelease localization/*.ts
-   ```
+PyQtPass needs Python 3.11 or newer.
 
-4. Run the application:
+```sh
+git clone https://github.com/annejan/PyQtPass.git
+cd PyQtPass
+pip install .          # installs the pyqtpass command
+pyqtpass
+```
 
-   ```sh
-   python pyqtpass.py
-   ```
+Or run it without installing: `pip install -r requirements.txt`, then `python -m pyqtpass`.
+
+Translations are compiled with Qt's `lrelease` (for example from the `qt6-l10n-tools` package);
+release builds include them:
+
+```sh
+lrelease pyqtpass/localization/*.ts
+```
 
 When no password store exists yet, a wizard helps you set one up.
 
@@ -110,7 +115,7 @@ Fields are `name: value` lines below the password. Add a line like
 pip install -r requirements-dev.txt
 pylint $(git ls-files '*.py')
 black --check .
-QT_QPA_PLATFORM=offscreen python -m pytest
+QT_QPA_PLATFORM=offscreen python -m pytest --cov=pyqtpass
 ```
 
 The tests create a throwaway GnuPG home and key, so they never touch your own keyring or store.

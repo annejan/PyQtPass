@@ -26,9 +26,9 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
 )
 
-from gpg_utils import import_keys, key_matches_id, key_problem, list_gpg_keys
-from keygen_dialog import KeyGenDialog
-from password_store import StoreError
+from pyqtpass.gpg_utils import import_keys, key_matches_id, key_problem, list_gpg_keys
+from pyqtpass.keygen_dialog import KeyGenDialog
+from pyqtpass.password_store import StoreError
 
 
 class UsersDialog(QDialog):

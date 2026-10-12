@@ -26,10 +26,10 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
 )
 
-from entry import build_entry, parse_entry
-from password_store import CommitError
-from tasks import run_task
-from settings_manager import SettingsManager
+from pyqtpass.entry import build_entry, parse_entry
+from pyqtpass.password_store import CommitError
+from pyqtpass.tasks import run_task
+from pyqtpass.settings_manager import SettingsManager
 
 CHARACTER_SETS = [
     string.ascii_letters + string.digits + string.punctuation,

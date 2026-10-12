@@ -28,8 +28,8 @@ import re
 import tempfile
 import time
 
-import executor
-from fs_utils import is_link
+from pyqtpass import executor
+from pyqtpass.fs_utils import is_link
 
 OUR_COMMENT = "# QtPass-GpgId-"
 GENERATION_PREFIX = "# QtPass-GpgId-Generation: "

@@ -20,11 +20,17 @@ import threading
 import shutil
 import tempfile
 
-import executor
-import git_utils
-from gpg_utils import parse_gpg_id_lines, which_gpg
-from gpgid_trust import GpgIdSigner, TrustError, list_key, parse_header, with_header
-from fs_utils import atomic_write, is_link
+from pyqtpass import executor
+from pyqtpass import git_utils
+from pyqtpass.gpg_utils import parse_gpg_id_lines, which_gpg
+from pyqtpass.gpgid_trust import (
+    GpgIdSigner,
+    TrustError,
+    list_key,
+    parse_header,
+    with_header,
+)
+from pyqtpass.fs_utils import atomic_write, is_link
 
 GPG_EXT = ".gpg"
 GPG_ID = ".gpg-id"
