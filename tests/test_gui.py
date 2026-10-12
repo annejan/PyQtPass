@@ -75,6 +75,12 @@ def test_clipboard_is_marked_secret_and_cleared(qapp, window):
     assert QApplication.clipboard().text() != "topsecret"
 
 
+def test_clipboard_is_cleared_on_quit(qapp, window):
+    # aboutToQuit is a private signal, so the test cannot emit it;
+    # disconnecting raises TypeError when clear_clipboard is not connected.
+    qapp.aboutToQuit.disconnect(window.clear_clipboard)
+
+
 def test_filter_and_content_search(qapp, window):
     window.ui.filter_text_box.setText("web si")
     assert find_index(window, "web/site") is not None
