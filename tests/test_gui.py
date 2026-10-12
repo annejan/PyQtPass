@@ -122,7 +122,7 @@ def test_content_search_lists_the_matching_lines(qapp, window, settings):
     item = window.ui.search_results.topLevelItem(0).child(0)
     window.ui.search_results.itemClicked.emit(item, 0)
     window.ui.search_results.itemActivated.emit(item, 0)
-    wait_until(qapp, lambda: window.ui.search_results.isHidden())
+    wait_until(qapp, window.ui.search_results.isHidden)
     assert not window.ui.search_results.isVisible()
     assert window.ui.tree_view.isVisible()
     assert window.ui.tree_view.currentIndex().data(PATH_ROLE) == "other"
