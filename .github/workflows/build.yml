@@ -83,7 +83,8 @@ jobs:
 
         Each file is listed in `SHA256SUMS`. A signed build provenance
         attestation records the workflow run and commit that produced them:
-        `gh attestation verify <file> --repo annejan/PyQtPass`.
+        `gh attestation verify <file> --repo annejan/PyQtPass`. Each file
+        also has the maintainer's GnuPG signature: `gpg --verify <file>.asc`.
         NOTES
     # The release starts as a draft: nothing is public until the maintainer
     # has looked at it, signed the files (scripts/sign-release-assets.sh)
