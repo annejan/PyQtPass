@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+## 0.4.1
+
+Fixes from the review of 0.3.0 and 0.4.0 (#30), and releases made like
+QtPass's: a draft first, source archives, and the maintainer's GnuPG
+signature on every file.
 
 ### Release builds
 
