@@ -2,5 +2,6 @@ venv
 dist
 build
 __pycache__
+.pytest_cache
 pyqtpass.pro.user
 localization/*.qm

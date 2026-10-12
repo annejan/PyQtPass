@@ -10,45 +10,6 @@ permissions:
   actions: read
 
 jobs:
-  build-windows32:
-    runs-on: windows-latest
-    steps:
-    - uses: actions/checkout@v7
-    - name: Set up Python
-      uses: actions/setup-python@v7
-      with:
-        python-version: '3.x'
-    - name: Install dependencies
-      run: |
-        pip install -r requirements.txt
-        pip install pyinstaller
-    - name: Setup Qt environment
-      uses: jurplel/install-qt-action@v4
-      with:
-        version: '6.5.3'
-    - name: Run lrelease
-      run: lrelease-pro pyqtpass.pro
-    - name: Install UPX
-      run: |
-        Invoke-WebRequest -Uri "https://github.com/upx/upx/releases/download/v4.2.1/upx-4.2.1-win32.zip" -OutFile "upx.zip"
-        Expand-Archive "upx.zip" -DestinationPath "upx"
-        echo "${{ github.workspace }}\upx" >> $env:GITHUB_PATH
-    - name: Build with PyInstaller
-      run: pyinstaller PyQtPass.spec
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v7
-      with:
-        name: PyQtPass-Windows32
-        path: dist/
-    - name: Rename to PyQtPass-32.exe
-      run: mv dist/PyQtPass.exe dist/PyQtPass-32.exe
-    - name: Upload Release Asset
-      uses: softprops/action-gh-release@v3
-      with:
-        files: ./dist/PyQtPass-32.exe
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   build-windows64:
     runs-on: windows-latest
     steps:
@@ -65,7 +26,7 @@ jobs:
     - name: Setup Qt environment
       uses: jurplel/install-qt-action@v4
       with:
-        version: '6.5.3'
+        version: '6.8.3'
     - name: Run lrelease
       run: lrelease-pro pyqtpass.pro
     - name: Install UPX
@@ -103,7 +64,7 @@ jobs:
     - name: Setup Qt environment
       uses: jurplel/install-qt-action@v4
       with:
-        version: '6.5.3'
+        version: '6.8.3'
     - name: Run lrelease
       run: lrelease-pro pyqtpass.pro
     - name: Build with PyInstaller
@@ -137,7 +98,7 @@ jobs:
     - name: Setup Qt environment
       uses: jurplel/install-qt-action@v4
       with:
-        version: '6.5.3'
+        version: '6.8.3'
     - name: Run lrelease
       run: lrelease-pro pyqtpass.pro
     - name: Build with PyInstaller
