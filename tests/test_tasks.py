@@ -63,6 +63,8 @@ from PyQt6.QtWidgets import QApplication
 import single_instance
 
 app = QApplication([])
+app.setOrganizationName("IJHack")
+app.setApplicationName("PyQtPass")
 print("found" if single_instance.activate_running_instance() else "none")
 """
 
@@ -76,7 +78,11 @@ def test_single_instance_answers_and_ignores_strangers(qapp, tmp_path, monkeypat
     import single_instance
 
     monkeypatch.setenv("XDG_RUNTIME_DIR", str(tmp_path))
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
     os.chmod(tmp_path, 0o700)
+    qapp.setOrganizationName("IJHack")
+    qapp.setApplicationName("PyQtPass")
+    single_instance._token.clear()  # pylint: disable=protected-access
     env = {**os.environ, "QT_QPA_PLATFORM": "offscreen"}
 
     def second_start():
@@ -96,6 +102,15 @@ def test_single_instance_answers_and_ignores_strangers(qapp, tmp_path, monkeypat
     assert stranger.listen(single_instance.single_instance_name())
     assert second_start() == "none"
     stranger.close()
+
+    # A listener that answers, but without this user's token, is not one.
+    impostor = QLocalServer()
+    assert impostor.listen(single_instance.single_instance_name())
+    impostor.newConnection.connect(
+        lambda: impostor.nextPendingConnection().write(b"PyQtPass\n")
+    )
+    assert second_start() == "none"
+    impostor.close()
 
     shown = []
     window = QWidget()

@@ -36,9 +36,37 @@ GENERATION_PREFIX = "# QtPass-GpgId-Generation: "
 FOLDER_PREFIX = "# QtPass-GpgId-Folder: "
 MAX_GENERATION = 999999999999999999
 LOCK_TIMEOUT = 10
-# A lock file older than this is left over from a crash: transactions are
-# a read, a compare and a small write.
-LOCK_STALE = 60
+
+
+def _try_lock(descriptor):
+    """:return: True when the exclusive lock on the file was taken."""
+    try:
+        if os.name == "nt":  # pragma: no cover - Windows
+            import msvcrt  # pylint: disable=import-outside-toplevel,import-error
+
+            msvcrt.locking(descriptor, msvcrt.LK_NBLCK, 1)
+        else:
+            import fcntl  # pylint: disable=import-outside-toplevel
+
+            fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        return False
+    return True
+
+
+def _unlock(descriptor):
+    """Release the lock taken by _try_lock."""
+    with contextlib.suppress(OSError):
+        if os.name == "nt":  # pragma: no cover - Windows
+            import msvcrt  # pylint: disable=import-outside-toplevel,import-error
+
+            os.lseek(descriptor, 0, os.SEEK_SET)
+            msvcrt.locking(descriptor, msvcrt.LK_UNLCK, 1)
+        else:
+            import fcntl  # pylint: disable=import-outside-toplevel
+
+            fcntl.flock(descriptor, fcntl.LOCK_UN)
+
 
 VALIDSIG = re.compile(
     r"^\[GNUPG:\] VALIDSIG ([A-F0-9]{40}(?:[A-F0-9]{24})?) .* "
@@ -150,40 +178,39 @@ class GenerationRecord:  # pylint: disable=too-few-public-methods
         """
         Lock the record and yield its entries; changes are written back.
 
+        The lock is an operating system lock on a lock file: it is released
+        when its holder ends, also by a crash, so there are no stale locks
+        to take over.
+
         :raises TrustError: when the record cannot be locked, read or written.
         """
         os.makedirs(os.path.dirname(self.path) or ".", exist_ok=True)
         lock_path = self.path + ".lock"
-        deadline = time.time() + LOCK_TIMEOUT
-        while True:
-            try:
-                descriptor = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
-                break
-            except FileExistsError as error:
-                with contextlib.suppress(OSError):
-                    if time.time() - os.path.getmtime(lock_path) > LOCK_STALE:
-                        os.remove(lock_path)
-                        continue
+        try:
+            descriptor = os.open(lock_path, os.O_CREAT | os.O_RDWR, 0o600)
+        except OSError as error:
+            raise TrustError(
+                f"The generation record {self.path} cannot be locked: {error}"
+            ) from error
+        try:
+            deadline = time.time() + LOCK_TIMEOUT
+            while not _try_lock(descriptor):
                 if time.time() > deadline:
                     raise TrustError(
                         f"The generation record {self.path} is locked by "
-                        f"another process (remove {lock_path} if none runs)."
-                    ) from error
+                        "another process."
+                    )
                 time.sleep(0.05)
-            except OSError as error:
-                raise TrustError(
-                    f"The generation record {self.path} cannot be locked: {error}"
-                ) from error
-        try:
-            os.close(descriptor)
-            entries = self._read()
-            before = json.dumps(entries, sort_keys=True)
-            yield entries
-            if json.dumps(entries, sort_keys=True) != before:
-                self._write(entries)
+            try:
+                entries = self._read()
+                before = json.dumps(entries, sort_keys=True)
+                yield entries
+                if json.dumps(entries, sort_keys=True) != before:
+                    self._write(entries)
+            finally:
+                _unlock(descriptor)
         finally:
-            with contextlib.suppress(OSError):
-                os.remove(lock_path)
+            os.close(descriptor)
 
     def _read(self):
         if not os.path.exists(self.path):
@@ -250,8 +277,10 @@ class GpgIdSigner:
         that the signature is really made by it before anything is written.
 
         gpg falls back to another secret key when --default-key names one
-        it does not have, so the key is given with --local-user and an
-        exclamation mark, and the result is verified.
+        it does not have, so the key is given with --local-user, and the
+        result is verified: VALIDSIG names the primary key's fingerprint
+        also when a signing subkey made the signature, which is what a key
+        whose primary key only certifies uses.
 
         :param contents: The bytes of the list.
         :return: The detached signature.
@@ -263,7 +292,7 @@ class GpgIdSigner:
                 "--batch",
                 "--yes",
                 "--local-user",
-                self.keys[0] + "!",
+                self.keys[0],
                 "--detach-sign",
                 "--output",
                 "-",
@@ -389,6 +418,17 @@ class GpgIdSigner:
         """
         with self.record.transaction() as entries:
             return list_key(gpg_id_file) in entries
+
+    def forget_keys(self, keys):
+        """
+        Forget lists, after their folder was moved or removed, so a new
+        folder there is not refused as one whose signed list was removed.
+
+        :param keys: Record keys, from list_key().
+        """
+        with self.record.transaction() as entries:
+            for key in keys:
+                entries.pop(key, None)
 
     def next_generation(self, gpg_id_file, on_disk_generation=0):
         """

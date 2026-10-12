@@ -3,6 +3,7 @@
 # pylint: disable=missing-function-docstring
 
 import os
+import re
 
 import pytest
 
@@ -266,16 +267,75 @@ def test_failed_commit_is_a_commit_error(tmp_path, key_id):
     assert git_store.get_key("entry") == "pw\n"
 
 
-def test_store_lock_serialises_pull_and_changes(store):
+def test_store_lock_is_shared_per_folder(store):
     import threading  # pylint: disable=import-outside-toplevel
 
+    again = PasswordStore(store.store_dir, use_git=False)
+    assert again.lock is store.lock
     with store.lock:
-        holder = threading.Thread(target=lambda: None)
-        holder.start()
-        holder.join()
-        assert not store.busy()  # re-entrant for the holding thread
         seen = []
-        other = threading.Thread(target=lambda: seen.append(store.busy()))
+        other = threading.Thread(
+            target=lambda: seen.append(again.lock.acquire(blocking=False))
+        )
         other.start()
         other.join()
-        assert seen == [True]
+        assert seen == [False]
+
+
+def test_staged_folder_move_keeps_links(store, key_id, tmp_path):
+    store.set_key("a/one", "1")
+    os.symlink(tmp_path, os.path.join(store.store_dir, "a", "link"))
+    store.init([key_id], "b")
+    os.makedirs(os.path.join(store.store_dir, "c"))
+    with open(
+        os.path.join(store.store_dir, "c", ".gpg-id"), "w", encoding="utf-8"
+    ) as f:
+        f.write(key_id + "\n# other list\n")
+    store.move_path("a", "c/a")
+    assert os.path.islink(os.path.join(store.store_dir, "c", "a", "link"))
+    assert store.get_key("c/a/one") == "1\n"
+
+
+def recipients_of(path):
+    _, stdout, _ = gpg_run(["--batch", "--list-packets", path])
+    return set(re.findall(r"keyid ([0-9A-F]{16})", stdout.decode()))
+
+
+def gpg_run(args):
+    import executor  # pylint: disable=import-outside-toplevel
+
+    return executor.run([gpg_utils.which_gpg(), *args], timeout=60)
+
+
+def test_init_with_failing_commit_still_reencrypts(tmp_path, key_id, second_key):
+    from password_store import CommitError  # pylint: disable=import-outside-toplevel
+
+    repo = str(tmp_path / "lockinit")
+    make_repo(repo)
+    git_store = PasswordStore(repo)
+    git_store.init([key_id])
+    git_store.set_key("a", "pw")
+    old_recipients = recipients_of(git_store.entry_file("a"))
+    with open(os.path.join(repo, ".git", "index.lock"), "w", encoding="utf-8"):
+        pass
+    with pytest.raises(CommitError, match="re-encrypted"):
+        git_store.init([second_key])
+    # Encrypted to the new key's encryption subkey only, not the old key.
+    new_recipients = recipients_of(git_store.entry_file("a"))
+    assert new_recipients and not new_recipients & old_recipients
+
+
+def test_leftover_staging_folder_is_not_committed(tmp_path, key_id):
+    repo = str(tmp_path / "staging")
+    make_repo(repo)
+    git_store = PasswordStore(repo)
+    git_store.init([key_id])
+    git_store.set_key("a", "pw")
+    leftover = os.path.join(repo, ".pyqtpass-move-crash")
+    os.makedirs(leftover)
+    with open(os.path.join(leftover, "x.gpg"), "wb") as f:
+        f.write(b"junk")
+    git_store.init([key_id])
+    git_store.reencrypt()
+    ok, files = git_utils.run_git(repo, "ls-files")
+    assert ok and ".pyqtpass-move-crash" not in files

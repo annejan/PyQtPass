@@ -19,7 +19,7 @@ from PyQt6.QtWidgets import (
 
 from edit_password_window import EditPasswordDialog
 from keygen_dialog import ExportPublicKeyDialog
-from password_store import CommitError, StoreError
+from password_store import CommitError
 from tasks import run_task
 from users_dialog import UsersDialog
 from utilities import get_item_full_path, is_folder_item
@@ -108,7 +108,7 @@ class StoreActionsMixin:
             self.show_status(done_message)
             self.auto_push()
 
-        task = run_task(function, finished, progress)
+        task = run_task(function, finished, progress, critical=True)
         dialog.canceled.connect(task.cancel)
 
     def export_public_key(self):
@@ -281,7 +281,7 @@ class StoreActionsMixin:
                 on_done()
             self.after_change(done_message)
 
-        run_task(lambda _progress, _cancelled: function(), done)
+        run_task(lambda _progress, _cancelled: function(), done, critical=True)
 
     def add_item(self, index=None):
         """Add a password in the folder of index or the selection."""
@@ -309,17 +309,12 @@ class StoreActionsMixin:
         if not ok or not name:
             return
         path = f"{parent}/{name}" if parent else name
-        try:
-            self.store.create_folder(path)
-        except (OSError, StoreError) as error:
-            self.store_error(
-                QCoreApplication.translate("QtPassGUI", "Failed to create folder"),
-                error,
-            )
-            return
-        self.refresh_tree()
-        self.show_status(
-            QCoreApplication.translate("QtPassGUI", "Added folder {}").format(path)
+        store = self.store
+        # Waits for the store's lock like any change, so not on this thread.
+        self.run_store_change(
+            lambda: store.create_folder(path),
+            QCoreApplication.translate("QtPassGUI", "Added folder {}").format(path),
+            QCoreApplication.translate("QtPassGUI", "Failed to create folder"),
         )
 
     def edit_item(self, index=None):

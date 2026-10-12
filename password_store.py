@@ -12,6 +12,7 @@ A symbolic link inside the store is not part of it: listing and search skip
 links and every operation refuses a path that is, or lies behind, one.
 """
 
+import contextlib
 import functools
 import os
 import re
@@ -22,7 +23,7 @@ import tempfile
 import executor
 import git_utils
 from gpg_utils import parse_gpg_id_lines, which_gpg
-from gpgid_trust import GpgIdSigner, TrustError, parse_header, with_header
+from gpgid_trust import GpgIdSigner, TrustError, list_key, parse_header, with_header
 from fs_utils import atomic_write, is_link
 
 GPG_EXT = ".gpg"
@@ -38,6 +39,24 @@ class CommitError(StoreError):
     The change itself was made, but committing it to git failed; the
     message says so, and the change is not to be retried.
     """
+
+
+STAGING_PREFIX = ".pyqtpass-move-"
+
+_store_locks = {}
+_store_locks_guard = threading.Lock()
+
+
+def store_lock(store_dir):
+    """
+    :param store_dir: A store directory.
+    :return: The lock shared by every PasswordStore for that directory, so a
+             store reopened with new settings still waits for a pull running
+             on the old one.
+    """
+    key = os.path.normcase(os.path.realpath(store_dir))
+    with _store_locks_guard:
+        return _store_locks.setdefault(key, threading.RLock())
 
 
 def locked(method):
@@ -76,7 +95,7 @@ class PasswordStore:
         self.gpg_bin = gpg_bin or which_gpg()
         self.use_git = use_git
         self.signer = GpgIdSigner(signing_keys, self.gpg_bin, record)
-        self.lock = threading.RLock()
+        self.lock = store_lock(self.store_dir)
         if self.signer.enabled and record is None:
             raise ValueError("Signing keys need a generation record")
 
@@ -449,10 +468,40 @@ class PasswordStore:
             raise FileExistsError(f"{path} already exists")
         os.makedirs(absolute)
 
+    def _own_lists(self, folder_abs):
+        """
+        :param folder_abs: An absolute folder of the store.
+        :return: The subfolders (relative to it, '' for itself) that hold a
+                 recipient list or signature of their own; links are not
+                 entered.
+        """
+        found = []
+        for current, dirs, _ in os.walk(folder_abs):
+            dirs[:] = [
+                name for name in dirs if not is_link(os.path.join(current, name))
+            ]
+            if any(
+                os.path.lexists(os.path.join(current, name))
+                for name in (GPG_ID, GPG_ID + ".sig")
+            ):
+                relative = os.path.relpath(current, folder_abs)
+                found.append("" if relative == "." else relative.replace(os.sep, "/"))
+        return found
+
+    @staticmethod
+    def _join(folder, sub):
+        return f"{folder}/{sub}" if folder and sub else folder or sub
+
+    def _list_keys(self, folder_abs, subs):
+        """:return: The generation record keys of the lists in subs."""
+        return [list_key(os.path.join(folder_abs, sub, GPG_ID)) for sub in subs]
+
     @locked
     def remove_path(self, path, recursive=False):
         """
         Remove an entry or a folder. A link is removed, not what it points to.
+        The record forgets the signed lists of a removed folder, so a new
+        folder of that name is not refused as one whose list was removed.
 
         :param path: Path relative to the store root.
         :param recursive: Allow removing a folder with its contents.
@@ -470,7 +519,11 @@ class PasswordStore:
         elif os.path.isdir(folder) and clean:
             if not recursive and os.listdir(folder):
                 raise StoreError(f"{clean} is not empty")
+            keys = []
+            if self.signer.enabled:
+                keys = self._list_keys(folder, self._own_lists(folder))
             shutil.rmtree(folder)
+            self._forget(keys)
             staged = clean
         elif os.path.isfile(entry):
             os.remove(entry)
@@ -478,6 +531,13 @@ class PasswordStore:
         else:
             raise FileNotFoundError(f"{clean} is not in the password store")
         self.git_commit([staged], f"Remove {clean} from store.")
+
+    def _forget(self, keys):
+        if keys:
+            try:
+                self.signer.forget_keys(keys)
+            except TrustError as error:
+                raise StoreError(str(error)) from error
 
     def _source_and_target(self, old_path, new_path, force):
         old_clean = self.clean_path(old_path)
@@ -505,80 +565,137 @@ class PasswordStore:
         self.absolute(self._folder_of(new_clean))
         return old_clean, new_clean, source, target, relative_target
 
-    def _needs_reencrypt(self, old_clean, new_clean, source):
+    def _inherited_change(self, old_clean, new_clean):
         """
-        :return: True when what moves from old_clean to new_clean would be
-                 governed by other recipients there, like pass mv/cp decide.
+        :return: The recipients at the destination's parent when they differ
+                 from those at the source's parent, else None.
         """
-        if os.path.isdir(source):
-            if os.path.lexists(os.path.join(source, GPG_ID)):
-                return False  # its own list travels with it
-            old_folder = self._folder_of(old_clean)
-            new_folder = self._folder_of(new_clean)
-        else:
-            old_folder = self._folder_of(old_clean)
-            new_folder = self._folder_of(new_clean)
+        new = self.recipients(self._folder_of(new_clean))
         try:
-            old = self.recipients(old_folder)
+            old = self.recipients(self._folder_of(old_clean))
         except StoreError:
-            return True
-        return old != self.recipients(new_folder)
+            return new
+        return None if old == new else new
+
+    def _transfer_entry(self, old_clean, new_clean, source, target, keep_source):
+        new_recipients = self._inherited_change(old_clean, new_clean)
+        if new_recipients is not None:
+            data = self.decrypt_bytes(source)
+            self.encrypt_to_file(target, data, new_recipients)
+            if not keep_source:
+                os.remove(source)
+        elif keep_source:
+            with open(source, "rb") as handle:
+                atomic_write(target, handle.read())
+        else:
+            os.replace(source, target)
+
+    def _transfer_folder(self, old_clean, new_clean, source, target, keep_source):
+        """
+        Move or copy a folder. Its own recipient lists go with it; with a
+        signing key they are signed again for their new place. Entries that
+        inherit their recipients are re-encrypted when the new parent has
+        other ones. All of that happens in a staging copy, which only takes
+        its place when everything succeeded.
+        """
+        # pylint: disable=too-many-arguments,too-many-positional-arguments,too-many-locals
+        own_ids = {}
+        for sub in self._own_lists(source):
+            if os.path.lexists(os.path.join(source, sub, GPG_ID + ".sig")) and (
+                not self.signer.enabled
+            ):
+                raise StoreError(
+                    f"/{self._join(old_clean, sub)} has a signed recipient list. "
+                    "Configure the signing key, so it can be signed again for "
+                    "its new place, before moving or copying it."
+                )
+            ids = self.list_at(self._join(old_clean, sub))
+            if ids is not None:
+                own_ids[sub] = ids
+        new_recipients = (
+            None if "" in own_ids else (self._inherited_change(old_clean, new_clean))
+        )
+        resign = self.signer.enabled and bool(own_ids)
+        if not keep_source and new_recipients is None and not resign:
+            os.replace(source, target)
+            return
+        staging = tempfile.mkdtemp(dir=os.path.dirname(target), prefix=STAGING_PREFIX)
+        os.rmdir(staging)
+        written = []
+        try:
+            # Links are copied as links (they are not followed either way);
+            # a junction would be copied as a folder, so it is left out.
+            shutil.copytree(
+                source,
+                staging,
+                symlinks=True,
+                ignore=lambda folder, names: [
+                    name
+                    for name in names
+                    if is_link(os.path.join(folder, name))
+                    and not os.path.islink(os.path.join(folder, name))
+                ],
+            )
+            if new_recipients is not None:
+                self._reencrypt_inherited(staging, set(own_ids), new_recipients)
+            if resign:
+                for sub, ids in own_ids.items():
+                    final = os.path.join(target, sub, GPG_ID)
+                    self.write_gpg_id(
+                        os.path.join(staging, sub, GPG_ID),
+                        self._join(new_clean, sub),
+                        ids,
+                        record_path=final,
+                    )
+                    written.append(list_key(final))
+            os.replace(staging, target)
+        except BaseException:
+            shutil.rmtree(staging, ignore_errors=True)
+            if written:
+                with contextlib.suppress(TrustError):
+                    self.signer.forget_keys(written)
+            raise
+        if not keep_source:
+            keys = self._list_keys(source, own_ids) if self.signer.enabled else []
+            shutil.rmtree(source)
+            self._forget(keys)
+
+    def _reencrypt_inherited(self, folder_abs, own, recipients):
+        """
+        Re-encrypt the entries of a staged folder that inherit their
+        recipients, leaving those under a list of their own alone.
+        """
+        for current, dirs, files in os.walk(folder_abs):
+            dirs[:] = [
+                name for name in dirs if not is_link(os.path.join(current, name))
+            ]
+            relative = os.path.relpath(current, folder_abs).replace(os.sep, "/")
+            parts = [] if relative == "." else relative.split("/")
+            if any("/".join(parts[:depth]) in own for depth in range(len(parts) + 1)):
+                continue
+            for name in files:
+                path = os.path.join(current, name)
+                if (
+                    name.endswith(GPG_EXT)
+                    and not is_link(path)
+                    and os.path.isfile(path)
+                ):
+                    self.encrypt_to_file(path, self.decrypt_bytes(path), recipients)
 
     def _transfer(self, old_path, new_path, force, keep_source):
         """
-        Move or copy an entry or folder. When the destination has other
-        recipients the copy is re-encrypted before it takes its place, so a
-        failure leaves the store as it was.
+        Move or copy an entry or folder; a failure leaves the store as it was.
 
         :return: Tuple of (old path, new path, git paths to commit).
         """
-        # pylint: disable=too-many-locals
         old_clean, new_clean, source, target, relative_target = self._source_and_target(
             old_path, new_path, force
         )
-        needs_reencrypt = self._needs_reencrypt(old_clean, new_clean, source)
-        parent = os.path.dirname(target)
-        os.makedirs(parent, exist_ok=True)
+        os.makedirs(os.path.dirname(target), exist_ok=True)
         if os.path.isdir(source):
-            if not needs_reencrypt and not keep_source:
-                os.replace(source, target)
-            else:
-                staging = tempfile.mkdtemp(dir=parent, prefix=".pyqtpass-")
-                os.rmdir(staging)
-                try:
-                    shutil.copytree(
-                        source,
-                        staging,
-                        symlinks=True,
-                        ignore=lambda folder, names: [
-                            name
-                            for name in names
-                            if is_link(os.path.join(folder, name))
-                        ],
-                    )
-                    if needs_reencrypt:
-                        cache = {}
-                        for entry in list(self.iter_entries(self.relative(staging))):
-                            self.reencrypt_entry(entry, cache)
-                    os.replace(staging, target)
-                except BaseException:
-                    shutil.rmtree(staging, ignore_errors=True)
-                    raise
-                if not keep_source:
-                    shutil.rmtree(source)
+            self._transfer_folder(old_clean, new_clean, source, target, keep_source)
         else:
-            if needs_reencrypt:
-                data = self.decrypt_bytes(source)
-                self.encrypt_to_file(
-                    target, data, self.recipients(self._folder_of(new_clean))
-                )
-                if not keep_source:
-                    os.remove(source)
-            elif keep_source:
-                with open(source, "rb") as handle:
-                    atomic_write(target, handle.read())
-            else:
-                os.replace(source, target)
+            self._transfer_entry(old_clean, new_clean, source, target, keep_source)
         paths = [relative_target]
         if not keep_source:
             paths.insert(0, self.relative(source))
@@ -639,7 +756,9 @@ class PasswordStore:
     def init(self, gpg_ids, folder="", progress=None):
         """
         Set the recipients of a (sub)store and re-encrypt its entries, like
-        'pass init'.
+        'pass init'. The list and the re-encrypted entries are committed
+        together, after re-encryption, so a failed commit never hides
+        entries that still use the old keys.
 
         :param gpg_ids: List of gpg ids to encrypt for.
         :param folder: Folder relative to the store root, '' for the root.
@@ -664,24 +783,34 @@ class PasswordStore:
             self.write_gpg_id(gpg_id_path, clean, gpg_ids)
         except TrustError as error:
             raise StoreError(str(error)) from error
-        joined = ", ".join(gpg_ids)
-        self.git_commit([relative_id, relative_id + ".sig"], f"Set GPG id to {joined}.")
-        if not has_entries:
-            return
+        changed = [relative_id, relative_id + ".sig"]
         failure = None
+        if has_entries:
+            try:
+                self._reencrypt_entries(clean, changed, progress)
+            except (OSError, StoreError) as error:
+                failure = error
+        joined = ", ".join(gpg_ids)
         try:
-            self.reencrypt(clean, progress=progress, commit=False)
-        except (OSError, StoreError) as error:
-            failure = error
-        # Commit what was re-encrypted, also when a later entry failed, so
-        # the store and its history agree.
-        self.git_commit(
-            [clean or "."], f"Reencrypt password store using new GPG id {joined}."
-        )
+            self.git_commit(changed, f"Set GPG id to {joined}.")
+        except CommitError as error:
+            if failure is not None:
+                raise StoreError(
+                    f"The recipients were changed, but re-encrypting stopped: "
+                    f"{failure}. Committing what was done failed too: {error}"
+                ) from failure
+            raise CommitError(
+                "The recipients were changed and every password was "
+                f"re-encrypted for them, but git commit failed: {error}"
+            ) from error
         if failure is not None:
-            raise failure
+            raise StoreError(
+                f"The recipients were changed, but re-encrypting stopped: "
+                f"{failure}. Some passwords still use the old keys; use "
+                "Re-encrypt once this is fixed."
+            ) from failure
 
-    def write_gpg_id(self, gpg_id_path, folder, gpg_ids):
+    def write_gpg_id(self, gpg_id_path, folder, gpg_ids, record_path=None):
         """
         Write a recipient list: signed and with a generation header when
         signing keys are configured, a plain list like pass writes otherwise.
@@ -689,6 +818,9 @@ class PasswordStore:
         :param gpg_id_path: Path of the .gpg-id file.
         :param folder: Its folder relative to the store root.
         :param gpg_ids: The recipients.
+        :param record_path: Where the list will end up when it is written to a
+                            staging copy first; the record is kept for that
+                            path.
         """
         signature = gpg_id_path + ".sig"
         if not self.signer.enabled:
@@ -711,7 +843,8 @@ class PasswordStore:
                 on_disk = parse_header(current.decode("utf-8"))[0]
             except (TrustError, UnicodeDecodeError):
                 on_disk = 0
-        generation = self.signer.next_generation(gpg_id_path, on_disk)
+        record_path = record_path or gpg_id_path
+        generation = self.signer.next_generation(record_path, on_disk)
         contents = with_header(generation, folder, gpg_ids).encode("utf-8")
         signed = self.signer.sign(contents)
 
@@ -719,7 +852,7 @@ class PasswordStore:
             atomic_write(gpg_id_path, contents)
             atomic_write(signature, signed)
 
-        self.signer.store_written(gpg_id_path, contents, generation, write)
+        self.signer.store_written(record_path, contents, generation, write)
 
     def reencrypt_entry(self, path, cache=None):
         """
@@ -741,6 +874,21 @@ class PasswordStore:
         data = self.decrypt_bytes(absolute)
         self.encrypt_to_file(absolute, data, recipients)
 
+    def _reencrypt_entries(self, folder, changed, progress=None, cancelled=None):
+        """
+        Re-encrypt the entries of a folder, adding each one's file to changed
+        as soon as it is done, so a failure still commits what was done.
+        """
+        entries = list(self.iter_entries(folder))
+        cache = {}
+        for done, entry in enumerate(entries, 1):
+            if cancelled and cancelled():
+                break
+            self.reencrypt_entry(entry, cache)
+            changed.append(entry + GPG_EXT)
+            if progress:
+                progress(done, len(entries))
+
     @locked
     def reencrypt(self, folder="", progress=None, cancelled=None, commit=True):
         """
@@ -752,22 +900,16 @@ class PasswordStore:
         :param commit: Commit the result to git.
         :return: Number of re-encrypted entries.
         """
-        entries = list(self.iter_entries(folder))
-        done = 0
-        cache = {}
-        for entry in entries:
-            if cancelled and cancelled():
-                break
-            self.reencrypt_entry(entry, cache)
-            done += 1
-            if progress:
-                progress(done, len(entries))
-        if commit and done:
-            self.git_commit(
-                [self.clean_path(folder) or "."],
-                f"Reencrypt {self.clean_path(folder) or 'password store'}.",
-            )
-        return done
+        changed = []
+        try:
+            self._reencrypt_entries(folder, changed, progress, cancelled)
+        finally:
+            if commit and changed:
+                self.git_commit(
+                    changed,
+                    f"Reencrypt {self.clean_path(folder) or 'password store'}.",
+                )
+        return len(changed)
 
     # Search
 
@@ -819,16 +961,6 @@ class PasswordStore:
         success, output = git_utils.git_commit_paths(self.store_dir, paths, message)
         if not success:
             raise CommitError(f"The change was made, but git commit failed: {output}")
-
-    def busy(self):
-        """
-        :return: True while another thread is changing the store or running
-                 git pull or push on it.
-        """
-        if not self.lock.acquire(blocking=False):  # pylint: disable=consider-using-with
-            return True
-        self.lock.release()
-        return False
 
     @locked
     def pull(self):

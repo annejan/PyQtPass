@@ -172,11 +172,73 @@ def test_failed_move_leaves_the_source(signed_store, key_id):
     assert not signed_store.is_entry("team/entry")
 
 
-def test_stale_lock_is_taken_over(tmp_path):
+def test_leftover_lock_file_does_not_block(tmp_path):
     record = GenerationRecord(str(tmp_path / "record.json"))
-    lock = tmp_path / "record.json.lock"
-    lock.write_text("")
-    os.utime(lock, (0, 0))
+    (tmp_path / "record.json.lock").write_text("")
     with record.transaction() as entries:
         entries["k"] = {"generation": "1", "digest": ""}
-    assert not lock.exists()
+    with record.transaction() as entries:
+        assert entries["k"]["generation"] == "1"
+
+
+def test_record_lock_excludes_other_holders(tmp_path):
+    import threading  # pylint: disable=import-outside-toplevel
+
+    record = GenerationRecord(str(tmp_path / "record.json"))
+    order = []
+    entered = threading.Event()
+
+    def other():
+        entered.wait()
+        with record.transaction():
+            order.append("other")
+
+    thread = threading.Thread(target=other)
+    thread.start()
+    with record.transaction():
+        entered.set()
+        thread.join(0.3)
+        order.append("first")
+    thread.join()
+    assert order == ["first", "other"]
+
+
+def test_signing_with_a_signing_subkey(tmp_path, second_key):
+    record = GenerationRecord(str(tmp_path / "record.json"))
+    store = PasswordStore(
+        str(tmp_path / "subkey"),
+        use_git=False,
+        signing_keys=[second_key],
+        record=record,
+    )
+    store.init([second_key])
+    store.set_key("entry", "pw")
+    assert store.get_key("entry") == "pw\n"
+
+
+def test_signed_folder_can_be_renamed_deleted_and_recreated(signed_store, key_id):
+    signed_store.init([key_id], "team")
+    signed_store.set_key("team/x", "pw")
+    signed_store.move_path("team", "squad")
+    assert signed_store.recipients("squad") == [key_id]
+    assert signed_store.get_key("squad/x") == "pw\n"
+    signed_store.init([key_id], "team")
+    assert signed_store.recipients("team") == [key_id]
+    signed_store.remove_path("team", recursive=True)
+    # A new folder of that name inherits the root's list again.
+    signed_store.create_folder("team")
+    signed_store.set_key("team/y", "pw")
+    assert signed_store.get_key("team/y") == "pw\n"
+    signed_store.init([key_id], "team")
+    assert signed_store.recipients("team") == [key_id]
+    signed_store.copy_path("squad", "copy")
+    assert signed_store.recipients("copy") == [key_id]
+    assert signed_store.recipients("squad") == [key_id]
+
+
+def test_moving_a_signed_folder_needs_the_signing_key(signed_store, key_id):
+    signed_store.init([key_id], "team")
+    plain = PasswordStore(signed_store.store_dir, use_git=False)
+    with pytest.raises(StoreError, match="signing key"):
+        plain.move_path("team", "squad")
+    assert os.path.isdir(os.path.join(signed_store.store_dir, "team"))

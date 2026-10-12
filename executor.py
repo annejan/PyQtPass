@@ -150,7 +150,13 @@ def run(
         stdout, stderr = process.communicate(input_data, timeout=timeout)
     except subprocess.TimeoutExpired:
         _end(process, getattr(signal, "SIGKILL", signal.SIGTERM))
-        process.communicate()
+        try:
+            # A descendant that left the group can keep the pipes open.
+            process.communicate(timeout=2)
+        except subprocess.TimeoutExpired:
+            for pipe in (process.stdin, process.stdout, process.stderr):
+                if pipe is not None:
+                    pipe.close()
         message = f"{args[0]} did not finish within {timeout} seconds"
         _notify(args, -1, message)
         return -1, b"", message.encode()

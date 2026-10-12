@@ -26,6 +26,7 @@ from PyQt6.QtWidgets import (
 )
 
 import executor
+from tasks import run_task
 import otp
 from utilities import format_key_html, is_web_url
 
@@ -277,11 +278,27 @@ class PasswordPanel(QWidget):
         :param value: The text to encode.
         :param what: Name of the value for the window title.
         """
-        returncode, stdout, stderr = executor.run(
-            [self.qrencode, "-o", "-", "-t", "PNG", "-s", "8", "-m", "2"],
-            input_data=value.encode("utf-8"),
-            timeout=30,
+        qrencode = self.qrencode
+        run_task(
+            lambda _progress, _cancelled: executor.run(
+                [qrencode, "-o", "-", "-t", "PNG", "-s", "8", "-m", "2"],
+                input_data=value.encode("utf-8"),
+                timeout=30,
+            ),
+            lambda result, error: self.show_qr_result(what, result, error),
         )
+
+    def show_qr_result(self, what, result, error):
+        """
+        Show the QR code qrencode rendered on a worker thread.
+
+        :param what: Name of the value for the window title.
+        :param result: Tuple of (returncode, stdout, stderr) from qrencode.
+        :param error: An exception, if running it failed.
+        """
+        returncode, stdout, stderr = result if error is None else (-1, b"", b"")
+        if error is not None:
+            stderr = str(error).encode()
         pixmap = QPixmap()
         dialog = QDialog(self)
         dialog.setWindowTitle(self.tr("QR code for {}").format(what))

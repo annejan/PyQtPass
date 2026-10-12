@@ -88,8 +88,17 @@ Brings PyQtPass up to date with the QtPass 2.0 feature set.
   recipients, and a list naming no key is refused like pass does.
 - A signed list is never replaced by an unsigned one: without the signing
   key the recipients of such a folder cannot be changed.
-- Signing uses `--local-user <fingerprint>!` and the signature is checked
-  against the configured key before the list is written.
+- Signing uses `--local-user <fingerprint>` (a signing subkey works) and
+  the signature is checked against the configured key before the list is
+  written.
+- Changing recipients commits the list together with the re-encrypted
+  passwords, after re-encryption, so a failed commit never hides passwords
+  still encrypted to a removed member.
+- Moving, copying or deleting a folder with its own signed list signs the
+  list again for its new place and updates the generation record, so the
+  folder (or a new one of the old name) is not refused afterwards.
+- The generation record is locked with an operating system file lock,
+  which a crash releases; there are no stale locks to take over.
 - Re-encryption works on the exact decrypted bytes, and a move or copy that
   needs re-encryption only takes its place once that succeeded.
 - PyQtPass's own git commits run without repository hooks or fsmonitor and
@@ -97,16 +106,18 @@ Brings PyQtPass up to date with the QtPass 2.0 feature set.
 - Commands run in a session of their own with empty standard input and
   `GIT_TERMINAL_PROMPT=0`, so git and ssh never wait on a hidden terminal;
   a timeout ends the whole process group.
-- The single-instance socket lives in the private runtime directory, and
-  only an instance that answers with PyQtPass's greeting is taken for one.
+- The single-instance socket lives in the private runtime directory (on
+  Windows the pipe name carries a private random token), and only an
+  instance that answers with this user's token is taken for one.
 
 ### Responsiveness
 
 - Copying, editing, saving, renaming, moving, duplicating and deleting run
   gpg and git on a worker thread. Store changes and git pull/push share a
   lock, so they never run at the same time.
-- Quitting while work is running no longer hangs: tasks are cancelled, given
-  a moment, and their commands are then terminated.
+- Quitting while work is running no longer hangs: tasks are cancelled and
+  given a moment (git and store changes up to a minute, so no lock or half
+  merge is left behind), then their commands are terminated.
 - A save whose commit fails says that the entry was saved but not committed,
   and closes; an unchanged entry is not written again.
 

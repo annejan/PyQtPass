@@ -608,7 +608,7 @@ class QtPassGUI(StoreActionsMixin, WindowActionsMixin, QMainWindow):
             else:
                 QMessageBox.warning(self, failed_title, output)
 
-        self.git_task = run_task(lambda _p, _c: function(store), done)
+        self.git_task = run_task(lambda _p, _c: function(store), done, critical=True)
         self.update_git_actions()
         self.show_status(self.tr("Running git..."), 0)
 

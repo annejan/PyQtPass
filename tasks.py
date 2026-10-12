@@ -39,8 +39,13 @@ class Task(QObject):
     run there.
     """
 
-    def __init__(self, function, on_done, on_progress=None, parent=None):
+    def __init__(
+        self, function, on_done, on_progress=None, parent=None, critical=False
+    ):  # pylint: disable=too-many-arguments,too-many-positional-arguments
         super().__init__(parent)
+        # A critical task (git, a store change) is not killed when quitting:
+        # killing a commit or a merge can leave index.lock or a half merge.
+        self.critical = critical
         self.on_done = on_done
         self.on_progress = on_progress
         self.thread = QThread()
@@ -92,7 +97,7 @@ class Task(QObject):
 _running = set()
 
 
-def run_task(function, on_done, on_progress=None):
+def run_task(function, on_done, on_progress=None, critical=False):
     """
     Run function(progress, cancelled) on a worker thread.
 
@@ -100,9 +105,10 @@ def run_task(function, on_done, on_progress=None):
                      cancelled() callable; its return value is the result.
     :param on_done: Called on the GUI thread with (result, error).
     :param on_progress: Optional, called on the GUI thread with (done, total).
+    :param critical: The task changes the store or runs git; see Task.
     :return: The started Task.
     """
-    task = Task(function, on_done, on_progress)
+    task = Task(function, on_done, on_progress, critical=critical)
     task.start()
     return task
 
@@ -112,17 +118,23 @@ def running():
     return bool(_running)
 
 
-def wait_for_all(grace_ms=3000):
+def wait_for_all(grace_ms=3000, critical_ms=60000, final_ms=10000):
     """
-    Stop all running tasks, used when quitting: they are asked to cancel,
-    given a moment, and then the commands they run are terminated.
+    Stop all running tasks, used when quitting. They are asked to cancel
+    and given grace_ms; critical tasks (git, store changes) get critical_ms
+    to finish on their own, since killing them can leave a lock or a half
+    merge behind. What still runs after that has its commands terminated.
 
-    :param grace_ms: Milliseconds tasks get to finish on their own.
+    :param grace_ms: Milliseconds other tasks get to finish on their own.
+    :param critical_ms: Milliseconds critical tasks get.
+    :param final_ms: Milliseconds to wait after terminating, at most.
     """
     tasks = list(_running)
     for task in tasks:
         task.cancel()
-    if not all(task.wait(grace_ms) for task in tasks):
+    for task in tasks:
+        task.wait(critical_ms if task.critical else grace_ms)
+    if any(task.thread.isRunning() for task in tasks):
         executor.terminate_all()
         for task in tasks:
-            task.wait()
+            task.wait(final_ms)

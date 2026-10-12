@@ -57,6 +57,31 @@ def key_id(gnupg_home):  # pylint: disable=redefined-outer-name,unused-argument
     return keys[0]["fingerprint"]
 
 
+@pytest.fixture(scope="session")
+def second_key(gnupg_home):  # pylint: disable=redefined-outer-name,unused-argument
+    """
+    A second key whose primary key only certifies and which signs with a
+    subkey, a common layout.
+    """
+    import executor  # pylint: disable=import-outside-toplevel
+
+    gpg = gpg_utils.which_gpg()
+    uid = "Second Key <second@example.org>"
+    base = [gpg, "--batch", "--pinentry-mode", "loopback", "--passphrase", ""]
+    returncode, _, stderr = executor.run(
+        base + ["--quick-generate-key", uid, "ed25519", "cert", "never"], timeout=120
+    )
+    assert returncode == 0, stderr
+    key = next(k for k in gpg_utils.list_gpg_keys(secret=True) if uid in k["uids"])
+    for usage, algorithm in (("sign", "ed25519"), ("encr", "cv25519")):
+        returncode, _, stderr = executor.run(
+            base + ["--quick-add-key", key["fingerprint"], algorithm, usage, "never"],
+            timeout=120,
+        )
+        assert returncode == 0, stderr
+    return key["fingerprint"]
+
+
 @pytest.fixture
 def store(tmp_path, key_id):  # pylint: disable=redefined-outer-name
     """An initialised, git-less password store."""
