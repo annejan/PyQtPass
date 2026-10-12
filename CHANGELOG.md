@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Portable mode
+
+- A `pyqtpass.ini` next to the program holds the settings instead of the
+  user's settings, like QtPass's portable `qtpass.ini`. Create an empty one
+  to run PyQtPass from a USB stick; the record of signed recipient lists
+  moves along with it.
+
 ### Translations and settings
 
 - The messages of the password store, the signed recipient lists, gpg and

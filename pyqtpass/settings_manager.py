@@ -7,11 +7,16 @@ boolean flags for application behavior.
 
 import os
 import string
+import sys
 
 from PyQt6.QtCore import QSettings, QByteArray
 
 DEFAULT_CUSTOM_CHARS = string.ascii_letters + string.digits + string.punctuation
 DEFAULT_STORE_DIR = "~/.password-store"
+
+# Portable mode, like QtPass's qtpass.ini: this file next to the program
+# holds the settings instead of the platform's settings store.
+PORTABLE_INI = "pyqtpass.ini"
 
 # Settings a profile can override; None in a profile means "as configured".
 PROFILE_OVERRIDES = ("use_git", "auto_push", "git_pull_on_start")
@@ -40,6 +45,35 @@ def profile_options(value):
     return options
 
 
+def program_dir():
+    """
+    :return: The folder holding the program: the executable of a frozen
+             build, else the script that started PyQtPass.
+    """
+    if getattr(sys, "frozen", False):
+        return os.path.dirname(os.path.abspath(sys.executable))
+    return os.path.dirname(os.path.abspath(sys.argv[0] or sys.executable))
+
+
+def portable_ini():
+    """
+    :return: The path of the portable settings file when it exists, else None.
+    """
+    path = os.path.join(program_dir(), PORTABLE_INI)
+    return path if os.path.isfile(path) else None
+
+
+def open_settings():
+    """
+    :return: QSettings on the portable settings file when there is one, else
+             on the platform's settings store.
+    """
+    path = portable_ini()
+    if path:
+        return QSettings(path, QSettings.Format.IniFormat)
+    return QSettings("IJHack", "PyQtPass")
+
+
 class SettingsManager:
     """
     The SettingsManager class encapsulates methods for saving and retrieving
@@ -57,7 +91,7 @@ class SettingsManager:
         if getattr(self, "initialized", False):
             return
         self.initialized = True
-        self.settings = QSettings("IJHack", "PyQtPass")
+        self.settings = open_settings()
         self.options = {
             "select_is_open": True,
             "close_is_hide": False,
