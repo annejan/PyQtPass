@@ -4,6 +4,7 @@
 
 import os
 import re
+import subprocess
 
 import pytest
 
@@ -424,3 +425,45 @@ def test_store_lock_follows_a_folder_made_later(tmp_path):
     os.symlink(tmp_path / "real", tmp_path / "via")
     late = PasswordStore(str(tmp_path / "real" / "store"), use_git=False)
     assert early.lock is late.lock
+
+
+def test_key_generation_parameters():
+    batch = gpg_utils.set_batch_parameter(
+        gpg_utils.DEFAULT_KEY_TEMPLATE, "Name-Real", "Anne Jan"
+    )
+    batch = gpg_utils.set_batch_parameter(batch, "Name-Email", "a@example.org")
+    assert "Name-Real: Anne Jan" in batch.splitlines()
+    assert "Name-Email: a@example.org" in batch.splitlines()
+    assert gpg_utils.apply_passphrase(batch, "") == batch + "\n"
+    protected = gpg_utils.apply_passphrase(batch, "secret").splitlines()
+    assert "%no-protection" not in protected
+    assert protected.index("Passphrase: secret") == protected.index("%commit") - 1
+    # gpg matches keywords case-insensitively: a stray %No-Protection would
+    # make an unprotected key next to the passphrase.
+    expert = "Key-Type: EdDSA\n%No-Protection\npassphrase: old\n%commit"
+    assert gpg_utils.apply_passphrase(expert, "new").splitlines() == [
+        "Key-Type: EdDSA",
+        "Passphrase: new",
+        "%commit",
+    ]
+    assert gpg_utils.apply_passphrase("Key-Type: EdDSA\n%commit", "pw").splitlines()[
+        1
+    ] == ("Passphrase: pw")
+    with pytest.raises(ValueError):
+        gpg_utils.generate_key_batch(batch, "two\nlines")
+
+
+@pytest.mark.usefixtures("gnupg_home")
+def test_generate_key_from_parameters(tmp_path, monkeypatch):
+    home = tmp_path / "gnupg"
+    home.mkdir(mode=0o700)
+    monkeypatch.setenv("GNUPGHOME", str(home))
+    batch = gpg_utils.set_batch_parameter(
+        gpg_utils.DEFAULT_KEY_TEMPLATE, "Name-Real", "Expert Mode"
+    )
+    batch = gpg_utils.set_batch_parameter(batch, "Name-Email", "x@example.org")
+    ok, output = gpg_utils.generate_key_batch(batch)
+    assert ok, output
+    keys = gpg_utils.list_gpg_keys(secret=True)
+    assert [key["uids"] for key in keys] == [["Expert Mode (PyQtPass) <x@example.org>"]]
+    subprocess.run(["gpgconf", "--kill", "gpg-agent"], check=False, capture_output=True)
