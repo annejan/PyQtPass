@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=69"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -9,15 +9,32 @@ description = "A cross-platform GUI for pass, the standard Unix password manager
 readme = "README.md"
 license = "GPL-3.0-or-later"
 requires-python = ">=3.11"
+authors = [{ name = "Anne Jan Brouwer" }]
+keywords = ["pass", "password manager", "password-store", "gpg", "qt", "qtpass"]
 dependencies = ["PyQt6>=6.8", "Markdown>=3.5"]
 classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: MacOS X",
+    "Environment :: Win32 (MS Windows)",
     "Environment :: X11 Applications :: Qt",
+    "Intended Audience :: End Users/Desktop",
+    "Natural Language :: English",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Security :: Cryptography",
+    "Topic :: Utilities",
 ]
 
 [project.urls]
 Homepage = "https://github.com/annejan/PyQtPass"
+Source = "https://github.com/annejan/PyQtPass"
+Issues = "https://github.com/annejan/PyQtPass/issues"
 Changelog = "https://github.com/annejan/PyQtPass/blob/main/CHANGELOG.md"
 
 [project.gui-scripts]
@@ -41,6 +58,13 @@ pyqtpass = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["pyqtpass"]
+branch = true
+
+[tool.coverage.report]
+skip_empty = true
 
 [tool.black]
 target-version = ["py311"]

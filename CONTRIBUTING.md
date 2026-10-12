@@ -12,7 +12,13 @@ black --check .
 QT_QPA_PLATFORM=offscreen python -m pytest --cov=pyqtpass
 ```
 
-CI runs the same checks on Python 3.11 and 3.13. The tests make their own
+CI runs the same checks on Python 3.11 and 3.13.
+
+Licensing follows [REUSE](https://reuse.software): `REUSE.toml` says who
+holds the copyright of each file and under which licence it is, and the
+licence texts are in `LICENSES/`. A new file under GPL-3.0-or-later needs
+nothing extra; for anything else, add it to `REUSE.toml`. Check with
+`pipx run reuse lint`. The tests make their own
 GnuPG home and key, and never touch your keyring or password store.
 
 The code lives in the `pyqtpass` package. `main_window.py` holds the main
@@ -95,3 +101,10 @@ placeholders of its source text.
 
 4. Publish the draft. A published release's files are never replaced by a
    workflow re-run.
+5. Publishing the release runs the PyPI workflow, which builds the sdist and
+   the wheel from the tag and uploads them to PyPI with trusted publishing
+   (no token; the `pypi` environment must approve it if it has reviewers).
+   To try a version on TestPyPI first, or to retry an upload, run the PyPI
+   workflow by hand with the version and `testpypi` or `pypi`.
+
+The PyPI workflow also builds and checks the package on every pull request.

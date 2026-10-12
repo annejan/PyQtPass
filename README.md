@@ -2,7 +2,7 @@
 
 ## Introduction
 
-<img align="right" src="pyqtpass/artwork/icon.png" width="30%" />
+<img align="right" src="https://raw.githubusercontent.com/annejan/PyQtPass/main/pyqtpass/artwork/icon.png" width="30%" />
 
 Welcome to PyQtPass, an experimental and early-stage Python port of the renowned QtPass, originally developed in C++.
 This initiative aims to leverage the versatility and simplicity of Python to enhance maintainability and extend the functionality of QtPass, a user-friendly GUI for `pass`, the standard Unix password manager.
@@ -74,9 +74,18 @@ To check a download:
   workflow run and commit built each file: `gh attestation verify <file> --repo annejan/PyQtPass`.
 - Each file has a GnuPG signature by the maintainer (`<file>.asc`): `gpg --verify <file>.asc <file>`.
 
-### From source
+### From PyPI
 
 PyQtPass needs Python 3.11 or newer.
+
+```sh
+pipx install pyqtpass  # or: pip install pyqtpass
+pyqtpass
+```
+
+The package on PyPI includes the translations.
+
+### From source
 
 ```sh
 git clone https://github.com/annejan/PyQtPass.git
@@ -143,7 +152,7 @@ The tests create a throwaway GnuPG home and key, so they never touch your own ke
 ## Contributions and Feedback
 
 We warmly welcome contributions, be it in the form of code, translations, bug reports, suggestions, or documentation.
-[CONTRIBUTING.md](CONTRIBUTING.md) explains how to run the checks and how to translate PyQtPass.
+[CONTRIBUTING.md](https://github.com/annejan/PyQtPass/blob/main/CONTRIBUTING.md) explains how to run the checks and how to translate PyQtPass.
 
 Since PyQtPass is in its experimental stage, your input is crucial for its refinement and progression.
 

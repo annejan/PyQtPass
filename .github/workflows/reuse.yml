@@ -1,0 +1,25 @@
+name: REUSE
+
+# Every file must say who holds its copyright and under which licence it
+# is; see REUSE.toml. Not filtered by path, so new files are checked too.
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+permissions: {}
+
+jobs:
+  reuse:
+    name: Check compliance
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - name: REUSE compliance check
+      uses: fsfe/reuse-action@676e2d560c9a403aa252096d99fcab3e1132b0f5 # v6.0.0
