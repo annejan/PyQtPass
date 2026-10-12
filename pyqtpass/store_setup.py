@@ -5,6 +5,7 @@ settings, and setting it up with the first-run wizard when it is new.
 
 from PyQt6.QtWidgets import QDialog
 
+from pyqtpass import environment
 from pyqtpass import git_utils
 from pyqtpass import gpg_utils
 from pyqtpass.first_run_wizard import FirstRunWizard
@@ -47,12 +48,15 @@ def make_store(settings, store_dir=None):
 
 def apply_executables(settings):
     """
-    Point the gpg and git helpers at the configured executables.
+    Point the gpg and git helpers at the configured executables, and set up
+    the GnuPG home and ssh agent they use.
 
     :param settings: The SettingsManager.
+    :return: Problems with the settings to tell the user about.
     """
     gpg_utils.set_gpg_executable(settings.get("gpg_executable"))
     git_utils.set_git_executable(settings.get("git_executable"))
+    return environment.apply(settings)
 
 
 def ensure_store(settings):

@@ -5,7 +5,6 @@ folder and optionally put it under Git.
 """
 
 import os
-import shutil
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
@@ -25,6 +24,7 @@ from PyQt6.QtWidgets import (
 )
 
 from pyqtpass import git_utils
+from pyqtpass.environment import program_exists
 from pyqtpass.gpg_utils import key_problem, list_gpg_keys, which_gpg
 from pyqtpass.keygen_dialog import KeyGenDialog
 from pyqtpass.password_store import PasswordStore, StoreError
@@ -48,7 +48,7 @@ class IntroPage(QWizardPage):  # pylint: disable=too-few-public-methods
         )
         text.setWordWrap(True)
         layout.addWidget(text)
-        if not shutil.which(which_gpg()):
+        if not program_exists(which_gpg()):
             warning = QLabel(
                 self.tr(
                     "<b>GnuPG was not found.</b> Install it (gpg or gpg2) and "
@@ -159,7 +159,7 @@ class StorePage(QWizardPage):
         browse.setToolTip(self.tr("Browse"))
         browse.clicked.connect(self.browse)
         self.use_git = QCheckBox(self.tr("Keep the store under Git"), self)
-        self.use_git.setEnabled(shutil.which(git_utils.git_executable()) is not None)
+        self.use_git.setEnabled(program_exists(git_utils.git_executable()))
         self.status = QLabel(self)
         self.status.setWordWrap(True)
         path_row = QHBoxLayout()

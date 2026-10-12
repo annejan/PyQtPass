@@ -13,6 +13,8 @@ import subprocess
 import threading
 import time
 
+from pyqtpass import environment
+
 _listeners = []
 
 # Options whose value must never be shown in the process output panel.
@@ -133,7 +135,7 @@ def run(
     """
     try:
         process = subprocess.Popen(  # pylint: disable=consider-using-with
-            list(args),
+            environment.wsl_command(args),
             stdin=subprocess.PIPE if input_data is not None else subprocess.DEVNULL,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,

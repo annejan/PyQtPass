@@ -198,8 +198,28 @@ class ConfigDialog(QDialog):
             self.tr("Custom characters:"), self.add_field("custom_chars", custom_edit)
         )
         layout.addWidget(password_group)
+        layout.addWidget(self.create_pwgen_group(tab))
         layout.addStretch(1)
         return tab
+
+    def create_pwgen_group(self, parent):
+        """
+        :param parent: The tab the group goes on.
+        :return: The group with the pwgen settings.
+        """
+        group = QGroupBox(self.tr("Use pwgen"), parent)
+        group.setCheckable(True)
+        self.add_field("use_pwgen", group)
+        group_layout = QFormLayout(group)
+        group_layout.addRow(self.tr("pwgen:"), self.path_row("pwgen_executable"))
+        for key, text in (
+            ("avoid_capitals", self.tr("Avoid capital letters")),
+            ("avoid_numbers", self.tr("Avoid numbers")),
+            ("use_symbols", self.tr("Include special symbols")),
+            ("less_random", self.tr("Generate easy to memorize but less secure")),
+        ):
+            group_layout.addRow(self.add_field(key, QCheckBox(text)))
+        return group
 
     def create_template_tab(self):
         """Create the tab with the field template settings."""
@@ -289,6 +309,19 @@ class ConfigDialog(QDialog):
         )
         programs_layout.addRow(self.tr("Signing key:"), signing_edit)
         programs_layout.addRow(self.tr("GnuPG:"), self.path_row("gpg_executable"))
+        programs_layout.addRow(
+            self.tr("GnuPG home:"), self.path_row("gpg_home", directory=True)
+        )
+        self.fields["gpg_home"].setPlaceholderText(self.tr("Default"))
+        programs_layout.addRow(
+            self.tr("SSH agent socket:"), self.path_row("ssh_auth_sock")
+        )
+        self.fields["ssh_auth_sock"].setToolTip(
+            self.tr(
+                "Used for Git over SSH when the session has no SSH_AUTH_SOCK; "
+                "when empty, the ssh socket of a running gpg-agent is used"
+            )
+        )
         programs_layout.addRow(self.tr("Git:"), self.path_row("git_executable"))
         programs_layout.addRow(
             self.tr("qrencode:"), self.path_row("qrencode_executable")
@@ -367,7 +400,7 @@ class ConfigDialog(QDialog):
         """
         for key, widget in self.fields.items():
             value = self.settings_manager.get(key)
-            if isinstance(widget, QCheckBox):
+            if isinstance(widget, (QCheckBox, QGroupBox)):
                 widget.setChecked(bool(value))
             elif isinstance(widget, QSpinBox):
                 widget.setValue(int(value))
@@ -392,7 +425,7 @@ class ConfigDialog(QDialog):
             QMessageBox.warning(self, self.tr("Configuration"), problem)
             return
         for key, widget in self.fields.items():
-            if isinstance(widget, QCheckBox):
+            if isinstance(widget, (QCheckBox, QGroupBox)):
                 self.settings_manager.set(key, widget.isChecked())
             elif isinstance(widget, QSpinBox):
                 self.settings_manager.set(key, widget.value())

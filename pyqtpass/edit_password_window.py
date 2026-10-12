@@ -29,6 +29,7 @@ from PyQt6.QtWidgets import (
 from pyqtpass.entry import build_entry, parse_entry
 from pyqtpass.fields_editor import FieldsEditor
 from pyqtpass.password_store import CommitError
+from pyqtpass.pwgen import pwgen_password
 from pyqtpass.settings_manager import SettingsManager
 from pyqtpass.tasks import run_task
 from pyqtpass.templates import default_template, read_templates
@@ -271,6 +272,10 @@ class EditPasswordDialog(QDialog):
         if not 0 <= charset <= CUSTOM_CHARSET:
             charset = 0
         self.charset_combo_box.setCurrentIndex(charset)
+        if self.settings.get("use_pwgen"):
+            self.charset_combo_box.setToolTip(
+                self.tr("pwgen picks the characters; this is used without it")
+            )
         self.length_edit.setRange(1, 4096)
         self.length_edit.setValue(int(self.settings.get("password_length")))
         settings_layout = QHBoxLayout()
@@ -290,8 +295,10 @@ class EditPasswordDialog(QDialog):
             self.password_edit.setEchoMode(QLineEdit.EchoMode.Password)
 
     def generate_password(self):
-        """Generate a password"""
-        password = random_password(
+        """Generate a password, with pwgen when it is turned on."""
+        password = pwgen_password(
+            self.settings, self.length_edit.value()
+        ) or random_password(
             self.charset_combo_box.currentIndex(),
             self.length_edit.value(),
             self.settings.get("custom_chars"),

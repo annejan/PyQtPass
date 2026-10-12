@@ -109,13 +109,15 @@ class QtPassGUI(StoreActionsMixin, WindowActionsMixin, QMainWindow):
         self.store = None
         self.menu_peek = False
         self.alt_alone = False
-        apply_executables(self.settings)
+        problems = apply_executables(self.settings)
         self.load_store()
         self.init_ui()
         self.restore_settings()
         self.process_output.connect(self.append_process_output)
         self.output_listener = make_output_listener(self)
         executor.add_listener(self.output_listener)
+        for problem in problems:
+            self.show_status(problem, 15000)
         if self.git_enabled() and self.settings.effective("git_pull_on_start"):
             QTimer.singleShot(0, self.on_git_pull)
 
@@ -664,7 +666,8 @@ class QtPassGUI(StoreActionsMixin, WindowActionsMixin, QMainWindow):
         """
         Apply the current settings to the running application.
         """
-        apply_executables(self.settings)
+        for problem in apply_executables(self.settings):
+            self.show_status(problem, 15000)
         if self.settings.get("use_tray_icon"):
             self.ui.tray_icon.show()
         else:

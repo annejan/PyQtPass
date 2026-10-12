@@ -1,5 +1,35 @@
 # Changelog
 
+## Unreleased
+
+### New features
+
+- Field names can be edited in the password dialog, and fields added and
+  removed; template fields keep their fixed name.
+- Templates kept in the store, like QtPass: a `.templates` file in the store
+  root defines named field lists, and a `.default_template` file in a folder
+  (or a parent) picks the one its entries use. The password dialog can switch
+  templates and keeps everything typed.
+- Passwords can be generated with `pwgen`, with the QtPass options (avoid
+  capitals or numbers, symbols, easier to remember). The built-in generator
+  is used when `pwgen` is missing or fails.
+- A GnuPG home other than the default one (System tab).
+- Git over ssh works without an ssh agent in the session: a configured
+  socket, or the ssh socket of a running gpg-agent (on macOS also the launchd
+  one), becomes `SSH_AUTH_SOCK`.
+- Windows: programs inside WSL, configured like `wsl gpg2`, run through
+  `wsl --exec` with Windows paths translated.
+- `pip install .` installs a `pyqtpass` command; `python -m pyqtpass` works.
+  A Linux `.desktop` file and an AppImage build are included.
+
+### Release builds
+
+- File names carry the version and platform; every release has `SHA256SUMS`
+  and a signed build provenance attestation.
+- The macOS app is a folder bundle, so it starts without unpacking itself
+  first.
+- Every GitHub Action is pinned to a commit.
+
 ## 0.3.0
 
 Brings PyQtPass up to date with the QtPass 2.0 feature set.
