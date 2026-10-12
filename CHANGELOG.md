@@ -11,7 +11,28 @@
   file has a `.asc` signature next to it. A workflow re-run never replaces
   the files of a published release.
 - The build jobs can only read the repository, and no job keeps the GitHub
-  token in its checkout.
+  token in its checkout. A release is made from `main` only (a dry run can
+  build any branch), and two runs for one version wait for each other.
+- PyInstaller is pinned (`requirements-build.txt`). The Windows build no
+  longer downloads UPX, which it never actually used.
+
+### Fixes
+
+- A signed move or copy that fails halfway (say, pinentry cancelled) puts
+  the generation record back as it was. It used to forget what it knew of
+  the destination, so a removed signed list there was no longer noticed and
+  new entries were encrypted to the parent's recipients.
+- Quitting while git or a store change runs waits at most a minute in all,
+  instead of a minute for each, shows a window after a second with a
+  "Quit now" button, and never starts a command once it has ended the
+  running ones.
+- Changing recipients can be cancelled; it says which passwords still use
+  the old keys.
+- The store lock follows the folder itself, so two spellings of it on a
+  case-insensitive volume, or a link to it made later, share one lock.
+- Clearer messages: a failed commit after changing recipients no longer
+  repeats itself, and a signing failure during a move is reported like any
+  other store error.
 
 ## 0.4.0
 

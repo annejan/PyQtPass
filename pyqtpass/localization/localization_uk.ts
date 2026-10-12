@@ -855,7 +855,7 @@
         <translation>Буфер обміну очищено</translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="291" />
+        <location filename="../main_window.py" line="295" />
         <location filename="../clipboard_actions.py" line="95" />
         <source>Could not decrypt {}: {}</source>
         <translation type="unfinished" />
@@ -917,98 +917,98 @@
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="457" />
-        <location filename="../store_actions.py" line="373" />
-        <location filename="../main_window.py" line="245" />
+        <location filename="../store_actions.py" line="459" />
+        <location filename="../store_actions.py" line="375" />
+        <location filename="../main_window.py" line="249" />
         <source>No password selected</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="327" />
-        <location filename="../main_window.py" line="273" />
+        <location filename="../store_actions.py" line="329" />
+        <location filename="../main_window.py" line="277" />
         <source>Decrypting {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="337" />
-        <location filename="../main_window.py" line="293" />
+        <location filename="../store_actions.py" line="339" />
+        <location filename="../main_window.py" line="297" />
         <source>Could not decrypt this password entry</source>
         <translation>Не вдалося розшифрувати цей запис пароля</translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="696" />
-        <location filename="../main_window.py" line="419" />
+        <location filename="../main_window.py" line="700" />
+        <location filename="../main_window.py" line="423" />
         <source>PyQtPass</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../main_window.py" line="423" />
+        <location filename="../main_window.py" line="427" />
         <source>Open PyQtPass</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../main_window.py" line="425" />
+        <location filename="../main_window.py" line="429" />
         <source>Exit</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../main_window.py" line="506" />
+        <location filename="../main_window.py" line="510" />
         <source>Filter passwords, Enter searches the content (regex)</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../main_window.py" line="510" />
+        <location filename="../main_window.py" line="514" />
         <source>Type here to filter passwords...</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../main_window.py" line="524" />
+        <location filename="../main_window.py" line="528" />
         <source>Searching...</source>
         <translation>Пошук…</translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="532" />
+        <location filename="../main_window.py" line="536" />
         <source>Search failed: {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../main_window.py" line="541" />
+        <location filename="../main_window.py" line="545" />
         <source>Found {} matches in {} entries</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../main_window.py" line="546" />
+        <location filename="../main_window.py" line="550" />
         <source>No matches found.</source>
         <translation>Збігів не знайдено.</translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="601" />
+        <location filename="../main_window.py" line="605" />
         <source>Store not initialised</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../main_window.py" line="602" />
+        <location filename="../main_window.py" line="606" />
         <source>{} is not a password store yet. Use Users to choose the keys to encrypt it with.</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../main_window.py" line="612" />
+        <location filename="../main_window.py" line="616" />
         <source>Switched to password store {}</source>
         <translation type="unfinished" />
     </message>
     <message>
         <location filename="../window_actions.py" line="227" />
-        <location filename="../main_window.py" line="639" />
+        <location filename="../main_window.py" line="643" />
         <source>About PyQtPass</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../main_window.py" line="640" />
+        <location filename="../main_window.py" line="644" />
         <source>&lt;b&gt;PyQtPass {}&lt;/b&gt;&lt;br&gt;&lt;br&gt;A cross-platform GUI for pass, the standard Unix password manager, written in Python. A port of &lt;a href="https://qtpass.org/"&gt;QtPass&lt;/a&gt;.&lt;br&gt;&lt;br&gt;Please report any issues you might have with this software at &lt;a href="https://github.com/annejan/PyQtPass"&gt;GitHub&lt;/a&gt;.</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../main_window.py" line="662" />
+        <location filename="../main_window.py" line="666" />
         <source># Welcome to PyQtPass!
 
 PyQtPass is your password manager. With it, managing passwords is a breeze.
@@ -1024,257 +1024,267 @@ Check out the [documentation](https://github.com/annejan/PyQtPass/) for more inf
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="74" />
+        <location filename="../main_window.py" line="749" />
+        <source>Finishing git and password store changes...</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../main_window.py" line="752" />
+        <source>Quit now</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../store_actions.py" line="76" />
         <location filename="../store_actions.py" line="47" />
         <source>Re-encrypting passwords...</source>
         <translation>Повторне шифрування паролів...</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="76" />
-        <location filename="../store_actions.py" line="49" />
+        <location filename="../store_actions.py" line="78" />
+        <location filename="../store_actions.py" line="51" />
         <source>Re-encrypted passwords in {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="79" />
-        <location filename="../store_actions.py" line="52" />
+        <location filename="../store_actions.py" line="81" />
+        <location filename="../store_actions.py" line="54" />
         <source>Re-encryption failed</source>
         <translation>Повторне шифрування не вдалося</translation>
     </message>
     <message>
         <location filename="../window_actions.py" line="103" />
-        <location filename="../store_actions.py" line="64" />
+        <location filename="../store_actions.py" line="66" />
         <source>Re-encrypt passwords</source>
         <translation>Перешифрувати паролі</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="65" />
+        <location filename="../store_actions.py" line="67" />
         <source>Re-encrypt all passwords in {} for its current recipients?</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="92" />
+        <location filename="../store_actions.py" line="94" />
         <source>Cancel</source>
         <translation>Скасувати</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="122" />
+        <location filename="../store_actions.py" line="124" />
         <source>Sharing passwords with GPG</source>
         <translation>Спільне використання паролів з GPG</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="123" />
+        <location filename="../store_actions.py" line="125" />
         <source>&lt;h3&gt;Sharing passwords with GPG&lt;/h3&gt;&lt;p&gt;Every folder is encrypted for the keys in its &lt;i&gt;.gpg-id&lt;/i&gt; file. To share a folder:&lt;/p&gt;&lt;ol&gt;&lt;li&gt;Ask the other person for their public key (they can use &lt;i&gt;Export my public key&lt;/i&gt;) and import it in the Users dialog.&lt;/li&gt;&lt;li&gt;Tick their key in &lt;i&gt;Users&lt;/i&gt; for the folder; its passwords are re-encrypted so both of you can read them.&lt;/li&gt;&lt;li&gt;Share the store, for example through a Git remote.&lt;/li&gt;&lt;/ol&gt;</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="157" />
+        <location filename="../store_actions.py" line="159" />
         <source>Copy password</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="162" />
+        <location filename="../store_actions.py" line="164" />
         <source>Copy OTP code</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="166" />
+        <location filename="../store_actions.py" line="168" />
         <source>Open</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="170" />
+        <location filename="../store_actions.py" line="172" />
         <source>Edit</source>
         <translation>Редагувати</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="382" />
-        <location filename="../store_actions.py" line="174" />
+        <location filename="../store_actions.py" line="384" />
+        <location filename="../store_actions.py" line="176" />
         <source>Rename password</source>
         <translation>Перейменувати пароль</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="178" />
+        <location filename="../store_actions.py" line="180" />
         <source>Duplicate</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="202" />
-        <location filename="../store_actions.py" line="182" />
+        <location filename="../store_actions.py" line="204" />
+        <location filename="../store_actions.py" line="184" />
         <source>Delete</source>
         <translation>Видалити</translation>
     </message>
     <message>
         <location filename="../window_actions.py" line="55" />
-        <location filename="../store_actions.py" line="189" />
+        <location filename="../store_actions.py" line="191" />
         <source>Add password</source>
         <translation>Додати пароль</translation>
     </message>
     <message>
         <location filename="../window_actions.py" line="61" />
-        <location filename="../store_actions.py" line="193" />
+        <location filename="../store_actions.py" line="195" />
         <source>Add folder</source>
         <translation>Додати папку</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="379" />
-        <location filename="../store_actions.py" line="198" />
+        <location filename="../store_actions.py" line="381" />
+        <location filename="../store_actions.py" line="200" />
         <source>Rename folder</source>
         <translation>Перейменувати папку</translation>
     </message>
     <message>
         <location filename="../window_actions.py" line="97" />
-        <location filename="../store_actions.py" line="207" />
+        <location filename="../store_actions.py" line="209" />
         <source>Users</source>
         <translation>Користувачі</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="211" />
+        <location filename="../store_actions.py" line="213" />
         <source>Share</source>
         <translation>Поширити</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="214" />
+        <location filename="../store_actions.py" line="216" />
         <source>Re-encrypt all passwords</source>
         <translation>Перешифрувати всі паролі</translation>
     </message>
     <message>
         <location filename="../window_actions.py" line="109" />
-        <location filename="../store_actions.py" line="218" />
+        <location filename="../store_actions.py" line="220" />
         <source>Export my public key...</source>
         <translation>Експортувати мій відкритий ключ...</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="222" />
+        <location filename="../store_actions.py" line="224" />
         <source>Add recipient...</source>
         <translation>Додати одержувача...</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="227" />
+        <location filename="../store_actions.py" line="229" />
         <source>What is this?</source>
         <translation>Що це?</translation>
     </message>
     <message>
         <location filename="../window_actions.py" line="115" />
-        <location filename="../store_actions.py" line="231" />
+        <location filename="../store_actions.py" line="233" />
         <source>Open folder with file manager</source>
         <translation>Відкрити папку за допомогою файлового менеджера</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="268" />
+        <location filename="../store_actions.py" line="270" />
         <source>Working...</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="274" />
+        <location filename="../store_actions.py" line="276" />
         <source>Not committed</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="293" />
+        <location filename="../store_actions.py" line="295" />
         <source>Added password {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="303" />
+        <location filename="../store_actions.py" line="305" />
         <source>New folder</source>
         <translation>Нова папка</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="304" />
+        <location filename="../store_actions.py" line="306" />
         <source>New folder:
 (will be placed in {})</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="316" />
+        <location filename="../store_actions.py" line="318" />
         <source>Added folder {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="317" />
+        <location filename="../store_actions.py" line="319" />
         <source>Failed to create folder</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="363" />
+        <location filename="../store_actions.py" line="365" />
         <source>Saved password {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="380" />
+        <location filename="../store_actions.py" line="382" />
         <source>Rename folder to:</source>
         <translation>Перейменувати папку на: </translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="383" />
+        <location filename="../store_actions.py" line="385" />
         <source>Rename password to:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="392" />
+        <location filename="../store_actions.py" line="394" />
         <source>Renamed {} to {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="395" />
+        <location filename="../store_actions.py" line="397" />
         <source>Rename failed</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="405" />
+        <location filename="../store_actions.py" line="407" />
         <source>Duplicate password</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="406" />
+        <location filename="../store_actions.py" line="408" />
         <source>Copy password to:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="437" />
-        <location filename="../store_actions.py" line="415" />
+        <location filename="../store_actions.py" line="439" />
+        <location filename="../store_actions.py" line="417" />
         <source>Copied {} to {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="440" />
-        <location filename="../store_actions.py" line="418" />
+        <location filename="../store_actions.py" line="442" />
+        <location filename="../store_actions.py" line="420" />
         <source>Copy failed</source>
         <translation>Помилка копіювання</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="445" />
+        <location filename="../store_actions.py" line="447" />
         <source>Moved {} to {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="448" />
+        <location filename="../store_actions.py" line="450" />
         <source>Move failed</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="463" />
+        <location filename="../store_actions.py" line="465" />
         <source>Are you sure you want to delete {} and the whole content?</source>
         <translation>Ви впевнені, що хочете видалити {0} разом з усім вмістом?</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="467" />
+        <location filename="../store_actions.py" line="469" />
         <source>Are you sure you want to delete {}?</source>
         <translation>Ви впевнені, що хочете видалити {0}?</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="472" />
+        <location filename="../store_actions.py" line="474" />
         <source>Confirm Delete</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="484" />
+        <location filename="../store_actions.py" line="486" />
         <source>Deleted {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="485" />
+        <location filename="../store_actions.py" line="487" />
         <source>Delete failed</source>
         <translation>Помилка видалення</translation>
     </message>

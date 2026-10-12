@@ -15,13 +15,19 @@ on:
         default: false
 
 permissions:
-  contents: write
-  actions: read
+  contents: read
+
+# One run per version at a time; a second one waits instead of racing it.
+concurrency:
+  group: release-${{ inputs.version || github.ref_name }}
+  cancel-in-progress: false
 
 # Every action is pinned to a commit; the comment names its release.
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     outputs:
       tag: ${{ steps.tag.outputs.tag }}
       version: ${{ steps.tag.outputs.version }}
@@ -36,6 +42,13 @@ jobs:
         REQUESTED: ${{ inputs.version || github.ref_name }}
         DRY_RUN: ${{ inputs.dry_run && 'true' || 'false' }}
       run: |
+        # A release is made from reviewed code only; a dry run may build
+        # any branch.
+        if [ "$DRY_RUN" != "true" ] && [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ] \
+            && [ "$GITHUB_REF" != "refs/heads/main" ]; then
+          echo "::error::Releases are made from main, not $GITHUB_REF; use dry_run to build other branches"
+          exit 1
+        fi
         if ! [[ "$REQUESTED" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
           echo "::error::'$REQUESTED' is not a version like v0.3.0"
           exit 1
@@ -109,8 +122,7 @@ jobs:
         architecture: 'x64'
     - name: Install dependencies
       run: |
-        pip install -r requirements.txt
-        pip install pyinstaller
+        pip install -r requirements-build.txt
     - name: Setup Qt environment
       uses: jurplel/install-qt-action@a9c63c7c123f3069cff414e7e482d95dfa9d8125 # v4.4.1
       with:
@@ -118,11 +130,6 @@ jobs:
     - name: Compile translations
       shell: bash
       run: lrelease -silent pyqtpass/localization/*.ts
-    - name: Install UPX
-      run: |
-        Invoke-WebRequest -Uri "https://github.com/upx/upx/releases/download/v4.2.1/upx-4.2.1-win64.zip" -OutFile "upx.zip"
-        Expand-Archive "upx.zip" -DestinationPath "upx"
-        echo "${{ github.workspace }}\upx" >> $env:GITHUB_PATH
     - name: Build with PyInstaller
       run: pyinstaller PyQtPass.spec
     - name: Name the program
@@ -151,8 +158,7 @@ jobs:
         python-version: '3.13'
     - name: Install dependencies
       run: |
-        pip install -r requirements.txt
-        pip install pyinstaller
+        pip install -r requirements-build.txt
     - name: Setup Qt environment
       uses: jurplel/install-qt-action@a9c63c7c123f3069cff414e7e482d95dfa9d8125 # v4.4.1
       with:
@@ -194,8 +200,7 @@ jobs:
         sudo apt-get install -y libegl1 libgl1 libxkbcommon0 libdbus-1-3 libglib2.0-0 libfontconfig1
     - name: Install dependencies
       run: |
-        pip install -r requirements.txt
-        pip install pyinstaller
+        pip install -r requirements-build.txt
     - name: Setup Qt environment
       uses: jurplel/install-qt-action@a9c63c7c123f3069cff414e7e482d95dfa9d8125 # v4.4.1
       with:

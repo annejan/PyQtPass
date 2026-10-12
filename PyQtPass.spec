@@ -36,7 +36,7 @@ common = dict(
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,
+    upx=False,
     upx_exclude=[],
     console=False,
     disable_windowed_traceback=False,
@@ -49,7 +49,7 @@ common = dict(
 
 if ONEDIR:
     exe = EXE(pyz, a.scripts, [], exclude_binaries=True, **common)
-    coll = COLLECT(exe, a.binaries, a.datas, strip=False, upx=True, name="PyQtPass")
+    coll = COLLECT(exe, a.binaries, a.datas, strip=False, upx=False, name="PyQtPass")
     if sys.platform == "darwin":
         app = BUNDLE(
             coll,
