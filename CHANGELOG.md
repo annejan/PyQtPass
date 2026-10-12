@@ -21,6 +21,9 @@
   `wsl --exec` with Windows paths translated.
 - `pip install .` installs a `pyqtpass` command; `python -m pyqtpass` works.
   A Linux `.desktop` file and an AppImage build are included.
+- The icon is redrawn as clean vector shapes (it was a traced bitmap of 270
+  KB with visible seams); `scripts/update_icons.py` makes the PNG, ICO and
+  ICNS files from it.
 
 ### Release builds
 

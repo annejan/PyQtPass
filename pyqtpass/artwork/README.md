@@ -2,34 +2,34 @@
 
 # Icon 
 
-## Processing Script
+The icon is a heart-shaped padlock holding the two Python snakes, drawn as
+plain vector shapes in `icon.svg` (gradients only, no filters, so Qt draws
+it the same way as other SVG viewers). Every other icon file is made from it.
 
-### Overview
-This repository contains a Bash script for converting and resizing an SVG image into various PNG formats and icon files. It is designed to generate icons suitable for different platforms and resolutions, including Windows and macOS.
+## Making the icon files
 
-### Prerequisites
-- [Inkscape](https://inkscape.org/)
-- [SVGO (SVG Optimizer)](https://github.com/svg/svgo)
-- [OptiPNG](http://optipng.sourceforge.net/)
-- [ImageMagick](https://imagemagick.org/)
-- [libicns](https://icns.sourceforge.io/)
+With PyQt6 and Pillow (both in `requirements-dev.txt`), from the repository
+root:
 
-Ensure these tools are installed on your system before running the script.
+```bash
+python scripts/update_icons.py
+```
 
-### Usage
-1. Place your SVG file named `icon.svg` in the same directory as the script.
-2. Run the script with:
-   ```bash
-   ./updateicons.sh
-   ```
-3. The script will generate various PNG files, an ICO file for Windows, and an ICNS file for macOS.
+It writes `icon.png` (512), `icon@2x.png` (1024), `doc-icon.png` (55),
+`icon.ico` (16 to 256) and `icon.icns`.
+
+`./updateicons.sh` in this folder does the same with
+[Inkscape](https://inkscape.org/), [SVGO](https://github.com/svg/svgo),
+[OptiPNG](http://optipng.sourceforge.net/),
+[ImageMagick](https://imagemagick.org/) and
+[libicns](https://icns.sourceforge.io/).
 
 ## Contributions
 Feel free to fork this repository and contribute by submitting a pull request.
 
 ## License
 
-The PyQtPass logo currently in flux and licensed under the WTFPL
+The PyQtPass logo is licensed under the WTFPL
 
 The Lato font by Lukasz Dziedzic is released under the SIL Open Font License
 
