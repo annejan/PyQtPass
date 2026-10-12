@@ -17,6 +17,13 @@ class StoreError(Exception):
     """Raised when a password store operation fails."""
 
 
+class PullConflictError(StoreError):
+    """
+    A pull before a change left the store with unmerged files, so the
+    change was not made.
+    """
+
+
 class CommitError(StoreError):
     """
     The change itself was made, but committing it to git failed; the

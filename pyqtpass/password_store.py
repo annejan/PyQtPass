@@ -35,6 +35,7 @@ from pyqtpass.store_base import (  # pylint: disable=unused-import
     GPG_ID,
     STAGING_PREFIX,
     CommitError,
+    PullConflictError,
     StoreError,
     locked,
     store_lock,
@@ -819,6 +820,31 @@ class PasswordStore(TransferMixin):
         :return: Tuple of (success, output).
         """
         return git_utils.git_pull(self.store_dir)
+
+    @locked
+    def pull_before_change(self):
+        """
+        Pull before a change that should start from the latest state of the
+        remote, like QtPass before an edit or a re-encrypt. A pull that
+        cannot reach the remote leaves the store as it was, and the change
+        goes on; one that stops in a merge leaves conflicts, and the change
+        must not be made on top of them.
+
+        :return: Tuple of (success, output); (True, '') without a remote.
+        :raises PullConflictError: When the store has unmerged files.
+        """
+        if not git_utils.has_remote(self.store_dir):
+            return True, ""
+        success, output = git_utils.git_pull(self.store_dir)
+        if not success and git_utils.has_unmerged_files(self.store_dir):
+            raise PullConflictError(
+                translate(
+                    "PasswordStore",
+                    "The pull left the store with unmerged files. Resolve the "
+                    "conflict with git first.",
+                )
+            )
+        return success, output
 
     @locked
     def push(self, only_with_remote=False):

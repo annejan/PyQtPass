@@ -264,11 +264,13 @@ class ConfigDialog(QDialog):
                 "auto_push", QCheckBox(self.tr("Automatically push local changes"))
             )
         )
-        git_layout.addRow(
-            self.add_field(
-                "git_pull_on_start", QCheckBox(self.tr("Update (git pull) on startup"))
+        auto_pull = QCheckBox(self.tr("Automatically pull"))
+        auto_pull.setToolTip(
+            self.tr(
+                "Pull on startup, before editing a password and before " "re-encrypting"
             )
         )
+        git_layout.addRow(self.add_field("git_pull_on_start", auto_pull))
         layout.addWidget(git_group)
         layout.addStretch(1)
         return tab

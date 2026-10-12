@@ -9,7 +9,7 @@ import pytest
 
 from pyqtpass import git_utils
 from pyqtpass import gpg_utils
-from pyqtpass.password_store import PasswordStore, StoreError
+from pyqtpass.password_store import PasswordStore, PullConflictError, StoreError
 
 
 def test_set_and_get(store):
@@ -182,6 +182,52 @@ def make_repo(path):
         ("config", "commit.gpgsign", "false"),
     ):
         git_utils.run_git(path, *args)
+
+
+def clone_store(upstream, path):
+    """Clone upstream to path, set up to commit and to merge on pull."""
+    git_utils.run_git(os.path.dirname(path), "clone", upstream, path)
+    for args in (
+        ("config", "user.email", "t@example.org"),
+        ("config", "user.name", "Test"),
+        ("config", "commit.gpgsign", "false"),
+        ("config", "pull.rebase", "false"),
+    ):
+        git_utils.run_git(path, *args)
+    return PasswordStore(path)
+
+
+def test_pull_before_change_without_a_remote(tmp_path, key_id):
+    repo = str(tmp_path / "repo")
+    make_repo(repo)
+    PasswordStore(repo).init([key_id])
+    assert PasswordStore(repo).pull_before_change() == (True, "")
+
+
+def test_pull_before_change_gets_the_remote_changes(tmp_path, key_id):
+    upstream = str(tmp_path / "upstream")
+    make_repo(upstream)
+    PasswordStore(upstream).init([key_id])
+    local = clone_store(upstream, str(tmp_path / "local"))
+    PasswordStore(upstream).set_key("new", "pw")
+    ok, _output = local.pull_before_change()
+    assert ok
+    assert local.get_key("new") == "pw\n"
+
+
+def test_pull_before_change_refuses_to_go_on_after_a_conflict(tmp_path, key_id):
+    upstream = str(tmp_path / "upstream")
+    make_repo(upstream)
+    PasswordStore(upstream).init([key_id])
+    PasswordStore(upstream).set_key("entry", "one")
+    local = clone_store(upstream, str(tmp_path / "local"))
+    PasswordStore(upstream).set_key("entry", "two", force=True)
+    local.set_key("entry", "three", force=True)
+    with pytest.raises(PullConflictError):
+        local.pull_before_change()
+    # Still refused while the conflict is there.
+    with pytest.raises(PullConflictError):
+        local.pull_before_change()
 
 
 def test_commit_leaves_other_staged_changes(tmp_path, key_id):

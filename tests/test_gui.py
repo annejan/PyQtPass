@@ -152,6 +152,35 @@ def test_reencrypt_in_background(qapp, window, store, key_id, monkeypatch):
     assert store.get_key("team/x") == "pw\n"
 
 
+def test_edit_pulls_first_and_stops_on_a_conflict(qapp, window, monkeypatch):
+    from pyqtpass.password_store import (
+        PullConflictError,
+    )  # pylint: disable=import-outside-toplevel
+
+    pulls, warnings, opened = [], [], []
+
+    def conflicted():
+        pulls.append(True)
+        raise PullConflictError("unmerged")
+
+    monkeypatch.setattr(window, "git_enabled", lambda: True)
+    monkeypatch.setattr(window.store, "pull_before_change", conflicted)
+    monkeypatch.setattr(window, "open_edit_dialog", lambda *args: opened.append(args))
+    monkeypatch.setattr(
+        "pyqtpass.store_actions.QMessageBox.warning",
+        lambda _parent, title, _text: warnings.append(title),
+    )
+    window.settings.set("git_pull_on_start", False)
+    window.edit_item(find_index(window, "other"))
+    wait_for_tasks(qapp)
+    assert not pulls and len(opened) == 1
+    window.settings.set("git_pull_on_start", True)
+    window.edit_item(find_index(window, "other"))
+    wait_for_tasks(qapp)
+    assert pulls and len(opened) == 1
+    assert warnings == ["Git pull failed"]
+
+
 def test_menu_bar_toggle_and_peek(qapp, window):
     window.actions["show_menu_bar"].setChecked(False)
     assert not window.settings.get("show_menu_bar")

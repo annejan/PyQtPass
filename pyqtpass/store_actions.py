@@ -19,7 +19,7 @@ from PyQt6.QtWidgets import (
 
 from pyqtpass.edit_password_window import EditPasswordDialog
 from pyqtpass.keygen_dialog import ExportPublicKeyDialog
-from pyqtpass.password_store import CommitError
+from pyqtpass.password_store import CommitError, PullConflictError
 from pyqtpass.tasks import run_task
 from pyqtpass.users_dialog import UsersDialog
 from pyqtpass.utilities import get_item_full_path, is_folder_item
@@ -29,6 +29,26 @@ class StoreActionsMixin:
     """
     Store changing actions of QtPassGUI.
     """
+
+    def pulling_first(self, function):
+        """
+        Wrap a worker function so it pulls the store first when automatic
+        pull is on, like QtPass before an edit or a re-encrypt.
+
+        :param function: Callable(progress, cancelled).
+        :return: Callable(progress, cancelled).
+        """
+        if not (self.git_enabled() and self.settings.effective("git_pull_on_start")):
+            return function
+        store = self.store
+
+        def pulled(progress, cancelled):
+            success, output = store.pull_before_change()
+            if not success:
+                self.verbose_print(output)
+            return function(progress, cancelled)
+
+        return pulled
 
     def open_users_dialog(self, index=None):
         """
@@ -45,8 +65,10 @@ class StoreActionsMixin:
         store = self.store
         self.run_with_progress(
             QCoreApplication.translate("QtPassGUI", "Re-encrypting passwords..."),
-            lambda progress, cancelled: store.init(
-                keys, folder, progress=progress, cancelled=cancelled
+            self.pulling_first(
+                lambda progress, cancelled: store.init(
+                    keys, folder, progress=progress, cancelled=cancelled
+                )
             ),
             QCoreApplication.translate(
                 "QtPassGUI", "Re-encrypted passwords in {}"
@@ -74,7 +96,9 @@ class StoreActionsMixin:
         store = self.store
         self.run_with_progress(
             QCoreApplication.translate("QtPassGUI", "Re-encrypting passwords..."),
-            lambda progress, cancelled: store.reencrypt(folder, progress, cancelled),
+            self.pulling_first(
+                lambda progress, cancelled: store.reencrypt(folder, progress, cancelled)
+            ),
             QCoreApplication.translate(
                 "QtPassGUI", "Re-encrypted passwords in {}"
             ).format(folder or "/"),
@@ -334,6 +358,11 @@ class StoreActionsMixin:
             if isinstance(error, FileNotFoundError):
                 self.verbose_print(f"Cannot retrieve a non-existent key: {path}")
                 return
+            if isinstance(error, PullConflictError):
+                self.store_error(
+                    QCoreApplication.translate("QtPassGUI", "Git pull failed"), error
+                )
+                return
             if error is not None:
                 self.store_error(
                     QCoreApplication.translate(
@@ -344,7 +373,10 @@ class StoreActionsMixin:
                 return
             self.open_edit_dialog(store, path, data)
 
-        run_task(lambda _progress, _cancelled: store.get_key(path), decrypted)
+        run_task(
+            self.pulling_first(lambda _progress, _cancelled: store.get_key(path)),
+            decrypted,
+        )
 
     def open_edit_dialog(self, store, path, data):
         """
