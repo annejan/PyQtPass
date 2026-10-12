@@ -4,7 +4,7 @@
 <context>
     <name>ConfigDialog</name>
     <message>
-        <location filename="../config_dialog.py" line="430" />
+        <location filename="../config_dialog.py" line="432" />
         <location filename="../config_dialog.py" line="60" />
         <source>Configuration</source>
         <translation>Konfiguration</translation>
@@ -195,7 +195,7 @@
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="330" />
+        <location filename="../config_dialog.py" line="332" />
         <location filename="../config_dialog.py" line="254" />
         <source>Git:</source>
         <translation>git:</translation>
@@ -216,137 +216,142 @@
         <translation type="unfinished" />
     </message>
     <message>
+        <location filename="../config_dialog.py" line="267" />
+        <source>Automatically pull</source>
+        <translation>Automatisches "Pull"</translation>
+    </message>
+    <message>
         <location filename="../config_dialog.py" line="269" />
-        <source>Update (git pull) on startup</source>
+        <source>Pull on startup, before editing a password and before re-encrypting</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="284" />
+        <location filename="../config_dialog.py" line="286" />
         <source>System:</source>
         <translation>System:</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="287" />
+        <location filename="../config_dialog.py" line="289" />
         <source>Use Tray icon</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="290" />
+        <location filename="../config_dialog.py" line="292" />
         <source>Start minimized</source>
         <translation>Minimiert starten</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="293" />
+        <location filename="../config_dialog.py" line="295" />
         <source>Hide on close</source>
         <translation>Nur minimieren nicht beenden</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="296" />
+        <location filename="../config_dialog.py" line="298" />
         <source>Always on top</source>
         <translation>Immer im Vordergrund</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="300" />
+        <location filename="../config_dialog.py" line="302" />
         <source>Locations:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="303" />
+        <location filename="../config_dialog.py" line="305" />
         <source>Password store:</source>
         <translation>Kennwortspeicher:</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="307" />
+        <location filename="../config_dialog.py" line="309" />
         <source>No signing</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="309" />
+        <location filename="../config_dialog.py" line="311" />
         <source>Full fingerprints of the keys that sign .gpg-id files, like PASSWORD_STORE_SIGNING_KEY; nothing is encrypted to a list whose signature does not verify</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="315" />
+        <location filename="../config_dialog.py" line="317" />
         <source>Signing key:</source>
         <translation>Signierschlüssel:</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="316" />
+        <location filename="../config_dialog.py" line="318" />
         <source>GnuPG:</source>
         <translation>GnuPG:</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="318" />
+        <location filename="../config_dialog.py" line="320" />
         <source>GnuPG home:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="320" />
+        <location filename="../config_dialog.py" line="322" />
         <source>Default</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="322" />
+        <location filename="../config_dialog.py" line="324" />
         <source>SSH agent socket:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="325" />
+        <location filename="../config_dialog.py" line="327" />
         <source>Used for Git over SSH when the session has no SSH_AUTH_SOCK; when empty, the ssh socket of a running gpg-agent is used</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="332" />
+        <location filename="../config_dialog.py" line="334" />
         <source>qrencode:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="334" />
+        <location filename="../config_dialog.py" line="336" />
         <source>Use the pass command-line tool</source>
         <translation>Das Kommandozeilenwerkzeug pass verwenden</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="336" />
+        <location filename="../config_dialog.py" line="338" />
         <source>Run the pass script for every change instead of gpg and git directly, for pass extensions and hooks</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="342" />
+        <location filename="../config_dialog.py" line="344" />
         <source>pass:</source>
         <translation>pass:</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="357" />
+        <location filename="../config_dialog.py" line="359" />
         <source>Found automatically</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="360" />
+        <location filename="../config_dialog.py" line="362" />
         <source>Browse</source>
         <translation>Durchsuchen</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="364" />
+        <location filename="../config_dialog.py" line="366" />
         <source>Select folder</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="367" />
+        <location filename="../config_dialog.py" line="369" />
         <source>Select executable</source>
         <translation>Ausführbare Datei auswählen</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="382" />
+        <location filename="../config_dialog.py" line="384" />
         <source>OK</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="384" />
+        <location filename="../config_dialog.py" line="386" />
         <source>Cancel</source>
         <translation>Abbrechen</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="397" />
+        <location filename="../config_dialog.py" line="399" />
         <source>The signing key must be full fingerprints (40 or 64 hexadecimal digits), separated by spaces.</source>
         <translation type="unfinished" />
     </message>
@@ -867,47 +872,47 @@
 </context><context>
     <name>PasswordStore</name>
     <message>
-        <location filename="../password_store.py" line="116" />
+        <location filename="../password_store.py" line="117" />
         <source>{} would resolve outside the password store</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../password_store.py" line="135" />
+        <location filename="../password_store.py" line="136" />
         <source>{} is, or lies behind, a symbolic link; links inside the password store are not followed</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../password_store.py" line="150" />
+        <location filename="../password_store.py" line="151" />
         <source>An entry needs a name</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../password_store.py" line="268" />
+        <location filename="../password_store.py" line="269" />
         <source>The recipient list of {} is a link or not a file. While a signing key is configured the folder does not fall back to its parent's list; a holder of the signing key saves the recipients in Users again.</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../password_store.py" line="287" />
+        <location filename="../password_store.py" line="288" />
         <source>The recipient list of {} names no key.</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../password_store.py" line="299" />
+        <location filename="../password_store.py" line="300" />
         <source>The signed recipient list of {} was removed; its passwords are not encrypted to the parent folder's keys instead. A holder of the signing key saves the recipients in Users again.</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../password_store.py" line="326" />
+        <location filename="../password_store.py" line="327" />
         <source>You must initialise the password store first (no .gpg-id file found)</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../password_store.py" line="386" />
+        <location filename="../password_store.py" line="387" />
         <source>gpg failed to decrypt</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../password_store.py" line="418" />
+        <location filename="../password_store.py" line="419" />
         <source>gpg failed to encrypt</source>
         <translation type="unfinished" />
     </message>
@@ -915,68 +920,73 @@
         <location filename="../store_transfer.py" line="47" />
         <location filename="../real_pass.py" line="109" />
         <location filename="../real_pass.py" line="67" />
-        <location filename="../password_store.py" line="549" />
-        <location filename="../password_store.py" line="436" />
+        <location filename="../password_store.py" line="550" />
+        <location filename="../password_store.py" line="437" />
         <source>{} is not in the password store</source>
         <translation type="unfinished" />
     </message>
     <message>
         <location filename="../store_transfer.py" line="57" />
         <location filename="../real_pass.py" line="83" />
-        <location filename="../password_store.py" line="481" />
-        <location filename="../password_store.py" line="458" />
+        <location filename="../password_store.py" line="482" />
+        <location filename="../password_store.py" line="459" />
         <source>{} already exists</source>
         <translation type="unfinished" />
     </message>
     <message>
         <location filename="../real_pass.py" line="105" />
-        <location filename="../password_store.py" line="536" />
+        <location filename="../password_store.py" line="537" />
         <source>{} is not empty</source>
         <translation type="unfinished" />
     </message>
     <message>
         <location filename="../real_pass.py" line="133" />
-        <location filename="../password_store.py" line="593" />
+        <location filename="../password_store.py" line="594" />
         <source>At least one key is needed</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../password_store.py" line="601" />
+        <location filename="../password_store.py" line="602" />
         <source>{} is a symbolic link</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../password_store.py" line="618" />
+        <location filename="../password_store.py" line="619" />
         <source>it was cancelled</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../password_store.py" line="627" />
+        <location filename="../password_store.py" line="628" />
         <source>The recipients were changed, but re-encrypting stopped: {0}. Committing what was done failed too: {1}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../password_store.py" line="634" />
+        <location filename="../password_store.py" line="635" />
         <source>The recipients were changed and every password was re-encrypted for them, but git commit failed: {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../password_store.py" line="643" />
+        <location filename="../password_store.py" line="644" />
         <source>The recipients were changed, but re-encrypting stopped: {}. Some passwords still use the old keys; use Re-encrypt once this is fixed.</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../password_store.py" line="667" />
+        <location filename="../password_store.py" line="668" />
         <source>The recipient list of /{} is signed. Configure the signing key (Settings, the profile, or PASSWORD_STORE_SIGNING_KEY) to change its recipients; an unsigned list would break the folder for everyone who verifies it.</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../password_store.py" line="808" />
+        <location filename="../password_store.py" line="809" />
         <source>The change was made, but git commit failed: {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../password_store.py" line="843" />
+        <location filename="../password_store.py" line="841" />
+        <source>The pull left the store with unmerged files. Resolve the conflict with git first.</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../password_store.py" line="869" />
         <source>git init failed: {}</source>
         <translation type="unfinished" />
     </message>
@@ -1059,8 +1069,8 @@
     </message>
     <message>
         <location filename="../profiles_editor.py" line="95" />
-        <source>Pull on startup:</source>
-        <translation type="unfinished" />
+        <source>Automatically pull:</source>
+        <translation>Automatisches "Pull":</translation>
     </message>
     <message>
         <location filename="../profiles_editor.py" line="99" />
@@ -1178,6 +1188,7 @@
         <translation type="unfinished" />
     </message>
     <message>
+        <location filename="../store_actions.py" line="363" />
         <location filename="../git_actions.py" line="80" />
         <source>Git pull failed</source>
         <translation>Git pull fehlgeschlagen</translation>
@@ -1199,20 +1210,20 @@
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="459" />
-        <location filename="../store_actions.py" line="375" />
+        <location filename="../store_actions.py" line="491" />
+        <location filename="../store_actions.py" line="407" />
         <location filename="../main_window.py" line="249" />
         <source>No password selected</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="329" />
+        <location filename="../store_actions.py" line="353" />
         <location filename="../main_window.py" line="277" />
         <source>Decrypting {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="339" />
+        <location filename="../store_actions.py" line="368" />
         <location filename="../main_window.py" line="297" />
         <source>Could not decrypt this password entry</source>
         <translation>Konnte diesen Passworteintrag nicht entschlüsseln</translation>
@@ -1316,257 +1327,257 @@ Check out the [documentation](https://github.com/annejan/PyQtPass/) for more inf
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="76" />
-        <location filename="../store_actions.py" line="47" />
+        <location filename="../store_actions.py" line="98" />
+        <location filename="../store_actions.py" line="67" />
         <source>Re-encrypting passwords...</source>
         <translation>Kennwörter werden neu verschlüsselt...</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="78" />
-        <location filename="../store_actions.py" line="51" />
+        <location filename="../store_actions.py" line="102" />
+        <location filename="../store_actions.py" line="73" />
         <source>Re-encrypted passwords in {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="81" />
-        <location filename="../store_actions.py" line="54" />
+        <location filename="../store_actions.py" line="105" />
+        <location filename="../store_actions.py" line="76" />
         <source>Re-encryption failed</source>
         <translation>Die erneute Verschlüsselung ist fehlgeschlagen</translation>
     </message>
     <message>
         <location filename="../window_actions.py" line="103" />
-        <location filename="../store_actions.py" line="66" />
+        <location filename="../store_actions.py" line="88" />
         <source>Re-encrypt passwords</source>
         <translation>Passwörter neu verschlüsseln</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="67" />
+        <location filename="../store_actions.py" line="89" />
         <source>Re-encrypt all passwords in {} for its current recipients?</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="94" />
+        <location filename="../store_actions.py" line="118" />
         <source>Cancel</source>
         <translation>Abbrechen</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="124" />
+        <location filename="../store_actions.py" line="148" />
         <source>Sharing passwords with GPG</source>
         <translation>Passwörter mit GPG teilen</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="125" />
+        <location filename="../store_actions.py" line="149" />
         <source>&lt;h3&gt;Sharing passwords with GPG&lt;/h3&gt;&lt;p&gt;Every folder is encrypted for the keys in its &lt;i&gt;.gpg-id&lt;/i&gt; file. To share a folder:&lt;/p&gt;&lt;ol&gt;&lt;li&gt;Ask the other person for their public key (they can use &lt;i&gt;Export my public key&lt;/i&gt;) and import it in the Users dialog.&lt;/li&gt;&lt;li&gt;Tick their key in &lt;i&gt;Users&lt;/i&gt; for the folder; its passwords are re-encrypted so both of you can read them.&lt;/li&gt;&lt;li&gt;Share the store, for example through a Git remote.&lt;/li&gt;&lt;/ol&gt;</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="159" />
+        <location filename="../store_actions.py" line="183" />
         <source>Copy password</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="164" />
+        <location filename="../store_actions.py" line="188" />
         <source>Copy OTP code</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="168" />
+        <location filename="../store_actions.py" line="192" />
         <source>Open</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="172" />
+        <location filename="../store_actions.py" line="196" />
         <source>Edit</source>
         <translation>Bearbeiten</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="384" />
-        <location filename="../store_actions.py" line="176" />
+        <location filename="../store_actions.py" line="416" />
+        <location filename="../store_actions.py" line="200" />
         <source>Rename password</source>
         <translation>Kennwort umbenennen</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="180" />
+        <location filename="../store_actions.py" line="204" />
         <source>Duplicate</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="204" />
-        <location filename="../store_actions.py" line="184" />
+        <location filename="../store_actions.py" line="228" />
+        <location filename="../store_actions.py" line="208" />
         <source>Delete</source>
         <translation>Löschen</translation>
     </message>
     <message>
         <location filename="../window_actions.py" line="55" />
-        <location filename="../store_actions.py" line="191" />
+        <location filename="../store_actions.py" line="215" />
         <source>Add password</source>
         <translation>Kennwort hinzufügen</translation>
     </message>
     <message>
         <location filename="../window_actions.py" line="61" />
-        <location filename="../store_actions.py" line="195" />
+        <location filename="../store_actions.py" line="219" />
         <source>Add folder</source>
         <translation>Ordner hinzufügen</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="381" />
-        <location filename="../store_actions.py" line="200" />
+        <location filename="../store_actions.py" line="413" />
+        <location filename="../store_actions.py" line="224" />
         <source>Rename folder</source>
         <translation>Ordner umbenennen</translation>
     </message>
     <message>
         <location filename="../window_actions.py" line="97" />
-        <location filename="../store_actions.py" line="209" />
+        <location filename="../store_actions.py" line="233" />
         <source>Users</source>
         <translation>Benutzer</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="213" />
+        <location filename="../store_actions.py" line="237" />
         <source>Share</source>
         <translation>Teilen</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="216" />
+        <location filename="../store_actions.py" line="240" />
         <source>Re-encrypt all passwords</source>
         <translation>Alle Passwörter neu verschlüsseln</translation>
     </message>
     <message>
         <location filename="../window_actions.py" line="109" />
-        <location filename="../store_actions.py" line="220" />
+        <location filename="../store_actions.py" line="244" />
         <source>Export my public key...</source>
         <translation>Meinen öffentlichen Schlüssel exportieren …</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="224" />
+        <location filename="../store_actions.py" line="248" />
         <source>Add recipient...</source>
         <translation>Empfänger hinzufügen …</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="229" />
+        <location filename="../store_actions.py" line="253" />
         <source>What is this?</source>
         <translation>Was ist das?</translation>
     </message>
     <message>
         <location filename="../window_actions.py" line="115" />
-        <location filename="../store_actions.py" line="233" />
+        <location filename="../store_actions.py" line="257" />
         <source>Open folder with file manager</source>
         <translation>Öffnen Sie den Ordner mit dem Dateimanager</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="270" />
+        <location filename="../store_actions.py" line="294" />
         <source>Working...</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="276" />
+        <location filename="../store_actions.py" line="300" />
         <source>Not committed</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="295" />
+        <location filename="../store_actions.py" line="319" />
         <source>Added password {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="305" />
+        <location filename="../store_actions.py" line="329" />
         <source>New folder</source>
         <translation>Neuer Ordner</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="306" />
+        <location filename="../store_actions.py" line="330" />
         <source>New folder:
 (will be placed in {})</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="318" />
+        <location filename="../store_actions.py" line="342" />
         <source>Added folder {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="319" />
+        <location filename="../store_actions.py" line="343" />
         <source>Failed to create folder</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="365" />
+        <location filename="../store_actions.py" line="397" />
         <source>Saved password {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="382" />
+        <location filename="../store_actions.py" line="414" />
         <source>Rename folder to:</source>
         <translation>Ordner umbenennen in: </translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="385" />
+        <location filename="../store_actions.py" line="417" />
         <source>Rename password to:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="394" />
+        <location filename="../store_actions.py" line="426" />
         <source>Renamed {} to {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="397" />
+        <location filename="../store_actions.py" line="429" />
         <source>Rename failed</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="407" />
+        <location filename="../store_actions.py" line="439" />
         <source>Duplicate password</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="408" />
+        <location filename="../store_actions.py" line="440" />
         <source>Copy password to:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="439" />
-        <location filename="../store_actions.py" line="417" />
+        <location filename="../store_actions.py" line="471" />
+        <location filename="../store_actions.py" line="449" />
         <source>Copied {} to {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="442" />
-        <location filename="../store_actions.py" line="420" />
+        <location filename="../store_actions.py" line="474" />
+        <location filename="../store_actions.py" line="452" />
         <source>Copy failed</source>
         <translation>Kopieren fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="447" />
+        <location filename="../store_actions.py" line="479" />
         <source>Moved {} to {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="450" />
+        <location filename="../store_actions.py" line="482" />
         <source>Move failed</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="465" />
+        <location filename="../store_actions.py" line="497" />
         <source>Are you sure you want to delete {} and the whole content?</source>
         <translation>Möchten Sie {0} samt dem gesamten Inhalt wirklich löschen?</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="469" />
+        <location filename="../store_actions.py" line="501" />
         <source>Are you sure you want to delete {}?</source>
         <translation>Sind Sie sicher, dass Sie {0} löschen wollen?</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="474" />
+        <location filename="../store_actions.py" line="506" />
         <source>Confirm Delete</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="486" />
+        <location filename="../store_actions.py" line="518" />
         <source>Deleted {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="487" />
+        <location filename="../store_actions.py" line="519" />
         <source>Delete failed</source>
         <translation>Löschen fehlgeschlagen</translation>
     </message>

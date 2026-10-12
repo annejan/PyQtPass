@@ -92,7 +92,7 @@ class ProfilesEditor(QWidget):
         labels = {
             "use_git": self.tr("Use Git:"),
             "auto_push": self.tr("Automatically push:"),
-            "git_pull_on_start": self.tr("Pull on startup:"),
+            "git_pull_on_start": self.tr("Automatically pull:"),
         }
         for key in PROFILE_OVERRIDES:
             box = QComboBox(self)
