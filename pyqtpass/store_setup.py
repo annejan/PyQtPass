@@ -10,7 +10,7 @@ from pyqtpass import git_utils
 from pyqtpass import gpg_utils
 from pyqtpass.first_run_wizard import FirstRunWizard
 from pyqtpass.gpgid_trust import GenerationRecord
-from pyqtpass.password_store import PasswordStore
+from pyqtpass.password_store import PasswordStore, StoreError
 from pyqtpass.real_pass import RealPassStore, find_pass
 from pyqtpass.settings_manager import profile_options
 
@@ -45,6 +45,45 @@ def make_store(settings, store_dir=None):
     if settings.get("use_pass") and pass_bin:
         return RealPassStore(store_dir, pass_bin, **options)
     return PasswordStore(store_dir, **options)
+
+
+def make_profile_store(settings, name):
+    """
+    Open the store of a profile with that profile's git and signing
+    settings, without switching to it.
+
+    :param settings: The SettingsManager.
+    :param name: The profile name.
+    :return: A PasswordStore or RealPassStore.
+    """
+    previous = settings.get("current_profile")
+    settings.set("current_profile", name)
+    try:
+        return make_store(settings)
+    finally:
+        settings.set("current_profile", previous)
+
+
+def set_up_store(store, gpg_ids):
+    """
+    Set up a new store like QtPass does for a new profile: write .gpg-id
+    for the keys, and with git on put it under git and commit it.
+
+    :param store: The PasswordStore of the new store.
+    :param gpg_ids: The key ids to encrypt for.
+    :raise StoreError: When git cannot commit or the list cannot be written.
+    """
+    if store.use_git:
+        # Checked before anything is written, like the first-run wizard: a
+        # list that cannot be committed would leave a half set up store.
+        known, complaint = git_utils.has_identity(store.store_dir)
+        if not known:
+            raise StoreError(complaint)
+        if not git_utils.is_git_repo(store.store_dir):
+            success, output = git_utils.git_init(store.store_dir)
+            if not success:
+                raise StoreError(output)
+    store.init(gpg_ids)
 
 
 def apply_executables(settings):

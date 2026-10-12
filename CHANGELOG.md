@@ -18,6 +18,10 @@
   the gpg key generation parameters (key type, curve, expiry and so on)
   before the key is made. Name and e-mail stay in step with the fields, and
   the passphrase is added when the key is generated, never shown there.
+- A profile added in the configuration dialog gets its store set up, like
+  QtPass: PyQtPass offers to create the folder, asks which keys to encrypt
+  for and writes .gpg-id, and with Git on puts the store under git and
+  commits it. Renaming a profile doesn't count as a new store.
 
 ### Search
 

@@ -4,375 +4,405 @@
 <context>
     <name>ConfigDialog</name>
     <message>
-        <location filename="../config_dialog.py" line="485" />
-        <location filename="../config_dialog.py" line="88" />
+        <location filename="../config_dialog.py" line="497" />
+        <location filename="../config_dialog.py" line="100" />
         <source>Configuration</source>
         <translation>Usanidi</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="91" />
+        <location filename="../config_dialog.py" line="103" />
         <source>Behaviour</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="92" />
+        <location filename="../config_dialog.py" line="104" />
         <source>Password Generation</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="93" />
+        <location filename="../config_dialog.py" line="105" />
         <source>Templates</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="94" />
+        <location filename="../config_dialog.py" line="106" />
         <source>Git</source>
         <translation>Git</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="95" />
+        <location filename="../config_dialog.py" line="107" />
         <source>Profiles</source>
         <translation>Wasifu</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="96" />
+        <location filename="../config_dialog.py" line="108" />
         <source>System</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="128" />
+        <location filename="../config_dialog.py" line="140" />
         <source>Tree view behavior:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="131" />
+        <location filename="../config_dialog.py" line="143" />
         <source>Select is open</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="133" />
+        <location filename="../config_dialog.py" line="145" />
         <source>Search the content of passwords too</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="135" />
+        <location filename="../config_dialog.py" line="147" />
         <source>Pressing Enter in the search box decrypts every entry and shows the ones whose content matches the regular expression</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="143" />
+        <location filename="../config_dialog.py" line="155" />
         <source>Content panel behavior:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="146" />
+        <location filename="../config_dialog.py" line="158" />
         <source>Hide content</source>
         <translation>Ficha maudhui</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="149" />
+        <location filename="../config_dialog.py" line="161" />
         <source>Hide password</source>
         <translation>Ficha nenosiri</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="152" />
+        <location filename="../config_dialog.py" line="164" />
         <source>Use monospace font</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="155" />
+        <location filename="../config_dialog.py" line="167" />
         <source>Display content as is</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="158" />
+        <location filename="../config_dialog.py" line="170" />
         <source>No line wrapping</source>
         <translation>Usifungie mistari</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="162" />
+        <location filename="../config_dialog.py" line="174" />
         <source>Show one-time passwords (TOTP)</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="168" />
+        <location filename="../config_dialog.py" line="180" />
         <source>Offer QR codes (needs qrencode)</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="173" />
+        <location filename="../config_dialog.py" line="185" />
         <source>Autoclear panel after:</source>
         <translation>Futa paneli kiotomatiki baada ya:</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="179" />
+        <location filename="../config_dialog.py" line="191" />
         <source>Clipboard behavior:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="185" />
+        <location filename="../config_dialog.py" line="197" />
         <source>No clipboard</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="186" />
+        <location filename="../config_dialog.py" line="198" />
         <source>Always copy to clipboard</source>
         <translation>Daima nakili kwenye ubao wa kunakili</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="187" />
+        <location filename="../config_dialog.py" line="199" />
         <source>On-demand copy to clipboard</source>
         <translation>Nakili kwenye ubao wa kunakili kwa mahitaji</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="194" />
+        <location filename="../config_dialog.py" line="206" />
         <source>Also copy to the selection (middle click)</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="199" />
+        <location filename="../config_dialog.py" line="211" />
         <source>Autoclear clipboard after:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="213" />
+        <location filename="../config_dialog.py" line="225" />
         <source> seconds</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="220" />
+        <location filename="../config_dialog.py" line="232" />
         <source>Password Generation:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="225" />
+        <location filename="../config_dialog.py" line="237" />
         <source>Password Length:</source>
         <translation>Urefu wa Nenosiri:</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="231" />
+        <location filename="../config_dialog.py" line="243" />
         <source>Characters:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="240" />
+        <location filename="../config_dialog.py" line="252" />
         <source>Custom characters:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="252" />
+        <location filename="../config_dialog.py" line="264" />
         <source>Use pwgen</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="256" />
+        <location filename="../config_dialog.py" line="268" />
         <source>pwgen:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="258" />
+        <location filename="../config_dialog.py" line="270" />
         <source>Avoid capital letters</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="259" />
+        <location filename="../config_dialog.py" line="271" />
         <source>Avoid numbers</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="260" />
+        <location filename="../config_dialog.py" line="272" />
         <source>Include special symbols</source>
         <translation>Jumuisha alama maalum</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="261" />
+        <location filename="../config_dialog.py" line="273" />
         <source>Generate easy to memorize but less secure</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="271" />
+        <location filename="../config_dialog.py" line="283" />
         <source>Use a template</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="274" />
+        <location filename="../config_dialog.py" line="286" />
         <source>Field names, one per line. Template fields get their own input in the password dialog and their own row, with a copy button, in the content panel.</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="287" />
+        <location filename="../config_dialog.py" line="299" />
         <source>Show all 'name: value' lines as fields</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="374" />
-        <location filename="../config_dialog.py" line="296" />
+        <location filename="../config_dialog.py" line="386" />
+        <location filename="../config_dialog.py" line="308" />
         <source>Git:</source>
         <translation>Git:</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="298" />
+        <location filename="../config_dialog.py" line="310" />
         <source>Use Git</source>
         <translation>Tumia Git</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="301" />
+        <location filename="../config_dialog.py" line="313" />
         <source>Automatically add .gpg-id files</source>
         <translation>Ongeza faili za .gpg-id kiotomatiki</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="306" />
+        <location filename="../config_dialog.py" line="318" />
         <source>Automatically push local changes</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="309" />
+        <location filename="../config_dialog.py" line="321" />
         <source>Automatically pull</source>
         <translation>Vuta kiotomatiki</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="311" />
+        <location filename="../config_dialog.py" line="323" />
         <source>Pull on startup, before editing a password and before re-encrypting</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="328" />
+        <location filename="../config_dialog.py" line="340" />
         <source>System:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="331" />
+        <location filename="../config_dialog.py" line="343" />
         <source>Use Tray icon</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="334" />
+        <location filename="../config_dialog.py" line="346" />
         <source>Start minimized</source>
         <translation>Anza ukiwa umepunguzwa</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="337" />
+        <location filename="../config_dialog.py" line="349" />
         <source>Hide on close</source>
         <translation>Ficha unapofunga</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="340" />
+        <location filename="../config_dialog.py" line="352" />
         <source>Always on top</source>
         <translation>Daima juu</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="344" />
+        <location filename="../config_dialog.py" line="356" />
         <source>Locations:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="347" />
+        <location filename="../config_dialog.py" line="359" />
         <source>Password store:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="351" />
+        <location filename="../config_dialog.py" line="363" />
         <source>No signing</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="353" />
+        <location filename="../config_dialog.py" line="365" />
         <source>Full fingerprints of the keys that sign .gpg-id files, like PASSWORD_STORE_SIGNING_KEY; nothing is encrypted to a list whose signature does not verify</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="359" />
+        <location filename="../config_dialog.py" line="371" />
         <source>Signing key:</source>
         <translation>Funguo ya Kusaini:</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="360" />
+        <location filename="../config_dialog.py" line="372" />
         <source>GnuPG:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="362" />
+        <location filename="../config_dialog.py" line="374" />
         <source>GnuPG home:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="364" />
+        <location filename="../config_dialog.py" line="376" />
         <source>Default</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="366" />
+        <location filename="../config_dialog.py" line="378" />
         <source>SSH agent socket:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="369" />
+        <location filename="../config_dialog.py" line="381" />
         <source>Used for Git over SSH when the session has no SSH_AUTH_SOCK; when empty, the ssh socket of a running gpg-agent is used</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="376" />
+        <location filename="../config_dialog.py" line="388" />
         <source>qrencode:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="378" />
+        <location filename="../config_dialog.py" line="390" />
         <source>Use the pass command-line tool</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="380" />
+        <location filename="../config_dialog.py" line="392" />
         <source>Run the pass script for every change instead of gpg and git directly, for pass extensions and hooks</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="386" />
+        <location filename="../config_dialog.py" line="398" />
         <source>pass:</source>
         <translation>Pass:</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="387" />
+        <location filename="../config_dialog.py" line="399" />
         <source>Autodetect</source>
         <translation>Tambua kiotomatiki</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="389" />
+        <location filename="../config_dialog.py" line="401" />
         <source>Look up gpg, git, pass, pwgen and qrencode in the PATH</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="412" />
+        <location filename="../config_dialog.py" line="424" />
         <source>Found automatically</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="415" />
+        <location filename="../config_dialog.py" line="427" />
         <source>Browse</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="419" />
+        <location filename="../config_dialog.py" line="431" />
         <source>Select folder</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="422" />
+        <location filename="../config_dialog.py" line="434" />
         <source>Select executable</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="437" />
+        <location filename="../config_dialog.py" line="449" />
         <source>OK</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="439" />
+        <location filename="../config_dialog.py" line="451" />
         <source>Cancel</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="452" />
+        <location filename="../config_dialog.py" line="464" />
         <source>The signing key must be full fingerprints (40 or 64 hexadecimal digits), separated by spaces.</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../config_dialog.py" line="553" />
+        <source>Create profile directory?</source>
+        <translation>Unda saraka ya wasifu?</translation>
+    </message>
+    <message>
+        <location filename="../config_dialog.py" line="554" />
+        <source>Would you like to create a password store at {0}?</source>
+        <translation>Je, ungependa kuunda hifadhi ya nenosiri katika {0}?</translation>
+    </message>
+    <message>
+        <location filename="../config_dialog.py" line="563" />
+        <source>Error</source>
+        <translation>Kosa</translation>
+    </message>
+    <message>
+        <location filename="../config_dialog.py" line="564" />
+        <source>Could not create profile directory: {0}</source>
+        <translation>Haikuweza kuunda saraka ya wasifu: {0}</translation>
+    </message>
+    <message>
+        <location filename="../config_dialog.py" line="577" />
+        <source>Select recipients for {0}</source>
+        <translation>Chagua wapokeaji kwa {0}</translation>
+    </message>
+    <message>
+        <location filename="../config_dialog.py" line="585" />
+        <source>Could not initialise profile {0}</source>
         <translation type="unfinished" />
     </message>
 </context><context>
