@@ -29,6 +29,7 @@ jobs:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         fetch-depth: 0
+        persist-credentials: false
     - name: Check the version
       id: tag
       env:
@@ -71,24 +72,36 @@ jobs:
         attestation records the workflow run and commit that produced them:
         `gh attestation verify <file> --repo annejan/PyQtPass`.
         NOTES
-    - name: Create the release and its tag
+    # The release starts as a draft: nothing is public until the maintainer
+    # has looked at it, signed the files (scripts/sign-release-assets.sh)
+    # and published it. A draft does not make its tag, so the tag is made
+    # here first; the build jobs check it out.
+    - name: Create the tag and the draft release
       if: ${{ !inputs.dry_run }}
-      uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
-      with:
-        tag_name: ${{ steps.tag.outputs.tag }}
-        target_commitish: ${{ github.sha }}
-        name: PyQtPass ${{ steps.tag.outputs.tag }}
-        body_path: release-notes.md
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_TOKEN: ${{ github.token }}
+        GH_REPO: ${{ github.repository }}
+        TAG: ${{ steps.tag.outputs.tag }}
+      run: |
+        if ! git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+          gh api "repos/$GITHUB_REPOSITORY/git/refs" \
+            -f ref="refs/tags/$TAG" -f sha="$GITHUB_SHA" >/dev/null
+        fi
+        if ! gh release view "$TAG" >/dev/null 2>&1; then
+          gh release create "$TAG" --draft --verify-tag \
+            --title "PyQtPass $TAG" --notes-file release-notes.md
+        fi
 
   build-windows:
     needs: release
+    permissions:
+      contents: read
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         ref: ${{ inputs.dry_run && github.sha || format('refs/tags/{0}', needs.release.outputs.tag) }}
+        persist-credentials: false
     - name: Set up Python
       uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
       with:
@@ -124,11 +137,14 @@ jobs:
 
   build-mac:
     needs: release
+    permissions:
+      contents: read
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         ref: ${{ inputs.dry_run && github.sha || format('refs/tags/{0}', needs.release.outputs.tag) }}
+        persist-credentials: false
     - name: Set up Python
       uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
       with:
@@ -160,11 +176,14 @@ jobs:
 
   build-linux:
     needs: release
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         ref: ${{ inputs.dry_run && github.sha || format('refs/tags/{0}', needs.release.outputs.tag) }}
+        persist-credentials: false
     - name: Set up Python
       uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
       with:
@@ -208,15 +227,42 @@ jobs:
       id-token: write
       attestations: write
     steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        ref: ${{ inputs.dry_run && github.sha || format('refs/tags/{0}', needs.release.outputs.tag) }}
+        persist-credentials: false
     - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
       with:
         path: out
         merge-multiple: true
+    # GitHub's own "Source code" downloads are made on the fly and can
+    # change, so they cannot be attested or signed; these can.
+    - name: Source archives
+      env:
+        VERSION: ${{ needs.release.outputs.version }}
+      run: |
+        git archive --format=tar.gz --prefix="PyQtPass-$VERSION/" \
+          -o "out/PyQtPass-$VERSION.tar.gz" HEAD
+        git archive --format=zip --prefix="PyQtPass-$VERSION/" \
+          -o "out/PyQtPass-$VERSION.zip" HEAD
     - name: Checksums
       working-directory: out
       run: |
         sha256sum -- * > SHA256SUMS
         cat SHA256SUMS
+    # A published release is left alone: its files may already be signed
+    # and downloaded, and new bytes under the same names would not match.
+    - name: Check that the release is still a draft
+      if: ${{ !inputs.dry_run }}
+      env:
+        GH_TOKEN: ${{ github.token }}
+        GH_REPO: ${{ github.repository }}
+        TAG: ${{ needs.release.outputs.tag }}
+      run: |
+        if [ "$(gh release view "$TAG" --json isDraft --jq .isDraft)" != "true" ]; then
+          echo "::error::$TAG is already published; its files are not replaced"
+          exit 1
+        fi
     - name: Attest build provenance
       if: ${{ !inputs.dry_run }}
       id: attest
@@ -226,14 +272,19 @@ jobs:
     - name: Attach the provenance bundle
       if: ${{ !inputs.dry_run }}
       run: cp "${{ steps.attest.outputs.bundle-path }}" "out/PyQtPass-${{ needs.release.outputs.version }}.intoto.jsonl"
-    - name: Upload to the release
+    - name: Upload to the draft release
       if: ${{ !inputs.dry_run }}
-      uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
-      with:
-        tag_name: ${{ needs.release.outputs.tag }}
-        files: out/*
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_TOKEN: ${{ github.token }}
+        GH_REPO: ${{ github.repository }}
+        TAG: ${{ needs.release.outputs.tag }}
+      run: |
+        gh release upload "$TAG" --clobber out/*
+        {
+          echo "Draft release $TAG is ready: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases"
+          echo
+          echo "Sign the files with \`scripts/sign-release-assets.sh $TAG\`, then publish it."
+        } >> "$GITHUB_STEP_SUMMARY"
     - name: Keep the dry run's files
       if: ${{ inputs.dry_run }}
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

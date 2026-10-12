@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+### Release builds
+
+- Source archives (`PyQtPass-x.y.z.tar.gz` and `.zip`) are attached to each
+  release, with checksums and build provenance like the other files.
+- Releases start as drafts. The maintainer signs every file with GnuPG
+  (`scripts/sign-release-assets.sh`, like QtPass) before publishing, so each
+  file has a `.asc` signature next to it. A workflow re-run never replaces
+  the files of a published release.
+- The build jobs can only read the repository, and no job keeps the GitHub
+  token in its checkout.
+
 ## 0.4.0
 
 The rest of the QtPass 2.0 feature set (field editing, store templates,
