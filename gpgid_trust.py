@@ -29,13 +29,16 @@ import tempfile
 import time
 
 import executor
-from fs_utils import atomic_write, is_link
+from fs_utils import is_link
 
 OUR_COMMENT = "# QtPass-GpgId-"
 GENERATION_PREFIX = "# QtPass-GpgId-Generation: "
 FOLDER_PREFIX = "# QtPass-GpgId-Folder: "
 MAX_GENERATION = 999999999999999999
 LOCK_TIMEOUT = 10
+# A lock file older than this is left over from a crash: transactions are
+# a read, a compare and a small write.
+LOCK_STALE = 60
 
 VALIDSIG = re.compile(
     r"^\[GNUPG:\] VALIDSIG ([A-F0-9]{40}(?:[A-F0-9]{24})?) .* "
@@ -157,6 +160,10 @@ class GenerationRecord:  # pylint: disable=too-few-public-methods
                 descriptor = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
                 break
             except FileExistsError as error:
+                with contextlib.suppress(OSError):
+                    if time.time() - os.path.getmtime(lock_path) > LOCK_STALE:
+                        os.remove(lock_path)
+                        continue
                 if time.time() > deadline:
                     raise TrustError(
                         f"The generation record {self.path} is locked by "
@@ -237,21 +244,26 @@ class GpgIdSigner:
         """:return: True when a signing key is configured."""
         return bool(self.keys)
 
-    def sign(self, gpg_id_file, contents):
+    def sign(self, contents):
         """
-        Write a detached signature of contents to gpg_id_file + '.sig'.
+        Sign a recipient list in memory with the configured key, and check
+        that the signature is really made by it before anything is written.
 
-        :param gpg_id_file: Path of the .gpg-id file.
-        :param contents: The bytes that were written to it.
-        :raises TrustError: when gpg fails.
+        gpg falls back to another secret key when --default-key names one
+        it does not have, so the key is given with --local-user and an
+        exclamation mark, and the result is verified.
+
+        :param contents: The bytes of the list.
+        :return: The detached signature.
+        :raises TrustError: when gpg fails or signs with another key.
         """
         returncode, stdout, stderr = executor.run(
             [
                 self.gpg_bin,
                 "--batch",
                 "--yes",
-                "--default-key",
-                self.keys[0],
+                "--local-user",
+                self.keys[0] + "!",
                 "--detach-sign",
                 "--output",
                 "-",
@@ -265,25 +277,18 @@ class GpgIdSigner:
                 "Signing the recipient list failed: "
                 + (stderr.decode(errors="replace").strip() or "gpg wrote nothing")
             )
-        signature = gpg_id_file + ".sig"
-        if is_link(signature):
-            raise TrustError(f"{signature} is a symbolic link")
-        atomic_write(signature, stdout)
+        with tempfile.TemporaryDirectory() as scratch:
+            signature = os.path.join(scratch, "list.sig")
+            with open(signature, "wb") as handle:
+                handle.write(stdout)
+            if not self._signed_by_us(signature, contents):
+                raise TrustError(
+                    "gpg did not sign the recipient list with the signing key "
+                    f"{self.keys[0]}; is its secret key available?"
+                )
+        return stdout
 
-    def verify(self, gpg_id_file, contents):
-        """
-        Check the detached signature of a recipient list.
-
-        :param gpg_id_file: Path of the .gpg-id file.
-        :param contents: The bytes read from it; these are what is verified.
-        :raises TrustError: when the signature is missing or not valid.
-        """
-        signature = gpg_id_file + ".sig"
-        if is_link(signature) or not os.path.isfile(signature):
-            raise TrustError(
-                f"The recipient list {gpg_id_file} has no signature, while a "
-                "signing key is configured."
-            )
+    def _signed_by_us(self, signature, contents):
         returncode, stdout, _ = executor.run(
             [
                 self.gpg_bin,
@@ -300,7 +305,23 @@ class GpgIdSigner:
         fingerprints = []
         for match in VALIDSIG.finditer(stdout.decode(errors="replace")):
             fingerprints += [match.group(1), match.group(2)]
-        if returncode != 0 or not any(key in fingerprints for key in self.keys):
+        return returncode == 0 and any(key in fingerprints for key in self.keys)
+
+    def verify(self, gpg_id_file, contents):
+        """
+        Check the detached signature of a recipient list.
+
+        :param gpg_id_file: Path of the .gpg-id file.
+        :param contents: The bytes read from it; these are what is verified.
+        :raises TrustError: when the signature is missing or not valid.
+        """
+        signature = gpg_id_file + ".sig"
+        if is_link(signature) or not os.path.isfile(signature):
+            raise TrustError(
+                f"The recipient list {gpg_id_file} has no signature, while a "
+                "signing key is configured."
+            )
+        if not self._signed_by_us(signature, contents):
             raise TrustError(
                 f"The signature of the recipient list {gpg_id_file} does not "
                 "verify with the signing key."
@@ -361,32 +382,51 @@ class GpgIdSigner:
                 )
             entries[key] = {"generation": str(generation), "digest": this_digest}
 
-    def reserve_next(self, gpg_id_file, on_disk_generation=0):
+    def remembers(self, gpg_id_file):
+        """
+        :param gpg_id_file: Path of a .gpg-id file.
+        :return: True when this device accepted or wrote a list there.
+        """
+        with self.record.transaction() as entries:
+            return list_key(gpg_id_file) in entries
+
+    def next_generation(self, gpg_id_file, on_disk_generation=0):
         """
         :param gpg_id_file: Path of the .gpg-id file about to be written.
         :param on_disk_generation: Generation of the verified list there now.
-        :return: The generation to write.
+        :return: The generation the new list gets.
+        """
+        with self.record.transaction() as entries:
+            last = int(entries.get(list_key(gpg_id_file), {}).get("generation", "0"))
+        base = max(last, on_disk_generation)
+        if base >= MAX_GENERATION:
+            raise TrustError(
+                f"The recipient list {gpg_id_file} has reached the highest "
+                "generation; it cannot be written."
+            )
+        return base + 1
+
+    def store_written(self, gpg_id_file, contents, generation, write):
+        """
+        Write a signed list and record it, under the record's lock, so the
+        record never steps backwards and never names a list that was not
+        written.
+
+        :param gpg_id_file: Path of the .gpg-id file.
+        :param contents: The bytes of the list.
+        :param generation: The generation in its header.
+        :param write: Callable writing the list and its signature.
+        :raises TrustError: when another process recorded this generation or
+                            a newer one meanwhile.
         """
         key = list_key(gpg_id_file)
         with self.record.transaction() as entries:
             last = int(entries.get(key, {}).get("generation", "0"))
-            base = max(last, on_disk_generation)
-            if base >= MAX_GENERATION:
+            if last >= generation:
                 raise TrustError(
-                    f"The recipient list {gpg_id_file} has reached the highest "
-                    "generation; it cannot be written."
+                    f"The generation record {self.record.path} has moved on to "
+                    f"generation {last} while generation {generation} of "
+                    f"{gpg_id_file} was being written; nothing was written."
                 )
-            entries[key] = {"generation": str(base + 1), "digest": ""}
-            return base + 1
-
-    def record_written(self, gpg_id_file, contents):
-        """
-        Remember the bytes of a list this device just wrote.
-
-        :param gpg_id_file: Path of the .gpg-id file.
-        :param contents: The bytes written.
-        """
-        generation, _ = parse_header(contents.decode("utf-8"))
-        key = list_key(gpg_id_file)
-        with self.record.transaction() as entries:
+            write()
             entries[key] = {"generation": str(generation), "digest": digest(contents)}

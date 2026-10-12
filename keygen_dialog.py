@@ -95,6 +95,10 @@ class KeyGenDialog(QDialog):
             self.passphrase_edit.text() != self.confirm_edit.text()
         ):
             message = self.tr("The passphrases differ.")
+        elif not no_passphrase and any(
+            char in self.passphrase_edit.text() for char in "\r\n"
+        ):
+            message = self.tr("The passphrase cannot contain a line break.")
         self.status.setText(message)
         self.buttons.button(QDialogButtonBox.StandardButton.Ok).setEnabled(not message)
 

@@ -87,6 +87,15 @@ You can filter the entries using the search box above the tree view.
 Fields are `name: value` lines below the password. Add a line like
 `otpauth://totp/Example?secret=JBSWY3DPEHPK3PXP` (or `otp: JBSWY3DPEHPK3PXP`) to an entry to get one-time passwords.
 
+## Security notes
+
+- PyQtPass's own commits run with hooks disabled (`core.hooksPath` pointed at
+  nothing, no fsmonitor), but `git pull` and `git push` run with your git
+  setup, hooks included, like the command line does. Treat write access to
+  the store's `.git` folder like write access to your account.
+- With a signing key, a recipient list that does not verify, was removed,
+  or was rolled back is refused rather than replaced by its parent's.
+
 ## Development
 
 ```sh

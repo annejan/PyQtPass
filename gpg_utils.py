@@ -172,6 +172,8 @@ def generate_key(name, email, passphrase=None, comment=""):
     :param comment: Optional user id comment.
     :return: Tuple of (success, gpg output).
     """
+    if passphrase and ("\n" in passphrase or "\r" in passphrase):
+        raise ValueError("A passphrase cannot contain a line break")
     uid = name
     if comment:
         uid += f" ({comment})"

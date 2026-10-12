@@ -216,6 +216,19 @@ class StorePage(QWizardPage):
         store.use_git = self.use_git.isChecked()
         try:
             os.makedirs(store.store_dir, exist_ok=True)
+            if self.use_git.isChecked():
+                # Checked before anything is written: a list that cannot be
+                # committed would leave a half set up store behind.
+                known, complaint = git_utils.has_identity(store.store_dir)
+                if not known:
+                    raise StoreError(
+                        self.tr(
+                            "Git does not know who you are, so nothing could "
+                            "be committed. Run\n  git config --global "
+                            'user.name "Your Name"\n  git config --global '
+                            "user.email you@example.org\nor untick Git.\n\n{}"
+                        ).format(complaint)
+                    )
             if self.use_git.isChecked() and not git_utils.is_git_repo(store.store_dir):
                 success, output = git_utils.git_init(store.store_dir)
                 if not success:

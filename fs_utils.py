@@ -46,7 +46,27 @@ def atomic_write(path, data, mode=0o600):
             os.fsync(handle.fileno())
         os.chmod(temporary, mode)
         os.replace(temporary, path)
+        fsync_directory(directory)
     except BaseException:
         if os.path.exists(temporary):
             os.remove(temporary)
         raise
+
+
+def fsync_directory(directory):
+    """
+    Flush a directory, so a rename into it survives a crash. Not every
+    platform can open a directory (Windows cannot); there it is skipped.
+
+    :param directory: The directory.
+    """
+    try:
+        descriptor = os.open(directory or ".", os.O_RDONLY)
+    except OSError:
+        return
+    try:
+        os.fsync(descriptor)
+    except OSError:
+        pass
+    finally:
+        os.close(descriptor)

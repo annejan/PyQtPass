@@ -75,7 +75,9 @@ def qapp():
 
 
 @pytest.fixture
-def settings(tmp_path, qapp):  # pylint: disable=redefined-outer-name,unused-argument
+def settings(
+    tmp_path, qapp, monkeypatch
+):  # pylint: disable=redefined-outer-name,unused-argument
     """A SettingsManager writing to a temporary directory."""
     # pylint: disable=import-outside-toplevel
     from PyQt6.QtCore import QSettings
@@ -89,6 +91,7 @@ def settings(tmp_path, qapp):  # pylint: disable=redefined-outer-name,unused-arg
     QSettings.setPath(
         QSettings.Format.IniFormat, QSettings.Scope.UserScope, str(tmp_path)
     )
+    monkeypatch.delenv("PASSWORD_STORE_SIGNING_KEY", raising=False)
     SettingsManager._instance = None  # pylint: disable=protected-access
     manager = SettingsManager()
     yield manager

@@ -197,11 +197,15 @@ class SettingsManager:
     def signing_keys(self):
         """
         :return: The fingerprints that sign .gpg-id files for the current
-                 store: the profile's, or the configured ones.
+                 store: the profile's, the configured ones, or those in
+                 PASSWORD_STORE_SIGNING_KEY.
         """
         profile = self.current_profile()
         keys = profile["signing_key"] if profile and profile["signing_key"] else ""
-        return (keys or str(self.get("pass_signing_key") or "")).split()
+        keys = keys or str(self.get("pass_signing_key") or "")
+        # Like pass, PASSWORD_STORE_SIGNING_KEY applies when nothing is set.
+        keys = keys or os.environ.get("PASSWORD_STORE_SIGNING_KEY", "")
+        return keys.split()
 
     def generation_record_path(self):
         """

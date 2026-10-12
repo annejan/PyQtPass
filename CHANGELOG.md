@@ -73,6 +73,20 @@ Brings PyQtPass up to date with the QtPass 2.0 feature set.
   type into the settings.
 - The lint workflow's `**/*.py` glob did not match the files in the root.
 
+### Security notes
+
+- With a signing key, a folder whose signed list was removed, is a link or
+  is not a file is refused instead of falling back to its parent's
+  recipients, and a list naming no key is refused like pass does.
+- A signed list is never replaced by an unsigned one: without the signing
+  key the recipients of such a folder cannot be changed.
+- Signing uses `--local-user <fingerprint>!` and the signature is checked
+  against the configured key before the list is written.
+- Re-encryption works on the exact decrypted bytes, and a move or copy that
+  needs re-encryption only takes its place once that succeeded.
+- PyQtPass's own git commits run without repository hooks or fsmonitor and
+  commit only their own paths; pull and push keep the user's git setup.
+
 ### Maintenance
 
 - pytest suite (store backend against a throwaway GnuPG home, RFC 6238

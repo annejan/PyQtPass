@@ -34,22 +34,33 @@ def is_git_repo(path):
     Check whether the given directory is a git repository.
 
     :param path: Directory to check, may contain '~'.
-    :return: True when path contains a .git directory.
+    :return: True when path holds a .git directory, or the .git file of a
+             worktree or submodule.
     """
-    return os.path.isdir(os.path.join(os.path.expanduser(path), ".git"))
+    return os.path.exists(os.path.join(os.path.expanduser(path), ".git"))
 
 
-def run_git(path, *args, timeout=120):
+# The app's own git calls run without hooks or an fsmonitor command from the
+# repository's configuration: whoever can write the store's .git/config could
+# otherwise make every save run a program. Pull and push keep the user's
+# setup, since those are what hooks there are usually for.
+NO_HOOKS = ["-c", f"core.hooksPath={os.devnull}", "-c", "core.fsmonitor=false"]
+
+
+def run_git(path, *args, timeout=120, hooks=True):
     """
     Run a git command inside the given directory.
 
     :param path: Directory to run git in, may contain '~'.
     :param args: The git subcommand and its arguments.
     :param timeout: Seconds before the command is given up on.
+    :param hooks: Allow repository hooks and fsmonitor; False for the
+                  app's own bookkeeping.
     :return: Tuple of (success, combined output).
     """
+    prefix = [] if hooks else NO_HOOKS
     returncode, stdout, stderr = executor.run(
-        [git_executable(), "-C", os.path.expanduser(path)] + list(args),
+        [git_executable(), *prefix, "-C", os.path.expanduser(path)] + list(args),
         timeout=timeout,
         log_stdout=True,
     )
@@ -95,7 +106,7 @@ def git_init(path):
     :param path: Directory to initialise.
     :return: Tuple of (success, combined output).
     """
-    return run_git(path, "init")
+    return run_git(path, "init", hooks=False)
 
 
 def git_commit_paths(path, paths, message):
@@ -115,17 +126,31 @@ def git_commit_paths(path, paths, message):
         name
         for name in paths
         if os.path.lexists(os.path.join(root, name))
-        or run_git(path, "ls-files", "--", name)[1]
+        or run_git(path, "ls-files", "--", name, hooks=False)[1]
     ]
     if not paths:
         return True, ""
-    success, output = run_git(path, "add", "-A", "--", *paths)
+    success, output = run_git(path, "add", "-A", "--", *paths, hooks=False)
     if not success:
         return success, output
-    unchanged, _ = run_git(path, "diff", "--cached", "--quiet")
+    unchanged, _ = run_git(
+        path, "diff", "--cached", "--quiet", "--", *paths, hooks=False
+    )
     if unchanged:
         return True, ""
-    return run_git(path, "commit", "-m", message)
+    # Only these paths: whatever else the user staged stays staged.
+    return run_git(path, "commit", "-m", message, "--", *paths, hooks=False)
+
+
+def has_identity(path):
+    """
+    Check that git knows who commits, before anything is written that
+    would then fail to be committed.
+
+    :param path: A directory inside (or for) the repository.
+    :return: Tuple of (success, git's complaint).
+    """
+    return run_git(path, "var", "GIT_AUTHOR_IDENT", hooks=False)
 
 
 def has_unmerged_files(path):

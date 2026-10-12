@@ -47,3 +47,10 @@ def test_profiles_editor(qapp):
     assert profiles["office"]["signing_key"] == FINGERPRINT
     assert profiles["office"]["auto_push"] is False
     assert profiles["home"]["path"] == "/home/store"
+
+
+def test_signing_key_from_environment(settings, monkeypatch):
+    monkeypatch.setenv("PASSWORD_STORE_SIGNING_KEY", FINGERPRINT)
+    assert settings.signing_keys() == [FINGERPRINT]
+    settings.set("pass_signing_key", "C" * 40)
+    assert settings.signing_keys() == ["C" * 40]
