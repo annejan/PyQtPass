@@ -331,3 +331,59 @@ def test_quitting_waits_for_a_running_change(qapp, monkeypatch):
     assert finished == [True]
     wait_until(qapp, lambda: not tasks.running())
     main_window.finish_tasks_on_quit()
+
+
+def test_config_dialog_sets_up_new_profiles(
+    settings, key_id, tmp_path, monkeypatch, git_identity
+):
+    from pyqtpass import config_dialog
+
+    renamed, plain, with_git, declined = (
+        str(tmp_path / name) for name in ("renamed", "plain", "git", "declined")
+    )
+    settings.set("profiles", {"old": renamed})
+    settings.set("use_git", False)
+    asked = []
+
+    def question(_parent, _title, text):
+        asked.append(text)
+        return (
+            config_dialog.QMessageBox.StandardButton.No
+            if declined in text
+            else config_dialog.QMessageBox.StandardButton.Yes
+        )
+
+    class Users:
+        """Picks the test key."""
+
+        def __init__(self, store, folder, parent):
+            self.selected_ids = [key_id]
+
+        def setWindowTitle(self, title):  # pylint: disable=invalid-name
+            asked.append(title)
+
+        def exec(self):
+            return QDialog.DialogCode.Accepted
+
+    monkeypatch.setattr(config_dialog.QMessageBox, "question", question)
+    monkeypatch.setattr(config_dialog, "UsersDialog", Users)
+    dialog = config_dialog.ConfigDialog()
+    dialog.profiles_editor.set_profiles(
+        {
+            "new name": renamed,
+            "plain": plain,
+            "git": {"path": with_git, "use_git": True},
+            "declined": declined,
+        }
+    )
+    dialog.save_settings()
+    # A renamed profile keeps its store; only new folders are set up.
+    assert not os.path.exists(renamed)
+    assert not os.path.exists(declined)
+    assert "Select recipients for plain" in asked
+    assert PasswordStore(plain).is_initialised()
+    assert not os.path.isdir(os.path.join(plain, ".git"))
+    assert PasswordStore(with_git).is_initialised()
+    assert git_utils.is_git_repo(with_git)
+    assert not git_utils.run_git(with_git, "status", "--porcelain")[1]
+    assert settings.get("current_profile") == ""

@@ -6,6 +6,7 @@ application settings, grouped in tabs like the QtPass configuration dialog.
 It interacts with a SettingsManager to persist these settings.
 """
 
+import os
 import shutil
 
 from PyQt6.QtCore import QByteArray
@@ -32,7 +33,10 @@ from PyQt6.QtWidgets import (
 from pyqtpass.edit_password_window import CUSTOM_CHARSET, charset_names
 from pyqtpass.gpgid_trust import is_fingerprint
 from pyqtpass.profiles_editor import ProfilesEditor
-from pyqtpass.settings_manager import SettingsManager
+from pyqtpass.password_store import StoreError
+from pyqtpass.settings_manager import SettingsManager, profile_options
+from pyqtpass.store_setup import make_profile_store, set_up_store
+from pyqtpass.users_dialog import UsersDialog
 
 # The program settings the Autodetect button fills in, and the names to
 # look for in the PATH, in order of preference (gpg2 first, like pass).
@@ -58,6 +62,14 @@ def detect_programs():
                 found[key] = path
                 break
     return found
+
+
+def store_path(path):
+    """
+    :param path: A store folder as configured.
+    :return: Its absolute path, to compare folders with.
+    """
+    return os.path.normpath(os.path.abspath(os.path.expanduser(path)))
 
 
 class ConfigDialog(QDialog):
@@ -497,9 +509,79 @@ class ConfigDialog(QDialog):
                 self.settings_manager.set(key, widget.toPlainText().strip())
         if not self.settings_manager.get("pass_store"):
             self.settings_manager.set("pass_store", "~/.password-store")
+        old_profiles = self.settings_manager.get("profiles") or {}
         profiles = self.profiles_editor.profiles()
         self.settings_manager.set("profiles", profiles)
         if self.settings_manager.get("current_profile") not in profiles:
             self.settings_manager.set("current_profile", "")
         self.settings_manager.save()
+        self.set_up_new_profiles(old_profiles, profiles)
         self.accept()
+
+    def set_up_new_profiles(self, old_profiles, profiles):
+        """
+        Offer to set up the store of every profile added in this dialog, like
+        QtPass: create its folder, pick the keys and write .gpg-id (and with
+        git on, put it under git). A rename is not a new store.
+
+        :param old_profiles: The profiles before this dialog.
+        :param profiles: The profiles now.
+        """
+        known = {
+            store_path(profile_options(profile)["path"])
+            for profile in old_profiles.values()
+        }
+        for name in sorted(profiles):
+            path = profile_options(profiles[name])["path"]
+            if not path or store_path(path) in known:
+                continue
+            known.add(store_path(path))
+            if self.ensure_profile_folder(store_path(path)):
+                store = make_profile_store(self.settings_manager, name)
+                if not store.is_initialised():
+                    self.set_up_profile_store(name, store)
+
+    def ensure_profile_folder(self, path):
+        """
+        :param path: The profile's store folder.
+        :return: True when it exists, or was created after asking.
+        """
+        if os.path.isdir(path):
+            return True
+        answer = QMessageBox.question(
+            self,
+            self.tr("Create profile directory?"),
+            self.tr("Would you like to create a password store at {0}?").format(path),
+        )
+        if answer != QMessageBox.StandardButton.Yes:
+            return False
+        try:
+            os.makedirs(path)
+        except OSError:
+            QMessageBox.warning(
+                self,
+                self.tr("Error"),
+                self.tr("Could not create profile directory: {0}").format(path),
+            )
+            return False
+        return True
+
+    def set_up_profile_store(self, name, store):
+        """
+        Ask for the keys of a new profile's store and set it up.
+
+        :param name: The profile name.
+        :param store: The profile's store.
+        """
+        users = UsersDialog(store, "", self)
+        users.setWindowTitle(self.tr("Select recipients for {0}").format(name))
+        if users.exec() != QDialog.DialogCode.Accepted:
+            return
+        try:
+            set_up_store(store, users.selected_ids)
+        except (OSError, StoreError) as error:
+            QMessageBox.warning(
+                self,
+                self.tr("Could not initialise profile {0}").format(name),
+                str(error),
+            )
