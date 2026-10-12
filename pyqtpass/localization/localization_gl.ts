@@ -4,7 +4,7 @@
 <context>
     <name>ConfigDialog</name>
     <message>
-        <location filename="../config_dialog.py" line="392" />
+        <location filename="../config_dialog.py" line="425" />
         <location filename="../config_dialog.py" line="60" />
         <source>Configuration</source>
         <translation>Axustes</translation>
@@ -150,241 +150,311 @@
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="209" />
+        <location filename="../config_dialog.py" line="210" />
+        <source>Use pwgen</source>
+        <translation>Usar pwgen</translation>
+    </message>
+    <message>
+        <location filename="../config_dialog.py" line="214" />
+        <source>pwgen:</source>
+        <translation>pwgen:</translation>
+    </message>
+    <message>
+        <location filename="../config_dialog.py" line="216" />
+        <source>Avoid capital letters</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../config_dialog.py" line="217" />
+        <source>Avoid numbers</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../config_dialog.py" line="218" />
+        <source>Include special symbols</source>
+        <translation>Incluír símbolos especiais</translation>
+    </message>
+    <message>
+        <location filename="../config_dialog.py" line="219" />
+        <source>Generate easy to memorize but less secure</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../config_dialog.py" line="229" />
         <source>Use a template</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="212" />
+        <location filename="../config_dialog.py" line="232" />
         <source>Field names, one per line. Template fields get their own input in the password dialog and their own row, with a copy button, in the content panel.</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="225" />
+        <location filename="../config_dialog.py" line="245" />
         <source>Show all 'name: value' lines as fields</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="292" />
-        <location filename="../config_dialog.py" line="234" />
+        <location filename="../config_dialog.py" line="325" />
+        <location filename="../config_dialog.py" line="254" />
         <source>Git:</source>
         <translation>git:</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="236" />
+        <location filename="../config_dialog.py" line="256" />
         <source>Use Git</source>
         <translation>Usar Git</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="239" />
+        <location filename="../config_dialog.py" line="259" />
         <source>Automatically push local changes</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="244" />
+        <location filename="../config_dialog.py" line="264" />
         <source>Update (git pull) on startup</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="259" />
+        <location filename="../config_dialog.py" line="279" />
         <source>System:</source>
         <translation>Sistema:</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="262" />
+        <location filename="../config_dialog.py" line="282" />
         <source>Use Tray icon</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="265" />
+        <location filename="../config_dialog.py" line="285" />
         <source>Start minimized</source>
         <translation>Iniciar minimizada</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="268" />
+        <location filename="../config_dialog.py" line="288" />
         <source>Hide on close</source>
         <translation>Agochar ao pechar</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="271" />
+        <location filename="../config_dialog.py" line="291" />
         <source>Always on top</source>
         <translation>Sempre enriba</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="275" />
+        <location filename="../config_dialog.py" line="295" />
         <source>Locations:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="278" />
+        <location filename="../config_dialog.py" line="298" />
         <source>Password store:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="282" />
+        <location filename="../config_dialog.py" line="302" />
         <source>No signing</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="284" />
+        <location filename="../config_dialog.py" line="304" />
         <source>Full fingerprints of the keys that sign .gpg-id files, like PASSWORD_STORE_SIGNING_KEY; nothing is encrypted to a list whose signature does not verify</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="290" />
+        <location filename="../config_dialog.py" line="310" />
         <source>Signing key:</source>
         <translation>Clave de sinatura:</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="291" />
+        <location filename="../config_dialog.py" line="311" />
         <source>GnuPG:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="294" />
+        <location filename="../config_dialog.py" line="313" />
+        <source>GnuPG home:</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../config_dialog.py" line="315" />
+        <source>Default</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../config_dialog.py" line="317" />
+        <source>SSH agent socket:</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../config_dialog.py" line="320" />
+        <source>Used for Git over SSH when the session has no SSH_AUTH_SOCK; when empty, the ssh socket of a running gpg-agent is used</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../config_dialog.py" line="327" />
         <source>qrencode:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="296" />
+        <location filename="../config_dialog.py" line="329" />
         <source>Use the pass command-line tool</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="298" />
+        <location filename="../config_dialog.py" line="331" />
         <source>Run the pass script for every change instead of gpg and git directly, for pass extensions and hooks</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="304" />
+        <location filename="../config_dialog.py" line="337" />
         <source>pass:</source>
         <translation>Pass:</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="319" />
+        <location filename="../config_dialog.py" line="352" />
         <source>Found automatically</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="322" />
+        <location filename="../config_dialog.py" line="355" />
         <source>Browse</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="326" />
+        <location filename="../config_dialog.py" line="359" />
         <source>Select folder</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="329" />
+        <location filename="../config_dialog.py" line="362" />
         <source>Select executable</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="344" />
+        <location filename="../config_dialog.py" line="377" />
         <source>OK</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="346" />
+        <location filename="../config_dialog.py" line="379" />
         <source>Cancel</source>
         <translation>Cancelar</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="359" />
+        <location filename="../config_dialog.py" line="392" />
         <source>The signing key must be full fingerprints (40 or 64 hexadecimal digits), separated by spaces.</source>
         <translation type="unfinished" />
     </message>
 </context><context>
     <name>EditPasswordDialog</name>
     <message>
-        <location filename="../edit_password_window.py" line="129" />
+        <location filename="../edit_password_window.py" line="111" />
         <source>Show password</source>
         <translation>Mostrar contrasinal</translation>
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="146" />
+        <location filename="../edit_password_window.py" line="131" />
         <source>Add password</source>
         <translation>Engadir contrasinal</translation>
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="148" />
+        <location filename="../edit_password_window.py" line="133" />
         <source>Edit {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="207" />
+        <location filename="../edit_password_window.py" line="177" />
+        <source>As configured</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../edit_password_window.py" line="184" />
+        <source>Template:</source>
+        <translation>Modelo:</translation>
+    </message>
+    <message>
+        <location filename="../edit_password_window.py" line="250" />
         <source>Folder:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="209" />
+        <location filename="../edit_password_window.py" line="252" />
         <source>Name of the new password</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="210" />
+        <location filename="../edit_password_window.py" line="253" />
         <source>Name:</source>
         <translation>Nome:</translation>
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="219" />
+        <location filename="../edit_password_window.py" line="262" />
         <source>Password</source>
         <translation>Contrasinal</translation>
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="220" />
+        <location filename="../edit_password_window.py" line="263" />
         <source>Generate</source>
         <translation>Crear</translation>
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="225" />
+        <location filename="../edit_password_window.py" line="268" />
         <source>Password:</source>
         <translation>Contrasinal:</translation>
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="238" />
+        <location filename="../edit_password_window.py" line="277" />
+        <source>pwgen picks the characters; this is used without it</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../edit_password_window.py" line="285" />
         <source>Length:</source>
         <translation>Lonxitude:</translation>
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="285" />
+        <location filename="../edit_password_window.py" line="334" />
         <source>No name</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="285" />
+        <location filename="../edit_password_window.py" line="334" />
         <source>Enter a name for the password.</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="313" />
+        <location filename="../edit_password_window.py" line="342" />
+        <source>Check the fields</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../edit_password_window.py" line="366" />
         <source>Password exists</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="314" />
+        <location filename="../edit_password_window.py" line="367" />
         <source>Password already exists at: {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="321" />
+        <location filename="../edit_password_window.py" line="374" />
         <source>Saved, but not committed</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="322" />
+        <location filename="../edit_password_window.py" line="375" />
         <source>{} was saved, but committing it to git failed:
 {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="329" />
+        <location filename="../edit_password_window.py" line="382" />
         <source>Could not save password</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="330" />
+        <location filename="../edit_password_window.py" line="383" />
         <source>Saving {} failed, nothing was changed:
 {}</source>
         <translation type="unfinished" />
@@ -429,6 +499,49 @@
     <message>
         <location filename="../keygen_dialog.py" line="210" />
         <source>ASCII armored keys (*.asc);;All files (*)</source>
+        <translation type="unfinished" />
+    </message>
+</context><context>
+    <name>FieldsEditor</name>
+    <message>
+        <location filename="../fields_editor.py" line="60" />
+        <source>Add field</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../fields_editor.py" line="109" />
+        <source>Name</source>
+        <translation>Nome</translation>
+    </message>
+    <message>
+        <location filename="../fields_editor.py" line="110" />
+        <source>Field name</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../fields_editor.py" line="113" />
+        <source>Value</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../fields_editor.py" line="114" />
+        <source>Field value</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../fields_editor.py" line="121" />
+        <location filename="../fields_editor.py" line="120" />
+        <source>Remove this field</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../fields_editor.py" line="162" />
+        <source>A field name cannot contain ':' ({}).</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../fields_editor.py" line="164" />
+        <source>A field with a value needs a name.</source>
         <translation type="unfinished" />
     </message>
 </context><context>
@@ -552,61 +665,61 @@
 </context><context>
     <name>PasswordPanel</name>
     <message>
-        <location filename="../password_panel.py" line="189" />
-        <location filename="../password_panel.py" line="112" />
+        <location filename="../password_panel.py" line="190" />
+        <location filename="../password_panel.py" line="113" />
         <source>Password</source>
         <translation>Contrasinal</translation>
     </message>
     <message>
-        <location filename="../password_panel.py" line="133" />
+        <location filename="../password_panel.py" line="134" />
         <source>Content hidden</source>
         <translation>Contido oculto</translation>
     </message>
     <message>
-        <location filename="../password_panel.py" line="181" />
+        <location filename="../password_panel.py" line="182" />
         <source>Show password</source>
         <translation>Mostrar contrasinal</translation>
     </message>
     <message>
-        <location filename="../password_panel.py" line="194" />
+        <location filename="../password_panel.py" line="195" />
         <source>Copy {} to clipboard</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../password_panel.py" line="203" />
+        <location filename="../password_panel.py" line="204" />
         <source>Open {} in browser</source>
         <translation>Abrir {0} no navegador</translation>
     </message>
     <message>
-        <location filename="../password_panel.py" line="212" />
+        <location filename="../password_panel.py" line="213" />
         <source>Show {} as QR code</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../password_panel.py" line="230" />
+        <location filename="../password_panel.py" line="231" />
         <source>No valid OTP configuration found</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../password_panel.py" line="253" />
-        <location filename="../password_panel.py" line="249" />
-        <location filename="../password_panel.py" line="236" />
-        <location filename="../password_panel.py" line="232" />
+        <location filename="../password_panel.py" line="254" />
+        <location filename="../password_panel.py" line="250" />
+        <location filename="../password_panel.py" line="237" />
+        <location filename="../password_panel.py" line="233" />
         <source>OTP code</source>
         <translation>Código OTP</translation>
     </message>
     <message>
-        <location filename="../password_panel.py" line="247" />
+        <location filename="../password_panel.py" line="248" />
         <source>Copy OTP code to clipboard</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../password_panel.py" line="287" />
+        <location filename="../password_panel.py" line="304" />
         <source>QR code for {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../password_panel.py" line="295" />
+        <location filename="../password_panel.py" line="312" />
         <source>qrencode failed: {}</source>
         <translation type="unfinished" />
     </message>
@@ -722,181 +835,180 @@
 </context><context>
     <name>QtPassGUI</name>
     <message>
-        <location filename="../store_actions.py" line="335" />
-        <location filename="../pyqtpass.py" line="263" />
-        <source>Decrypting {}</source>
-        <translation type="unfinished" />
-    </message>
-    <message>
-        <location filename="../pyqtpass.py" line="376" />
-        <location filename="../pyqtpass.py" line="281" />
-        <source>Could not decrypt {}: {}</source>
-        <translation type="unfinished" />
-    </message>
-    <message>
-        <location filename="../store_actions.py" line="345" />
-        <location filename="../pyqtpass.py" line="283" />
-        <source>Could not decrypt this password entry</source>
-        <translation>Non se puido descifrar este contrasinal</translation>
-    </message>
-    <message>
-        <location filename="../pyqtpass.py" line="335" />
+        <location filename="../clipboard_actions.py" line="48" />
         <source>Password</source>
         <translation>Contrasinal</translation>
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="340" />
+        <location filename="../clipboard_actions.py" line="53" />
         <source>{} copied to clipboard, clearing in {} seconds</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="345" />
+        <location filename="../clipboard_actions.py" line="59" />
         <source>{} copied to clipboard</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="360" />
+        <location filename="../clipboard_actions.py" line="78" />
         <source>Clipboard cleared</source>
         <translation>Portapapeis baleiro</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="465" />
-        <location filename="../store_actions.py" line="381" />
-        <location filename="../store_actions.py" line="330" />
-        <location filename="../pyqtpass.py" line="391" />
-        <source>No password selected</source>
+        <location filename="../main_window.py" line="291" />
+        <location filename="../clipboard_actions.py" line="95" />
+        <source>Could not decrypt {}: {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="397" />
+        <location filename="../clipboard_actions.py" line="117" />
         <source>This entry holds an OTP secret, not a password</source>
         <translation>Esta entrada contén unha configuración OTP, non un contrasinal</translation>
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="412" />
+        <location filename="../clipboard_actions.py" line="134" />
         <source>No password selected for OTP generation</source>
         <translation>Sen contrasinal seleccionado para crear o OTP</translation>
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="418" />
+        <location filename="../clipboard_actions.py" line="145" />
         <source>No OTP code found in this password entry</source>
         <translation>Non se atopa código OTP para esta entrada de contrasinal</translation>
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="420" />
+        <location filename="../clipboard_actions.py" line="152" />
         <source>OTP code</source>
         <translation>Código OTP</translation>
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="882" />
-        <location filename="../pyqtpass.py" line="517" />
-        <source>PyQtPass</source>
-        <translation type="unfinished" />
-    </message>
-    <message>
-        <location filename="../pyqtpass.py" line="521" />
-        <source>Open PyQtPass</source>
-        <translation type="unfinished" />
-    </message>
-    <message>
-        <location filename="../pyqtpass.py" line="523" />
-        <source>Exit</source>
-        <translation type="unfinished" />
-    </message>
-    <message>
-        <location filename="../pyqtpass.py" line="590" />
+        <location filename="../git_actions.py" line="45" />
         <source>Git is not available for this store</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="613" />
+        <location filename="../git_actions.py" line="71" />
         <source>Running git...</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="621" />
+        <location filename="../git_actions.py" line="79" />
         <source>Password store updated</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="622" />
+        <location filename="../git_actions.py" line="80" />
         <source>Git pull failed</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="632" />
+        <location filename="../git_actions.py" line="90" />
         <source>Password store pushed</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="649" />
-        <location filename="../pyqtpass.py" line="633" />
+        <location filename="../git_actions.py" line="107" />
+        <location filename="../git_actions.py" line="91" />
         <source>Git push failed</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="648" />
+        <location filename="../git_actions.py" line="106" />
         <source>Pushed changes to remote</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="692" />
+        <location filename="../store_actions.py" line="457" />
+        <location filename="../store_actions.py" line="373" />
+        <location filename="../main_window.py" line="245" />
+        <source>No password selected</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../store_actions.py" line="327" />
+        <location filename="../main_window.py" line="273" />
+        <source>Decrypting {}</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../store_actions.py" line="337" />
+        <location filename="../main_window.py" line="293" />
+        <source>Could not decrypt this password entry</source>
+        <translation>Non se puido descifrar este contrasinal</translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="696" />
+        <location filename="../main_window.py" line="419" />
+        <source>PyQtPass</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../main_window.py" line="423" />
+        <source>Open PyQtPass</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../main_window.py" line="425" />
+        <source>Exit</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../main_window.py" line="506" />
         <source>Filter passwords, Enter searches the content (regex)</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="696" />
+        <location filename="../main_window.py" line="510" />
         <source>Type here to filter passwords...</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="710" />
+        <location filename="../main_window.py" line="524" />
         <source>Searching...</source>
         <translation>Buscando…</translation>
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="718" />
+        <location filename="../main_window.py" line="532" />
         <source>Search failed: {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="727" />
+        <location filename="../main_window.py" line="541" />
         <source>Found {} matches in {} entries</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="732" />
+        <location filename="../main_window.py" line="546" />
         <source>No matches found.</source>
         <translation>Non se atoparon coincidencias.</translation>
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="787" />
+        <location filename="../main_window.py" line="601" />
         <source>Store not initialised</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="788" />
+        <location filename="../main_window.py" line="602" />
         <source>{} is not a password store yet. Use Users to choose the keys to encrypt it with.</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="798" />
+        <location filename="../main_window.py" line="612" />
         <source>Switched to password store {}</source>
         <translation type="unfinished" />
     </message>
     <message>
         <location filename="../window_actions.py" line="227" />
-        <location filename="../pyqtpass.py" line="825" />
+        <location filename="../main_window.py" line="639" />
         <source>About PyQtPass</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="826" />
+        <location filename="../main_window.py" line="640" />
         <source>&lt;b&gt;PyQtPass {}&lt;/b&gt;&lt;br&gt;&lt;br&gt;A cross-platform GUI for pass, the standard Unix password manager, written in Python. A port of &lt;a href="https://qtpass.org/"&gt;QtPass&lt;/a&gt;.&lt;br&gt;&lt;br&gt;Please report any issues you might have with this software at &lt;a href="https://github.com/annejan/PyQtPass"&gt;GitHub&lt;/a&gt;.</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../pyqtpass.py" line="848" />
+        <location filename="../main_window.py" line="662" />
         <source># Welcome to PyQtPass!
 
 PyQtPass is your password manager. With it, managing passwords is a breeze.
@@ -976,7 +1088,7 @@ Check out the [documentation](https://github.com/annejan/PyQtPass/) for more inf
         <translation>Editar</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="390" />
+        <location filename="../store_actions.py" line="382" />
         <location filename="../store_actions.py" line="174" />
         <source>Rename password</source>
         <translation>Cambiar nome ao contrasinal</translation>
@@ -1005,7 +1117,7 @@ Check out the [documentation](https://github.com/annejan/PyQtPass/) for more inf
         <translation>Engadir cartafol</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="387" />
+        <location filename="../store_actions.py" line="379" />
         <location filename="../store_actions.py" line="198" />
         <source>Rename folder</source>
         <translation>Cambiar nome ao cartafol</translation>
@@ -1076,93 +1188,93 @@ Check out the [documentation](https://github.com/annejan/PyQtPass/) for more inf
     </message>
     <message>
         <location filename="../store_actions.py" line="316" />
-        <source>Failed to create folder</source>
-        <translation type="unfinished" />
-    </message>
-    <message>
-        <location filename="../store_actions.py" line="322" />
         <source>Added folder {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="371" />
+        <location filename="../store_actions.py" line="317" />
+        <source>Failed to create folder</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../store_actions.py" line="363" />
         <source>Saved password {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="388" />
+        <location filename="../store_actions.py" line="380" />
         <source>Rename folder to:</source>
         <translation>Novo nome do cartafol: </translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="391" />
+        <location filename="../store_actions.py" line="383" />
         <source>Rename password to:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="400" />
+        <location filename="../store_actions.py" line="392" />
         <source>Renamed {} to {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="403" />
+        <location filename="../store_actions.py" line="395" />
         <source>Rename failed</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="413" />
+        <location filename="../store_actions.py" line="405" />
         <source>Duplicate password</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="414" />
+        <location filename="../store_actions.py" line="406" />
         <source>Copy password to:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="445" />
-        <location filename="../store_actions.py" line="423" />
+        <location filename="../store_actions.py" line="437" />
+        <location filename="../store_actions.py" line="415" />
         <source>Copied {} to {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="448" />
-        <location filename="../store_actions.py" line="426" />
+        <location filename="../store_actions.py" line="440" />
+        <location filename="../store_actions.py" line="418" />
         <source>Copy failed</source>
         <translation>Fallo ao copiar</translation>
     </message>
     <message>
-        <location filename="../store_actions.py" line="453" />
+        <location filename="../store_actions.py" line="445" />
         <source>Moved {} to {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="456" />
+        <location filename="../store_actions.py" line="448" />
         <source>Move failed</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="471" />
+        <location filename="../store_actions.py" line="463" />
         <source>Are you sure you want to delete {} and the whole content?</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="475" />
+        <location filename="../store_actions.py" line="467" />
         <source>Are you sure you want to delete {}?</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="480" />
+        <location filename="../store_actions.py" line="472" />
         <source>Confirm Delete</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="492" />
+        <location filename="../store_actions.py" line="484" />
         <source>Deleted {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../store_actions.py" line="493" />
+        <location filename="../store_actions.py" line="485" />
         <source>Delete failed</source>
         <translation type="unfinished" />
     </message>

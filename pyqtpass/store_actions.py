@@ -319,11 +319,8 @@ class StoreActionsMixin:
 
     def edit_item(self, index=None):
         """Decrypt an entry in the background, then open it for editing."""
-        path = self.selected_entry_path(index)
+        path = self.required_entry_path(index)
         if path is None:
-            self.show_status(
-                QCoreApplication.translate("QtPassGUI", "No password selected")
-            )
             return
         store = self.store
         self.show_status(

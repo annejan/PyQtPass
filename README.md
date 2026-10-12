@@ -100,6 +100,21 @@ You can filter the entries using the search box above the tree view.
 Fields are `name: value` lines below the password. Add a line like
 `otpauth://totp/Example?secret=JBSWY3DPEHPK3PXP` (or `otp: JBSWY3DPEHPK3PXP`) to an entry to get one-time passwords.
 
+Templates decide which fields the password dialog always shows. Set one in the
+settings, or share them with everyone using the store, like QtPass does: a
+`.templates` file in the store root lists named templates, and a
+`.default_template` file in a folder names the one its entries use.
+
+```ini
+[website]
+login
+url
+
+[server]
+user
+host
+```
+
 ## Security notes
 
 - PyQtPass's own commits run with hooks disabled (`core.hooksPath` pointed at
@@ -122,7 +137,8 @@ The tests create a throwaway GnuPG home and key, so they never touch your own ke
 
 ## Contributions and Feedback
 
-We warmly welcome contributions, be it in the form of code, bug reports, suggestions, or documentation.
+We warmly welcome contributions, be it in the form of code, translations, bug reports, suggestions, or documentation.
+[CONTRIBUTING.md](CONTRIBUTING.md) explains how to run the checks and how to translate PyQtPass.
 
 Since PyQtPass is in its experimental stage, your input is crucial for its refinement and progression.
 

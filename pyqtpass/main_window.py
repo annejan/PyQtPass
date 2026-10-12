@@ -20,13 +20,11 @@ import markdown
 from PyQt6.QtCore import (
     Qt,
     QByteArray,
-    QMimeData,
     QTimer,
     pyqtSignal,
 )
 from PyQt6.QtGui import (
     QAction,
-    QClipboard,
     QFont,
     QFontDatabase,
     QIcon,
@@ -42,9 +40,10 @@ from PyQt6.QtWidgets import (
 )
 
 from pyqtpass import __version__, executor
-from pyqtpass import otp
+from pyqtpass.clipboard_actions import ClipboardActionsMixin
 from pyqtpass.config_dialog import ConfigDialog
 from pyqtpass.entry import parse_entry
+from pyqtpass.git_actions import GitActionsMixin
 from pyqtpass.settings_manager import SettingsManager
 from pyqtpass.store_setup import (
     apply_executables,
@@ -68,15 +67,14 @@ from pyqtpass.utilities import (
     set_locale,
 )
 
-# Clipboard formats that ask clipboard managers not to keep a copy.
-SECRET_CLIPBOARD_HINTS = {
-    "x-kde-passwordManagerHint": b"secret",
-    "ExcludeClipboardContentFromMonitorProcessing": b"1",
-    "org.nspasteboard.ConcealedType": b"",
-}
 
-
-class QtPassGUI(StoreActionsMixin, WindowActionsMixin, QMainWindow):
+class QtPassGUI(
+    ClipboardActionsMixin,
+    GitActionsMixin,
+    StoreActionsMixin,
+    WindowActionsMixin,
+    QMainWindow,
+):
     """
     PyQt GUI class for the password store.
     """
@@ -236,6 +234,17 @@ class QtPassGUI(StoreActionsMixin, WindowActionsMixin, QMainWindow):
             return None
         return get_item_full_path(item)
 
+    def required_entry_path(self, index=None, message=None):
+        """
+        :param index: The index in the proxy model, or None for the selection.
+        :param message: What to say when no entry is selected.
+        :return: The path of the entry at index, or None after saying so.
+        """
+        path = self.selected_entry_path(index)
+        if path is None:
+            self.show_status(message or self.tr("No password selected"))
+        return path
+
     def selected_folder(self, index=None):
         """
         :param index: The index in the proxy model, or None for the selection.
@@ -313,116 +322,6 @@ class QtPassGUI(StoreActionsMixin, WindowActionsMixin, QMainWindow):
         Clear the content panel, called by the panel autoclear timer.
         """
         self.ui.panel.clear()
-
-    # Clipboard
-
-    def copy_text_to_clipboard(self, text, what=None):
-        """
-        Copy text to the clipboard, marked as secret for clipboard managers,
-        and start the autoclear timer.
-
-        :param text: The text to copy.
-        :param what: Optional name of what was copied, for the status bar.
-        """
-        clipboard = QApplication.clipboard()
-        modes = [QClipboard.Mode.Clipboard]
-        if self.settings.get("use_selection") and clipboard.supportsSelection():
-            modes.append(QClipboard.Mode.Selection)
-        for mode in modes:
-            mime = QMimeData()
-            mime.setText(text)
-            for hint, value in SECRET_CLIPBOARD_HINTS.items():
-                mime.setData(hint, QByteArray(value))
-            clipboard.setMimeData(mime, mode)
-        self.copied_text = text
-        what = what or self.tr("Password")
-        if self.settings.get("autoclear_clipboard"):
-            timeout = int(self.settings.get("clipboard_timeout"))
-            self.clipboard_timer.start(timeout * 1000)
-            self.show_status(
-                self.tr("{} copied to clipboard, clearing in {} seconds").format(
-                    what, timeout
-                )
-            )
-        else:
-            self.show_status(self.tr("{} copied to clipboard").format(what))
-
-    def clear_clipboard(self):
-        """
-        Clear the clipboard if it still holds the text we copied.
-        """
-        clipboard = QApplication.clipboard()
-        cleared = False
-        for mode in (QClipboard.Mode.Clipboard, QClipboard.Mode.Selection):
-            if mode == QClipboard.Mode.Selection and not clipboard.supportsSelection():
-                continue
-            if self.copied_text and clipboard.text(mode) == self.copied_text:
-                clipboard.clear(mode)
-                cleared = True
-        if cleared:
-            self.show_status(self.tr("Clipboard cleared"))
-        self.copied_text = ""
-
-    def with_decrypted(self, path, callback):
-        """
-        Decrypt an entry on a worker thread, then hand it to callback on the
-        GUI thread; a slow gpg (smartcard, pinentry) never freezes the window.
-
-        :param path: The entry path.
-        :param callback: Called with the parsed EntryContent.
-        """
-        store = self.store
-
-        def done(data, error):
-            if error is not None:
-                self.show_status(
-                    self.tr("Could not decrypt {}: {}").format(path, error)
-                )
-                return
-            callback(parse_entry(data))
-
-        run_task(lambda _progress, _cancelled: store.get_key(path), done)
-
-    def copy_password(self, index=None):
-        """
-        Copy the password (first line) of the item at index to the clipboard.
-
-        :param index: The index in the proxy model, or None for the selection.
-        """
-        path = self.selected_entry_path(index)
-        if path is None:
-            self.show_status(self.tr("No password selected"))
-            return
-
-        def copy(content):
-            if not content.password_for_display:
-                self.show_status(
-                    self.tr("This entry holds an OTP secret, not a password")
-                )
-                return
-            self.copy_text_to_clipboard(content.password)
-
-        self.with_decrypted(path, copy)
-
-    def copy_otp(self, index=None):
-        """
-        Copy the current one-time password of the item at index.
-
-        :param index: The index in the proxy model, or None for the selection.
-        """
-        path = self.selected_entry_path(index)
-        if path is None:
-            self.show_status(self.tr("No password selected for OTP generation"))
-            return
-
-        def copy(content):
-            settings = otp.parse(content.otp)
-            if settings is None:
-                self.show_status(self.tr("No OTP code found in this password entry"))
-                return
-            self.copy_text_to_clipboard(otp.generate(settings), self.tr("OTP code"))
-
-        self.with_decrypted(path, copy)
 
     # Tree events
 
@@ -562,95 +461,6 @@ class QtPassGUI(StoreActionsMixin, WindowActionsMixin, QMainWindow):
                 self.restore_expanded(
                     self.ui.proxy_model.index(row, 0, index), expanded
                 )
-
-    # Git
-
-    def git_enabled(self):
-        """
-        :return: True when git support is on and the store is a git repository.
-        """
-        return self.store.git_enabled()
-
-    def update_git_actions(self):
-        """
-        Show the git actions only when git is used for this store.
-        """
-        enabled = self.git_enabled()
-        for name in ("git_pull", "git_push"):
-            self.actions[name].setVisible(enabled)
-            self.actions[name].setEnabled(enabled and self.git_task is None)
-
-    def run_git(self, function, done_message, failed_title, refresh=False):
-        """
-        Run a git operation on a worker thread.
-
-        :param function: Callable(store) returning (success, output).
-        :param done_message: Status message on success.
-        :param failed_title: Title of the warning on failure.
-        :param refresh: Rebuild the tree on success.
-        """
-        if not self.git_enabled():
-            self.show_status(self.tr("Git is not available for this store"))
-            return
-        if self.git_task is not None:
-            return
-        store = self.store
-
-        def done(result, error):
-            self.git_task = None
-            self.update_git_actions()
-            if self.push_pending:
-                self.push_pending = False
-                QTimer.singleShot(0, self.auto_push)
-            success, output = result if error is None else (False, str(error))
-            self.verbose_print(output)
-            if success:
-                if refresh:
-                    self.refresh_tree()
-                self.show_status(done_message)
-            else:
-                QMessageBox.warning(self, failed_title, output)
-
-        self.git_task = run_task(lambda _p, _c: function(store), done, critical=True)
-        self.update_git_actions()
-        self.show_status(self.tr("Running git..."), 0)
-
-    def on_git_pull(self):
-        """
-        Update the password store from the remote git repository.
-        """
-        self.run_git(
-            lambda store: store.pull(),
-            self.tr("Password store updated"),
-            self.tr("Git pull failed"),
-            refresh=True,
-        )
-
-    def on_git_push(self):
-        """
-        Push local changes of the password store to the remote git repository.
-        """
-        self.run_git(
-            lambda store: store.push(),
-            self.tr("Password store pushed"),
-            self.tr("Git push failed"),
-        )
-
-    def auto_push(self):
-        """
-        Push local changes automatically when the auto push setting is on.
-        """
-        if not self.git_enabled() or not self.settings.effective("auto_push"):
-            return
-        if self.git_task is not None:
-            # Push once the running pull or push is done.
-            self.push_pending = True
-            return
-        self.run_git(
-            lambda store: store.push(only_with_remote=True),
-            self.tr("Pushed changes to remote"),
-            self.tr("Git push failed"),
-        )
 
     # Dialogs
 
