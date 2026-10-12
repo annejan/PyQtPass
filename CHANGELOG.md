@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Search
+
+- `pyqtpass github` starts with "github" in the search box, like QtPass.
+  When PyQtPass is already running, the text goes to that window, which
+  comes to the front and searches; this makes launchers and global hotkeys
+  work (#49).
+
 ### Clipboard
 
 - The clipboard setting has QtPass's three modes: No clipboard, Always copy

@@ -65,7 +65,8 @@ from pyqtpass import single_instance
 app = QApplication([])
 app.setOrganizationName("IJHack")
 app.setApplicationName("PyQtPass")
-print("found" if single_instance.activate_running_instance() else "none")
+found = single_instance.activate_running_instance(" ".join(sys.argv[1:]))
+print("found" if found else "none")
 """
 
 
@@ -85,9 +86,9 @@ def test_single_instance_answers_and_ignores_strangers(qapp, tmp_path, monkeypat
     single_instance._token.clear()  # pylint: disable=protected-access
     env = {**os.environ, "QT_QPA_PLATFORM": "offscreen"}
 
-    def second_start():
+    def second_start(*search):
         process = subprocess.Popen(  # pylint: disable=consider-using-with
-            [sys.executable, "-c", SECOND_START.format(root=ROOT)],
+            [sys.executable, "-c", SECOND_START.format(root=ROOT), *search],
             stdout=subprocess.PIPE,
             text=True,
             env=env,
@@ -115,12 +116,17 @@ def test_single_instance_answers_and_ignores_strangers(qapp, tmp_path, monkeypat
     shown = []
     window = QWidget()
     window.show_and_raise = lambda: shown.append(True)
+    window.search_for = shown.append
     server = single_instance.listen_for_instances(window)
     assert server.isListening()
     assert second_start() == "found"
     QTimer.singleShot(0, lambda: None)
     qapp.processEvents()
     assert shown == [True]
+    # A search text goes to the running instance, on one line.
+    assert second_start("git", "hüb\nlab") == "found"
+    qapp.processEvents()
+    assert shown == [True, "git hüb lab"]
     server.close()
 
 

@@ -392,6 +392,20 @@ class QtPassGUI(
         self.raise_()
         self.activateWindow()
 
+    def search_for(self, text):
+        """
+        Show the window and search for text, like a search text given on
+        the command line; without text, put the cursor in the search box.
+
+        :param text: The search text, may be ''.
+        """
+        self.show_and_raise()
+        if text:
+            self.ui.filter_text_box.setText(text)
+            self.on_search_return()
+        else:
+            self.ui.filter_text_box.setFocus()
+
     def verbose_print(self, *args, **kwargs):
         """
         Prints messages to the console if verbose mode is enabled.
@@ -788,7 +802,13 @@ def main():
         action="store_true",
         help="Start even when PyQtPass is already running.",
     )
+    parser.add_argument(
+        "search",
+        nargs="*",
+        help="Text to search for; a running PyQtPass searches for it.",
+    )
     args = parser.parse_args()
+    search = " ".join(args.search)
 
     app = QApplication(sys.argv)
     app.setApplicationName("PyQtPass")
@@ -796,7 +816,7 @@ def main():
     app.setOrganizationName("IJHack")
     app.setWindowIcon(QIcon(get_icon_path()))
     set_locale()
-    if not args.new_instance and activate_running_instance():
+    if not args.new_instance and activate_running_instance(search):
         return
     settings = SettingsManager()
     apply_executables(settings)
@@ -805,6 +825,8 @@ def main():
     window = QtPassGUI(verbose=args.verbose)
     server = listen_for_instances(window)  # pylint: disable=unused-variable
     window.show()
+    if search:
+        window.search_for(search)
     app.aboutToQuit.connect(finish_tasks_on_quit)
     code = app.exec()
     if tasks.stuck():
