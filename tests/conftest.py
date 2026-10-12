@@ -8,6 +8,7 @@ import os
 import shutil
 import subprocess
 import sys
+import time
 
 import pytest
 
@@ -23,6 +24,8 @@ TEST_UID = "PyQtPass Test <test@example.org>"
 # The RFC 6238 test seed in base32, built at run time so secret scanners do
 # not mistake the well-known test vector for a leaked credential.
 TEST_OTP_SEED = base64.b32encode(b"12345678901234567890").decode()
+
+OTP_URI = f"otpauth://totp/Test?secret={TEST_OTP_SEED}"
 
 
 def has_gpg():
@@ -121,3 +124,52 @@ def settings(
     manager = SettingsManager()
     yield manager
     SettingsManager._instance = None  # pylint: disable=protected-access
+
+
+def wait_until(app, condition, timeout=10):
+    """Process events until condition() holds, failing after timeout seconds."""
+    deadline = time.time() + timeout
+    while not condition():
+        app.processEvents()
+        if time.time() > deadline:
+            raise AssertionError("condition not met in time")
+        time.sleep(0.01)
+
+
+@pytest.fixture
+def window(qapp, settings, store):  # pylint: disable=redefined-outer-name
+    """A main window on the test store, holding two entries."""
+    # pylint: disable=import-outside-toplevel
+    from pyqtpass.main_window import QtPassGUI
+
+    settings.set("pass_store", store.store_dir)
+    settings.set("use_template", True)
+    settings.set("use_tray_icon", False)
+    store.set_key("web/site", f"secret\nlogin: me\nurl: https://example.org\n{OTP_URI}")
+    store.set_key("other", "pw2\nnote: findme")
+    gui = QtPassGUI()
+    yield gui
+    gui.close()
+    gui.deleteLater()
+    qapp.processEvents()
+
+
+def find_index(gui, path):
+    """:return: The proxy model index of path in the tree, or None."""
+    from pyqtpass.utilities import PATH_ROLE  # pylint: disable=import-outside-toplevel
+
+    model = gui.ui.proxy_model
+    pending = [model.index(row, 0) for row in range(model.rowCount())]
+    while pending:
+        index = pending.pop()
+        if index.data(PATH_ROLE) == path:
+            return index
+        pending += [model.index(row, 0, index) for row in range(model.rowCount(index))]
+    return None
+
+
+def wait_for_tasks(app):
+    """Process events until no background task runs."""
+    from pyqtpass import tasks  # pylint: disable=import-outside-toplevel
+
+    wait_until(app, lambda: not tasks.running())
