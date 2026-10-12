@@ -105,6 +105,9 @@ class QtPassGUI(
         self.clipboard_timer = QTimer(self)
         self.clipboard_timer.setSingleShot(True)
         self.clipboard_timer.timeout.connect(self.clear_clipboard)
+        # Quitting before the timer runs, or with autoclear off, must not
+        # leave a password in the clipboard, like QtPass.
+        QApplication.instance().aboutToQuit.connect(self.clear_clipboard)
         self.panel_timer = QTimer(self)
         self.panel_timer.setSingleShot(True)
         self.panel_timer.timeout.connect(self.clear_panel)

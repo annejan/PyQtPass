@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Clipboard
+
+- Quitting PyQtPass clears a password or OTP code it copied, like QtPass.
+  Before, only the autoclear timer did, so quitting before it ran, or with
+  autoclear off, left the password in the clipboard (#45).
+
 ## 0.5.0
 
 Portable mode, translated store messages, QtPass's addGPGId setting, and
