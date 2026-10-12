@@ -6,7 +6,8 @@ import base64
 
 import pytest
 
-import otp
+import otp  # pylint: disable=wrong-import-order
+from conftest import TEST_OTP_SEED
 
 SEEDS = {
     "SHA1": b"12345678901234567890",
@@ -54,7 +55,7 @@ def test_invalid():
 
 
 def test_steam():
-    settings = otp.parse("otpauth://totp/Steam?secret=GEZDGNBVGY3TQOJQ&encoder=steam")
+    settings = otp.parse(f"otpauth://totp/Steam?secret={TEST_OTP_SEED}&encoder=steam")
     code = otp.generate(settings, 59)
     assert len(code) == 5
     assert all(char in otp.STEAM_ALPHABET for char in code)

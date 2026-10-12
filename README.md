@@ -48,7 +48,7 @@ PyQtPass follows the feature set of [QtPass 2.0](https://github.com/IJHack/QtPas
 
 ## Installation
 
-PyQtPass needs Python 3.10 or newer and GnuPG (`gpg` or `gpg2`) with a graphical pinentry.
+PyQtPass needs Python 3.11 or newer and GnuPG (`gpg` or `gpg2`) with a graphical pinentry.
 Git is optional (for synchronisation) and so is `qrencode` (for QR codes). Then:
 
 1. Clone this repository:

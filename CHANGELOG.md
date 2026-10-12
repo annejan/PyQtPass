@@ -60,7 +60,7 @@ Brings PyQtPass up to date with the QtPass 2.0 feature set.
 ### Maintenance
 
 - pytest suite (store backend against a throwaway GnuPG home, RFC 6238
-  vectors, entry parsing, offscreen GUI smoke tests), run in CI on Python 3.10
+  vectors, entry parsing, offscreen GUI smoke tests), run in CI on Python 3.11
   and 3.13.
 - Release builds compile the translations with Qt 6.8 LTS tools.
 - `requirements-dev.txt` and `pyproject.toml` for the development tools.
