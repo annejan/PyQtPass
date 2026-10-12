@@ -59,3 +59,25 @@ def test_steam():
     code = otp.generate(settings, 59)
     assert len(code) == 5
     assert all(char in otp.STEAM_ALPHABET for char in code)
+
+
+def test_normalize():
+    assert otp.normalize("not base32 !!") == ""
+    assert otp.normalize(TEST_OTP_SEED.lower(), "github.com") == (
+        f"otpauth://totp/github.com?secret={TEST_OTP_SEED.rstrip('=')}"
+        "&digits=6&period=30"
+    )
+    uri = (
+        f"otpauth://totp/Ex:me%40x.org?secret={TEST_OTP_SEED}&issuer=Ex%20Co"
+        "&algorithm=sha256&image=https%3A%2F%2Fx.org%2Fi.png&digits=8"
+    )
+    canonical = otp.normalize(uri, "ignored", "ignored")
+    assert canonical == (
+        f"otpauth://totp/Ex:me@x.org?secret={TEST_OTP_SEED.rstrip('=')}"
+        "&issuer=Ex%20Co&algorithm=SHA256&digits=8&period=30"
+        "&image=https%3A%2F%2Fx.org%2Fi.png"
+    )
+    assert otp.normalize(canonical) == canonical
+    assert otp.parse(canonical).key == otp.parse(uri).key
+    steam = otp.normalize(f"otpauth://totp/?secret={TEST_OTP_SEED}&encoder=steam")
+    assert steam.startswith("otpauth://totp/QtPass?") and "&encoder=steam" in steam

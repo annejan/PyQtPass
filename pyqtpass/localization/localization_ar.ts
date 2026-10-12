@@ -378,113 +378,113 @@
 </context><context>
     <name>EditPasswordDialog</name>
     <message>
-        <location filename="../edit_password_window.py" line="111" />
+        <location filename="../edit_password_window.py" line="112" />
         <source>Show password</source>
         <translation>كلمة المرور</translation>
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="131" />
+        <location filename="../edit_password_window.py" line="132" />
         <source>Add password</source>
         <translation>أضف كلمة المرور</translation>
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="133" />
+        <location filename="../edit_password_window.py" line="134" />
         <source>Edit {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="177" />
+        <location filename="../edit_password_window.py" line="178" />
         <source>As configured</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="184" />
+        <location filename="../edit_password_window.py" line="185" />
         <source>Template:</source>
         <translation>النموذج:</translation>
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="250" />
+        <location filename="../edit_password_window.py" line="251" />
         <source>Folder:</source>
         <translation>المجلد:</translation>
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="252" />
+        <location filename="../edit_password_window.py" line="253" />
         <source>Name of the new password</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="253" />
+        <location filename="../edit_password_window.py" line="254" />
         <source>Name:</source>
         <translation>إسم:</translation>
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="262" />
+        <location filename="../edit_password_window.py" line="263" />
         <source>Password</source>
         <translation>كلمة السر</translation>
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="263" />
+        <location filename="../edit_password_window.py" line="264" />
         <source>Generate</source>
         <translation>الجيل</translation>
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="268" />
+        <location filename="../edit_password_window.py" line="269" />
         <source>Password:</source>
         <translation>كلمة السر:</translation>
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="277" />
+        <location filename="../edit_password_window.py" line="278" />
         <source>pwgen picks the characters; this is used without it</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="285" />
+        <location filename="../edit_password_window.py" line="286" />
         <source>Length:</source>
         <translation>طول:</translation>
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="334" />
+        <location filename="../edit_password_window.py" line="335" />
         <source>No name</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="334" />
+        <location filename="../edit_password_window.py" line="335" />
         <source>Enter a name for the password.</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="342" />
+        <location filename="../edit_password_window.py" line="344" />
         <source>Check the fields</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="366" />
+        <location filename="../edit_password_window.py" line="368" />
         <source>Password exists</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="367" />
+        <location filename="../edit_password_window.py" line="369" />
         <source>Password already exists at: {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="374" />
+        <location filename="../edit_password_window.py" line="376" />
         <source>Saved, but not committed</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="375" />
+        <location filename="../edit_password_window.py" line="377" />
         <source>{} was saved, but committing it to git failed:
 {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="382" />
+        <location filename="../edit_password_window.py" line="384" />
         <source>Could not save password</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../edit_password_window.py" line="383" />
+        <location filename="../edit_password_window.py" line="385" />
         <source>Saving {} failed, nothing was changed:
 {}</source>
         <translation type="unfinished" />
@@ -548,43 +548,53 @@
 </context><context>
     <name>FieldsEditor</name>
     <message>
-        <location filename="../fields_editor.py" line="60" />
+        <location filename="../fields_editor.py" line="68" />
         <source>Add field</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../fields_editor.py" line="109" />
+        <location filename="../fields_editor.py" line="119" />
         <source>Name</source>
         <translation>إسم</translation>
     </message>
     <message>
-        <location filename="../fields_editor.py" line="110" />
+        <location filename="../fields_editor.py" line="120" />
         <source>Field name</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../fields_editor.py" line="113" />
+        <location filename="../fields_editor.py" line="123" />
         <source>Value</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../fields_editor.py" line="114" />
+        <location filename="../fields_editor.py" line="124" />
         <source>Field value</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../fields_editor.py" line="121" />
-        <location filename="../fields_editor.py" line="120" />
+        <location filename="../fields_editor.py" line="131" />
+        <location filename="../fields_editor.py" line="130" />
         <source>Remove this field</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../fields_editor.py" line="162" />
+        <location filename="../fields_editor.py" line="198" />
+        <source>otpauth:// URI or base32 secret</source>
+        <translation>عنوان otpauth:// أو سر بترميز base32</translation>
+    </message>
+    <message>
+        <location filename="../fields_editor.py" line="213" />
+        <source>Invalid OTP secret</source>
+        <translation>سر OTP غير صالح</translation>
+    </message>
+    <message>
+        <location filename="../fields_editor.py" line="257" />
         <source>A field name cannot contain ':' ({}).</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../fields_editor.py" line="164" />
+        <location filename="../fields_editor.py" line="259" />
         <source>A field with a value needs a name.</source>
         <translation type="unfinished" />
     </message>

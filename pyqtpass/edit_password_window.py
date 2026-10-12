@@ -105,6 +105,7 @@ class EditPasswordDialog(QDialog):
         self.folder_combo = None
         self.name_edit = None
         self.fields_editor = FieldsEditor(self)
+        self.fields_editor.otp_label = lambda: self.target_path().rsplit("/", 1)[-1]
         self.template_combo = QComboBox(self)
         self.templates = read_templates(store.store_dir)
         self.password_edit = QLineEdit(self)
@@ -334,6 +335,7 @@ class EditPasswordDialog(QDialog):
                 self, self.tr("No name"), self.tr("Enter a name for the password.")
             )
             return
+        self.fields_editor.normalize_otp()
         if not self.dirty:
             self.accept()
             return

@@ -10,6 +10,10 @@
 - The tray menu has Hide, Minimize, Maximize and Restore.
 - An Autodetect button on the System tab fills in where gpg, git, pass,
   pwgen and qrencode are found in the PATH.
+- In the password dialog the otp or totp field warns about a value that is
+  not an otpauth:// URI or base32 secret. An otpauth URI, or a secret you
+  type, is saved as a canonical otpauth URI labelled with the entry name;
+  parameters PyQtPass doesn't use, like `image=`, are kept.
 
 ### Search
 

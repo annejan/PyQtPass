@@ -14,7 +14,7 @@ import hmac
 import struct
 import time
 from dataclasses import dataclass
-from urllib.parse import parse_qsl, unquote, urlsplit
+from urllib.parse import parse_qsl, quote, unquote, urlsplit
 
 DEFAULT_DIGITS = 6
 DEFAULT_PERIOD = 30
@@ -24,6 +24,8 @@ MAX_PERIOD = 3600
 STEAM_DIGITS = 5
 STEAM_ALPHABET = "23456789BCDFGHJKMNPQRTVWXY"
 
+KNOWN_PARAMS = ("secret", "issuer", "digits", "period", "algorithm", "encoder")
+
 ALGORITHMS = {
     "SHA1": hashlib.sha1,
     "SHA256": hashlib.sha256,
@@ -32,7 +34,7 @@ ALGORITHMS = {
 
 
 @dataclass
-class TotpSettings:
+class TotpSettings:  # pylint: disable=too-many-instance-attributes
     """The parsed configuration of a TOTP generator."""
 
     key: bytes
@@ -42,6 +44,7 @@ class TotpSettings:
     steam: bool = False
     label: str = ""
     issuer: str = ""
+    extra: tuple = ()
 
 
 def is_otp_field_name(name):
@@ -112,6 +115,13 @@ def parse(config):
         if settings.algorithm not in ALGORITHMS:
             settings.algorithm = "SHA1"
         settings.steam = query.get("encoder", "").lower() == "steam"
+        # Kept so to_uri() does not silently drop parameters (like image=)
+        # that other authenticators use.
+        settings.extra = tuple(
+            (key, value)
+            for key, value in parse_qsl(parts.query)
+            if key.lower() not in KNOWN_PARAMS
+        )
     else:
         secret = config
     settings.key = decode_base32(secret)
@@ -123,6 +133,47 @@ def parse(config):
         settings.digits = min(max(settings.digits, MIN_DIGITS), MAX_DIGITS)
     settings.period = min(max(settings.period, 1), MAX_PERIOD)
     return settings
+
+
+def to_uri(settings):
+    """
+    Serialise settings as a canonical otpauth URI, like QtPass.
+
+    :param settings: TotpSettings from parse().
+    :return: An otpauth://totp/... URI.
+    """
+    label = settings.label or "QtPass"
+    # The Key Uri Format leaves out the base32 padding; some importers
+    # reject it.
+    secret = base64.b32encode(settings.key).decode("ascii").rstrip("=")
+    uri = f"otpauth://totp/{quote(label, safe=':@')}?secret={secret}"
+    if settings.issuer:
+        uri += f"&issuer={quote(settings.issuer, safe=':@')}"
+    if settings.algorithm != "SHA1":
+        uri += f"&algorithm={settings.algorithm}"
+    uri += f"&digits={settings.digits}&period={settings.period}"
+    if settings.steam:
+        uri += "&encoder=steam"
+    for key, value in settings.extra:
+        uri += f"&{quote(key, safe='')}={quote(value, safe='')}"
+    return uri
+
+
+def normalize(config, label="", issuer=""):
+    """
+    Turn an otpauth URI or base32 secret into a canonical otpauth URI.
+
+    :param config: The configuration text.
+    :param label: The label to use when config has none.
+    :param issuer: The issuer to use when config has none.
+    :return: The URI, or '' when config is not a usable TOTP setup.
+    """
+    settings = parse(config)
+    if settings is None:
+        return ""
+    settings.label = settings.label or label
+    settings.issuer = settings.issuer or issuer
+    return to_uri(settings)
 
 
 def generate(settings, unix_time=None):
