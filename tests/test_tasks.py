@@ -122,3 +122,35 @@ def test_single_instance_answers_and_ignores_strangers(qapp, tmp_path, monkeypat
     qapp.processEvents()
     assert shown == [True]
     server.close()
+
+
+def test_quit_wait_is_one_budget_and_can_be_cut_short(qapp):
+    # pylint: disable=import-outside-toplevel,unused-argument
+    from pyqtpass import tasks
+
+    def sleeper(_progress, _cancelled):
+        return executor.run(["sleep", "20"])
+
+    for _ in range(3):
+        tasks.run_task(sleeper, lambda *_: None, critical=True)
+    start = time.monotonic()
+    assert tasks.wait_for_all(grace_ms=100, critical_ms=600, final_ms=5000)
+    # Three critical tasks share 0.6 s, instead of 0.6 s each.
+    assert time.monotonic() - start < 3
+    executor.allow_commands()
+    for _ in range(2):
+        tasks.run_task(sleeper, lambda *_: None, critical=True)
+    calls = []
+    start = time.monotonic()
+    assert tasks.wait_for_all(
+        critical_ms=60000, final_ms=5000, idle=lambda: calls.append(1) or True
+    )
+    assert calls and time.monotonic() - start < 3
+    # Once quitting has ended the commands, a new one does not start.
+    start = time.monotonic()
+    assert executor.run(["sleep", "20"])[0] != 0
+    assert time.monotonic() - start < 3
+    while tasks.running():
+        qapp.processEvents()
+    assert not tasks.stuck()
+    executor.allow_commands()
