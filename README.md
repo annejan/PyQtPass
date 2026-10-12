@@ -2,7 +2,7 @@
 
 ## Introduction
 
-<img align="right" src="artwork/icon.png" width="30%" />
+<img align="right" src="pyqtpass/artwork/icon.png" width="30%" />
 
 Welcome to PyQtPass, an experimental and early-stage Python port of the renowned QtPass, originally developed in C++.
 This initiative aims to leverage the versatility and simplicity of Python to enhance maintainability and extend the functionality of QtPass, a user-friendly GUI for `pass`, the standard Unix password manager.
@@ -64,10 +64,15 @@ Each [release](https://github.com/annejan/PyQtPass/releases) has:
 
 - `PyQtPass-<version>-windows-x64.exe` for Windows;
 - `PyQtPass-<version>-macos-arm64.dmg` for macOS (not signed: right-click the app and choose Open the first time);
-- `PyQtPass-<version>-x86_64.AppImage` and a single-file `PyQtPass-<version>-linux-x86_64` for Linux.
+- `PyQtPass-<version>-x86_64.AppImage` and a single-file `PyQtPass-<version>-linux-x86_64` for Linux;
+- `PyQtPass-<version>.tar.gz` and `.zip` with the source code.
 
-`SHA256SUMS` lists their checksums, and a signed build provenance attestation records which
-workflow run and commit built them: `gh attestation verify <file> --repo annejan/PyQtPass`.
+To check a download:
+
+- `SHA256SUMS` lists the checksums of every file: `sha256sum --ignore-missing -c SHA256SUMS`.
+- A signed build provenance attestation (`PyQtPass-<version>.intoto.jsonl`) records which
+  workflow run and commit built each file: `gh attestation verify <file> --repo annejan/PyQtPass`.
+- Each file has a GnuPG signature by the maintainer (`<file>.asc`): `gpg --verify <file>.asc <file>`.
 
 ### From source
 

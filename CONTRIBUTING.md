@@ -76,3 +76,22 @@ pylupdate6 --ts localization/localization_nl_NL.ts *.py
 
 `tests/test_translations.py` checks that every translation keeps the
 placeholders of its source text.
+
+## Releasing
+
+1. Set the version in `pyqtpass/__init__.py` and turn the "Unreleased"
+   section of `CHANGELOG.md` into that version; merge that.
+2. Run the Build and Release workflow on `main` with the version, like
+   `v0.5.0` (or push that tag). It makes the tag and a draft release with the
+   changelog section as notes, and attaches the builds, source archives,
+   `SHA256SUMS` and the build provenance attestation. With `dry_run` it only
+   builds, and keeps the files as a workflow artifact.
+3. Sign the files with your GnuPG key; `--dryrun` first shows what it would
+   upload:
+
+   ```sh
+   scripts/sign-release-assets.sh v0.5.0
+   ```
+
+4. Publish the draft. A published release's files are never replaced by a
+   workflow re-run.
