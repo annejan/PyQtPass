@@ -129,6 +129,14 @@ user
 host
 ```
 
+### Portable mode
+
+Like QtPass's `qtpass.ini`, an empty `pyqtpass.ini` next to the program (the
+`PyQtPass` executable of a ready-made build, or the `pyqtpass` script) makes
+PyQtPass keep its settings in that file instead of your user settings, for
+example to run it from a USB stick. The file is named after PyQtPass, not
+QtPass, because the two programs store different settings.
+
 ## Security notes
 
 - PyQtPass's own commits run with hooks disabled (`core.hooksPath` pointed at
