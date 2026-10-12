@@ -1,0 +1,37 @@
+version = 1
+
+# Licensing of every file, in the REUSE format (https://reuse.software),
+# like QtPass. `reuse lint` checks it; so does CI.
+
+[[annotations]]
+path = "**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2023 Anne Jan Brouwer"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+# Translations reuse the work of QtPass's translators on Weblate.
+[[annotations]]
+path = "pyqtpass/localization/**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = ["2023 Anne Jan Brouwer", "QtPass translators"]
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+# The logo and the icon files made from it.
+[[annotations]]
+path = [
+    "pyqtpass/artwork/icon.svg",
+    "pyqtpass/artwork/icon.png",
+    "pyqtpass/artwork/icon@2x.png",
+    "pyqtpass/artwork/doc-icon.png",
+    "pyqtpass/artwork/icon.ico",
+    "pyqtpass/artwork/icon.icns",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "2023 Anne Jan Brouwer"
+SPDX-License-Identifier = "WTFPL"
+
+[[annotations]]
+path = "pyqtpass/artwork/fonts/**"
+precedence = "override"
+SPDX-FileCopyrightText = "2010-2014 tyPoland Lukasz Dziedzic"
+SPDX-License-Identifier = "OFL-1.1"
