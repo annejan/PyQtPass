@@ -7,6 +7,10 @@
   publishing; every pull request builds and checks the package.
 - The package metadata names the supported Python versions and platforms,
   and the README's picture and links work on PyPI too.
+- Licensing follows the REUSE specification, like QtPass: `REUSE.toml`
+  records the copyright and licence of every file (GPL-3.0-or-later; the
+  logo WTFPL; the Lato font OFL-1.1), with the licence texts in `LICENSES/`,
+  and CI checks it.
 
 ## 0.4.1
 
