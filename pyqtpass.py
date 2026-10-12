@@ -43,13 +43,17 @@ from PyQt6.QtWidgets import (
 
 import executor
 import git_utils
-import gpg_utils
 import otp
 from config_dialog import ConfigDialog
 from entry import parse_entry
-from first_run_wizard import FirstRunWizard
-from password_store import PasswordStore, StoreError
+from password_store import StoreError
 from settings_manager import SettingsManager
+from store_setup import (
+    apply_executables,
+    configured_store_dir,
+    ensure_store,
+    make_store,
+)
 from single_instance import activate_running_instance, listen_for_instances
 from tasks import run_task, wait_for_all
 from store_actions import StoreActionsMixin
@@ -67,37 +71,12 @@ from utilities import (
 
 __version__ = "0.3.0"
 
-DEFAULT_STORE_DIR = "~/.password-store"
-
 # Clipboard formats that ask clipboard managers not to keep a copy.
 SECRET_CLIPBOARD_HINTS = {
     "x-kde-passwordManagerHint": b"secret",
     "ExcludeClipboardContentFromMonitorProcessing": b"1",
     "org.nspasteboard.ConcealedType": b"",
 }
-
-
-def configured_store_dir(settings):
-    """
-    :param settings: The SettingsManager.
-    :return: The store directory of the current profile, or the configured
-             password store when no profile is selected.
-    """
-    profiles = settings.get("profiles") or {}
-    current = settings.get("current_profile")
-    if current and current in profiles:
-        return profiles[current]
-    return settings.get("pass_store") or DEFAULT_STORE_DIR
-
-
-def apply_executables(settings):
-    """
-    Point the gpg and git helpers at the configured executables.
-
-    :param settings: The SettingsManager.
-    """
-    gpg_utils.set_gpg_executable(settings.get("gpg_executable"))
-    git_utils.set_git_executable(settings.get("git_executable"))
 
 
 class QtPassGUI(StoreActionsMixin, WindowActionsMixin, QMainWindow):
@@ -130,6 +109,8 @@ class QtPassGUI(StoreActionsMixin, WindowActionsMixin, QMainWindow):
         self.panel_timer.setSingleShot(True)
         self.panel_timer.timeout.connect(self.clear_panel)
         self.store = None
+        self.menu_peek = False
+        self.alt_alone = False
         apply_executables(self.settings)
         self.load_store()
         self.init_ui()
@@ -137,7 +118,7 @@ class QtPassGUI(StoreActionsMixin, WindowActionsMixin, QMainWindow):
         self.process_output.connect(self.append_process_output)
         self.output_listener = make_output_listener(self)
         executor.add_listener(self.output_listener)
-        if self.git_enabled() and self.settings.get("git_pull_on_start"):
+        if self.git_enabled() and self.settings.effective("git_pull_on_start"):
             QTimer.singleShot(0, self.on_git_pull)
 
     def get_store_dir(self):
@@ -151,11 +132,7 @@ class QtPassGUI(StoreActionsMixin, WindowActionsMixin, QMainWindow):
         :param store_dir: The store directory.
         :return: A PasswordStore for it with the current settings.
         """
-        return PasswordStore(
-            store_dir,
-            gpg_bin=gpg_utils.which_gpg(),
-            use_git=bool(self.settings.get("use_git")),
-        )
+        return make_store(self.settings, store_dir)
 
     def load_store(self):
         """
@@ -189,6 +166,7 @@ class QtPassGUI(StoreActionsMixin, WindowActionsMixin, QMainWindow):
         else:
             self.save_settings()
             executor.remove_listener(self.output_listener)
+            QApplication.instance().removeEventFilter(self)
             event.accept()
             QApplication.instance().quit()
 
@@ -527,6 +505,7 @@ class QtPassGUI(StoreActionsMixin, WindowActionsMixin, QMainWindow):
         exit_action.triggered.connect(self.exit)
         tray_menu.addAction(open_action)
         tray_menu.addAction(self.actions["add"])
+        tray_menu.addAction(self.actions["show_menu_bar"])
         tray_menu.addSeparator()
         tray_menu.addAction(exit_action)
         self.ui.tray_icon.setContextMenu(tray_menu)
@@ -636,7 +615,7 @@ class QtPassGUI(StoreActionsMixin, WindowActionsMixin, QMainWindow):
         """
         Push local changes automatically when the auto push setting is on.
         """
-        if not self.git_enabled() or not self.settings.get("auto_push"):
+        if not self.git_enabled() or not self.settings.effective("auto_push"):
             return
         if not git_utils.has_remote(self.store.store_dir):
             return
@@ -661,8 +640,6 @@ class QtPassGUI(StoreActionsMixin, WindowActionsMixin, QMainWindow):
         Apply the current settings to the running application.
         """
         apply_executables(self.settings)
-        self.store.gpg_bin = gpg_utils.which_gpg()
-        self.store.use_git = bool(self.settings.get("use_git"))
         if self.settings.get("use_tray_icon"):
             self.ui.tray_icon.show()
         else:
@@ -679,8 +656,8 @@ class QtPassGUI(StoreActionsMixin, WindowActionsMixin, QMainWindow):
 
         self.update_search_placeholder()
         self.update_profile_combo()
-        self.update_git_actions()
-        self.switch_store_if_needed()
+        self.apply_menu_bar_setting()
+        self.switch_store_if_needed(always=True)
 
     # Search
 
@@ -762,12 +739,18 @@ class QtPassGUI(StoreActionsMixin, WindowActionsMixin, QMainWindow):
         self.settings.save()
         self.switch_store_if_needed()
 
-    def switch_store_if_needed(self):
+    def switch_store_if_needed(self, always=False):
         """
         Reopen the password store when the current profile points elsewhere.
+
+        :param always: Reopen it with the current settings (backend, git,
+                       signing keys) even when the folder did not change.
         """
         new_dir = os.path.abspath(os.path.expanduser(self.get_store_dir()))
         if new_dir == self.store.store_dir:
+            if always:
+                self.store = self.new_store(new_dir)
+                self.update_git_actions()
             return
         store = self.new_store(new_dir)
         if not store.is_initialised():
@@ -878,6 +861,7 @@ Check out the [documentation](https://github.com/annejan/PyQtPass/) for more inf
         self.update_git_actions()
         self.update_search_placeholder()
 
+        QApplication.instance().installEventFilter(self)
         self.setup_tray_icon()
         if self.settings.get("use_tray_icon"):
             self.ui.tray_icon.show()
@@ -906,33 +890,6 @@ def make_output_listener(window):
             target.process_output.emit(label, returncode, output)
 
     return listener
-
-
-def ensure_store(settings):
-    """
-    Run the first-run wizard when the configured store is not set up.
-
-    :param settings: The SettingsManager.
-    :return: False when the user cancelled the wizard.
-    """
-    store = PasswordStore(configured_store_dir(settings), use_git=False)
-    if store.is_initialised():
-        return True
-    wizard = FirstRunWizard(store.store_dir)
-    if wizard.exec() != QDialog.DialogCode.Accepted:
-        return False
-    store_dir = wizard.store_dir()
-    profiles = settings.get("profiles") or {}
-    current = settings.get("current_profile")
-    if current and current in profiles:
-        profiles = dict(profiles)
-        profiles[current] = store_dir
-        settings.set("profiles", profiles)
-    else:
-        settings.set("pass_store", store_dir)
-    settings.set("use_git", wizard.use_git())
-    settings.save()
-    return True
 
 
 def main():

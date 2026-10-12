@@ -51,6 +51,8 @@ def window(qapp, settings, store):
     gui = QtPassGUI()
     yield gui
     gui.close()
+    gui.deleteLater()
+    qapp.processEvents()
 
 
 def find_index(gui, path):
@@ -155,3 +157,30 @@ def test_reencrypt_in_background(qapp, window, store, key_id, monkeypatch):
     assert not failures
     assert os.path.isfile(os.path.join(store.store_dir, "team", ".gpg-id"))
     assert store.get_key("team/x") == "pw\n"
+
+
+def test_menu_bar_toggle_and_peek(qapp, window):
+    window.actions["show_menu_bar"].setChecked(False)
+    assert not window.settings.get("show_menu_bar")
+    assert window.menuBar().isHidden()
+    window.peek_menu_bar()
+    assert not window.menuBar().isHidden() and window.menu_peek
+    window.menuBar().setActiveAction(None)
+    window.end_menu_peek()
+    assert window.menuBar().isHidden()
+    window.actions["show_menu_bar"].setChecked(True)
+    assert not window.menuBar().isHidden()
+
+
+def test_signed_profile_store(qapp, window, settings, key_id):
+    from store_setup import make_store  # pylint: disable=import-outside-toplevel
+
+    settings.set("pass_signing_key", key_id)
+    store = make_store(settings)
+    assert store.signer.enabled
+    store.init([key_id])
+    assert os.path.isfile(os.path.join(store.store_dir, ".gpg-id.sig"))
+    store.set_key("signed", "pw")
+    window.apply_settings()
+    assert window.store.signer.enabled
+    assert window.store.get_key("signed") == "pw\n"

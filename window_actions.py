@@ -5,7 +5,9 @@ They live in a mixin to keep the main window module readable; the strings
 are translated in the context of the main window class.
 """
 
-from PyQt6.QtCore import QCoreApplication, Qt
+import sys
+
+from PyQt6.QtCore import QCoreApplication, QEvent, Qt, QTimer
 from PyQt6.QtGui import QAction, QFontDatabase, QIcon
 from PyQt6.QtWidgets import (
     QApplication,
@@ -150,6 +152,17 @@ class WindowActionsMixin:
         quit_action.setMenuRole(QAction.MenuRole.QuitRole)
         quit_action.triggered.connect(self.exit)
         self.actions["quit"] = quit_action
+        menu_bar_action = QAction(
+            QCoreApplication.translate("QtPassGUI", "Show menu bar"), self
+        )
+        menu_bar_action.setCheckable(True)
+        menu_bar_action.setShortcut("Ctrl+M")
+        menu_bar_action.setShortcutContext(Qt.ShortcutContext.ApplicationShortcut)
+        menu_bar_action.setChecked(bool(self.settings.get("show_menu_bar")))
+        menu_bar_action.toggled.connect(self.on_menu_bar_toggled)
+        # The window keeps the shortcut working while the menu bar is hidden.
+        self.addAction(menu_bar_action)
+        self.actions["show_menu_bar"] = menu_bar_action
         self.actions["process_output"] = self.output_dock.toggleViewAction()
         self.actions["process_output"].setText(
             QCoreApplication.translate("QtPassGUI", "Show process output")
@@ -207,6 +220,7 @@ class WindowActionsMixin:
         )
         settings_menu.addAction(self.actions["config"])
         settings_menu.addAction(self.actions["process_output"])
+        settings_menu.addAction(self.actions["show_menu_bar"])
 
         help_menu = menubar.addMenu(QCoreApplication.translate("QtPassGUI", "&Help"))
         about_action = QAction(
@@ -221,6 +235,65 @@ class WindowActionsMixin:
         about_qt_action.setMenuRole(QAction.MenuRole.AboutQtRole)
         about_qt_action.triggered.connect(QApplication.instance().aboutQt)
         help_menu.addAction(about_qt_action)
+        for menu in (file_menu, store_menu, settings_menu, help_menu):
+            menu.aboutToHide.connect(lambda: QTimer.singleShot(0, self.end_menu_peek))
+        self.apply_menu_bar_setting()
+
+    def on_menu_bar_toggled(self, checked):
+        """
+        Show or hide the menu bar and remember the choice.
+
+        :param checked: Whether the menu bar is to be shown.
+        """
+        self.settings.set("show_menu_bar", checked)
+        self.settings.save()
+        self.apply_menu_bar_setting()
+
+    def apply_menu_bar_setting(self):
+        """Show the menu bar as configured; macOS always has its own."""
+        shown = bool(self.settings.get("show_menu_bar")) or sys.platform == "darwin"
+        self.actions["show_menu_bar"].blockSignals(True)
+        self.actions["show_menu_bar"].setChecked(
+            bool(self.settings.get("show_menu_bar"))
+        )
+        self.actions["show_menu_bar"].blockSignals(False)
+        self.menu_peek = False
+        self.menuBar().setVisible(shown)
+
+    def peek_menu_bar(self):
+        """
+        Show the hidden menu bar for as long as it is used, after Alt.
+        """
+        if not self.menuBar().isHidden() or not self.menuBar().actions():
+            return
+        self.menu_peek = True
+        self.menuBar().show()
+        if self.isVisible():
+            self.menuBar().setActiveAction(self.menuBar().actions()[0])
+
+    def end_menu_peek(self):
+        """Hide the menu bar again once no menu of it is open."""
+        if self.menu_peek and self.menuBar().activeAction() is None:
+            self.apply_menu_bar_setting()
+
+    def eventFilter(self, watched, event):  # pylint: disable=invalid-name
+        """
+        Alt pressed and released on its own shows a hidden menu bar, like
+        QtPass; it hides again when its menus close.
+        """
+        if event.type() == QEvent.Type.KeyPress:
+            self.alt_alone = event.key() == Qt.Key.Key_Alt
+        elif (
+            event.type() == QEvent.Type.KeyRelease
+            and event.key() == Qt.Key.Key_Alt
+            and self.alt_alone
+            and self.isActiveWindow()
+        ):
+            self.alt_alone = False
+            self.peek_menu_bar()
+        elif event.type() == QEvent.Type.MouseButtonPress:
+            self.alt_alone = False
+        return super().eventFilter(watched, event)
 
     def setup_output_dock(self):
         """

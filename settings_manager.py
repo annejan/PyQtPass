@@ -5,11 +5,39 @@ and retrieving various settings such as window geometry, splitter sizes, and
 boolean flags for application behavior.
 """
 
+import os
 import string
 
 from PyQt6.QtCore import QSettings, QByteArray
 
 DEFAULT_CUSTOM_CHARS = string.ascii_letters + string.digits + string.punctuation
+DEFAULT_STORE_DIR = "~/.password-store"
+
+# Settings a profile can override; None in a profile means "as configured".
+PROFILE_OVERRIDES = ("use_git", "auto_push", "git_pull_on_start")
+
+
+def profile_options(value):
+    """
+    Normalise a stored profile: older versions stored only its path.
+
+    :param value: The stored profile, a path or a dict.
+    :return: Dict with 'path', 'signing_key' and the PROFILE_OVERRIDES.
+    """
+    if isinstance(value, dict):
+        options = {
+            "path": str(value.get("path") or ""),
+            "signing_key": str(value.get("signing_key") or ""),
+        }
+        for key in PROFILE_OVERRIDES:
+            override = value.get(key)
+            if isinstance(override, str):
+                override = {"true": True, "false": False}.get(override.lower())
+            options[key] = override if isinstance(override, bool) else None
+        return options
+    options = {"path": str(value or ""), "signing_key": ""}
+    options.update({key: None for key in PROFILE_OVERRIDES})
+    return options
 
 
 class SettingsManager:
@@ -54,6 +82,10 @@ class SettingsManager:
             "profiles": {},
             "current_profile": "",
             "pass_store": "~/.password-store",
+            "pass_signing_key": "",
+            "use_pass": False,
+            "pass_executable": "",
+            "show_menu_bar": True,
             "use_selection": False,
             "use_monospace": True,
             "display_as_is": False,
@@ -132,6 +164,54 @@ class SettingsManager:
             for name in str(self.get("pass_template")).splitlines()
             if name.strip()
         ]
+
+    def current_profile(self):
+        """
+        :return: The options of the selected profile, or None.
+        """
+        profiles = self.get("profiles") or {}
+        current = self.get("current_profile")
+        if current and current in profiles:
+            return profile_options(profiles[current])
+        return None
+
+    def store_dir(self):
+        """
+        :return: The store of the selected profile, or the configured store.
+        """
+        profile = self.current_profile()
+        if profile and profile["path"]:
+            return profile["path"]
+        return self.get("pass_store") or DEFAULT_STORE_DIR
+
+    def effective(self, key):
+        """
+        :param key: A setting a profile can override.
+        :return: The profile's value when it sets one, else the global one.
+        """
+        profile = self.current_profile()
+        if profile is not None and profile.get(key) is not None:
+            return profile[key]
+        return self.get(key)
+
+    def signing_keys(self):
+        """
+        :return: The fingerprints that sign .gpg-id files for the current
+                 store: the profile's, or the configured ones.
+        """
+        profile = self.current_profile()
+        keys = profile["signing_key"] if profile and profile["signing_key"] else ""
+        return (keys or str(self.get("pass_signing_key") or "")).split()
+
+    def generation_record_path(self):
+        """
+        :return: Where the generations of signed recipient lists are kept,
+                 next to the settings.
+        """
+        return os.path.join(
+            os.path.dirname(self.settings.fileName()),
+            "PyQtPass-gpgid-generations.json",
+        )
 
     def save(self):
         """Save settings"""

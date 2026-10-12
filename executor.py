@@ -7,6 +7,7 @@ Listeners are plain callables so this module does not depend on Qt and can
 be used from worker threads; the GUI marshals the calls to its own thread.
 """
 
+import os
 import subprocess
 
 _listeners = []
@@ -68,7 +69,9 @@ def _notify(args, returncode, output):
             pass
 
 
-def run(args, input_data=None, timeout=None, cwd=None, log_stdout=False):
+def run(
+    args, input_data=None, timeout=None, cwd=None, log_stdout=False, env=None
+):  # pylint: disable=too-many-arguments,too-many-positional-arguments
     """
     Run a command and report it to the listeners.
 
@@ -80,6 +83,7 @@ def run(args, input_data=None, timeout=None, cwd=None, log_stdout=False):
     :param timeout: Optional timeout in seconds.
     :param cwd: Optional working directory.
     :param log_stdout: Whether standard output may be shown to listeners.
+    :param env: Optional extra environment variables.
     :return: Tuple of (returncode, stdout bytes, stderr bytes); returncode is
              -1 when the program could not be started or timed out.
     """
@@ -91,6 +95,7 @@ def run(args, input_data=None, timeout=None, cwd=None, log_stdout=False):
             timeout=timeout,
             cwd=cwd,
             check=False,
+            env={**os.environ, **env} if env else None,
         )
     except (OSError, subprocess.TimeoutExpired) as error:
         _notify(args, -1, str(error))

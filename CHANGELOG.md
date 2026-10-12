@@ -13,6 +13,7 @@ Brings PyQtPass up to date with the QtPass 2.0 feature set.
 - The password store folder is a setting now (System tab), so a store outside
   `~/.password-store` no longer needs a profile. A missing store opens the
   first-run wizard instead of quitting.
+- Python 3.11 or newer is required.
 - Ctrl+Q quits, Ctrl+W closes the window (hides it with "hide on close").
 - The 32-bit Windows build is gone: PyQt6 has no 32-bit Windows wheels, so it
   was a 64-bit build under another name.
@@ -46,7 +47,22 @@ Brings PyQtPass up to date with the QtPass 2.0 feature set.
 - Clipboard contents are marked as secret for clipboard managers, and can be
   copied to the X11 selection too.
 - Single instance: starting PyQtPass again brings the running window forward.
-- Configurable gpg, git and qrencode executables.
+- Configurable gpg, git, pass and qrencode executables; on Windows gpg is
+  also found in the Gpg4win folder.
+- Signed `.gpg-id` files: with a signing key configured, globally or per
+  profile, recipient lists are signed (`.gpg-id.sig`, compatible with pass's
+  `PASSWORD_STORE_SIGNING_KEY`) and verified before anything is encrypted.
+  Lists written here carry the QtPass 2.0 generation and folder header, and
+  a record next to the settings refuses an older generation, a list copied
+  from another folder or a different list under the same generation. The
+  Users dialog preselects only a trusted list and says why otherwise.
+- "Use the pass command-line tool": changes go through the `pass` script
+  (listing and search stay native, links are still refused first).
+- Profiles are a list with a form: folder, signing key, and whether to use
+  Git, push automatically and pull on startup, each "as configured" or
+  overridden. Profiles stored by 0.2 (just a path) are read as before.
+- The menu bar can be hidden with Ctrl+M (also in the tray menu); Alt shows
+  it for as long as it is used.
 
 ### Fixes
 
@@ -64,3 +80,5 @@ Brings PyQtPass up to date with the QtPass 2.0 feature set.
   and 3.13.
 - Release builds compile the translations with Qt 6.8 LTS tools.
 - `requirements-dev.txt` and `pyproject.toml` for the development tools.
+- Python 3.11 or newer is required (Markdown 3.11 needs it; 3.10 is end of
+  life).

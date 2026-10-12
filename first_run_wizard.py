@@ -139,9 +139,12 @@ class KeyPage(QWizardPage):
 class StorePage(QWizardPage):
     """Pick the store folder and set it up."""
 
-    def __init__(self, store_dir, key_page, parent=None):
+    def __init__(self, store_dir, key_page, parent=None, store_factory=None):
         super().__init__(parent)
         self.key_page = key_page
+        self.store_factory = store_factory or (
+            lambda path: PasswordStore(path, use_git=False)
+        )
         self.setTitle(self.tr("Password store"))
         self.setSubTitle(
             self.tr(
@@ -209,7 +212,8 @@ class StorePage(QWizardPage):
 
     def validatePage(self):  # pylint: disable=invalid-name
         """Set the store up; stay on the page when that fails."""
-        store = PasswordStore(self.store_dir(), use_git=self.use_git.isChecked())
+        store = self.store_factory(self.store_dir())
+        store.use_git = self.use_git.isChecked()
         try:
             os.makedirs(store.store_dir, exist_ok=True)
             if self.use_git.isChecked() and not git_utils.is_git_repo(store.store_dir):
@@ -233,13 +237,19 @@ class StorePage(QWizardPage):
 class FirstRunWizard(QWizard):
     """The wizard tying the pages together."""
 
-    def __init__(self, store_dir, parent=None):
+    def __init__(self, store_dir, parent=None, store_factory=None):
+        """
+        :param store_dir: The suggested store folder.
+        :param parent: The parent widget.
+        :param store_factory: Callable(path) opening a store with the
+                              configured backend and signing keys.
+        """
         super().__init__(parent)
         self.setWindowTitle(self.tr("Welcome to PyQtPass"))
         self.addPage(IntroPage(self))
         self.key_page = KeyPage(self)
         self.addPage(self.key_page)
-        self.store_page = StorePage(store_dir, self.key_page, self)
+        self.store_page = StorePage(store_dir, self.key_page, self, store_factory)
         self.addPage(self.store_page)
         self.resize(600, 450)
 

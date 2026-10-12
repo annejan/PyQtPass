@@ -41,8 +41,14 @@ PyQtPass follows the feature set of [QtPass 2.0](https://github.com/IJHack/QtPas
   import of keys from a file or the clipboard, key pair generation and exporting your public key to share a store.
 - A first-run wizard that sets up a store, a key and Git for new users.
 - A dockable process output panel showing what `gpg` and `git` were asked and what they said.
-- Multiple password store profiles that can be switched from the toolbar.
-- Links inside the store are never followed, and paths cannot escape the store.
+- Multiple password store profiles, switched from the toolbar, each with its own folder,
+  signing key and Git behaviour.
+- Signed recipient lists: with a signing key (like `PASSWORD_STORE_SIGNING_KEY`) every `.gpg-id`
+  is signed and nothing is encrypted to a list that does not verify; rolled back lists,
+  lists copied from another folder and swapped lists are refused (QtPass 2.0 compatible headers).
+- Optionally runs the `pass` script itself for every change, for pass extensions and hooks.
+- Links (and NTFS junctions) inside the store are never followed, and paths cannot escape the store.
+- A menu bar that can be hidden (Ctrl+M); Alt shows it while you use it.
 - System tray icon, start minimized, hide on close, always on top and a single running instance.
 - Cross-platform compatibility, thanks to the Python and PyQt6 combination.
 
