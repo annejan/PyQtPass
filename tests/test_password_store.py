@@ -322,8 +322,9 @@ def test_init_with_failing_commit_still_reencrypts(tmp_path, key_id, second_key)
     old_recipients = recipients_of(git_store.entry_file("a"))
     with open(os.path.join(repo, ".git", "index.lock"), "w", encoding="utf-8"):
         pass
-    with pytest.raises(CommitError, match="re-encrypted"):
+    with pytest.raises(CommitError, match="re-encrypted") as raised:
         git_store.init([second_key])
+    assert str(raised.value).count("git commit failed") == 1
     # Encrypted to the new key's encryption subkey only, not the old key.
     new_recipients = recipients_of(git_store.entry_file("a"))
     assert new_recipients and not new_recipients & old_recipients
@@ -343,3 +344,23 @@ def test_leftover_staging_folder_is_not_committed(tmp_path, key_id):
     git_store.reencrypt()
     ok, files = git_utils.run_git(repo, "ls-files")
     assert ok and ".pyqtpass-move-crash" not in files
+
+
+def test_cancelled_init_says_it_stopped(store, second_key):
+    store.set_key("a", "pw")
+    with pytest.raises(StoreError, match="cancelled") as raised:
+        store.init([second_key], cancelled=lambda: True)
+    assert "Re-encrypt" in str(raised.value)
+    assert store.recipients() == [second_key]
+    assert store.get_key("a") == "pw\n"
+
+
+def test_store_lock_follows_a_folder_made_later(tmp_path):
+    # Opened through a path that only later leads to the real folder.
+    early = PasswordStore(str(tmp_path / "via" / "store"), use_git=False)
+    with early.lock:
+        pass
+    (tmp_path / "real" / "store").mkdir(parents=True)
+    os.symlink(tmp_path / "real", tmp_path / "via")
+    late = PasswordStore(str(tmp_path / "real" / "store"), use_git=False)
+    assert early.lock is late.lock

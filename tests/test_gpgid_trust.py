@@ -7,7 +7,13 @@ import shutil
 
 import pytest
 
-from pyqtpass.gpgid_trust import GenerationRecord, TrustError, parse_header, with_header
+from pyqtpass.gpgid_trust import (
+    GenerationRecord,
+    TrustError,
+    list_key,
+    parse_header,
+    with_header,
+)
 from pyqtpass.password_store import PasswordStore, StoreError
 
 
@@ -242,3 +248,38 @@ def test_moving_a_signed_folder_needs_the_signing_key(signed_store, key_id):
     with pytest.raises(StoreError, match="signing key"):
         plain.move_path("team", "squad")
     assert os.path.isdir(os.path.join(signed_store.store_dir, "team"))
+
+
+def test_failed_signed_move_restores_the_record(signed_store, key_id, monkeypatch):
+    # secret's signed list was removed outside the app (say, by a pull):
+    # entries there are rightly refused.
+    signed_store.init([key_id], "secret")
+    secret_id = os.path.join(signed_store.store_dir, "secret", ".gpg-id")
+    shutil.rmtree(os.path.dirname(secret_id))
+    signed_store.init([key_id], "team")
+    signed_store.init([key_id], "team/sub")
+    signed_store.set_key("team/sub/t", "pw")
+    signer = signed_store.signer
+    remembered = signer.entry(list_key(secret_id))
+    assert remembered is not None
+    sign = signer.sign
+    calls = []
+
+    def second_fails(contents):
+        calls.append(1)
+        if len(calls) == 2:
+            raise TrustError("pinentry cancelled")
+        return sign(contents)
+
+    monkeypatch.setattr(signer, "sign", second_fails)
+    with pytest.raises(StoreError, match="pinentry cancelled"):
+        signed_store.move_path("team", "secret")
+    monkeypatch.setattr(signer, "sign", sign)
+    assert len(calls) == 2
+    assert signer.entry(list_key(secret_id)) == remembered
+    assert not signer.entry(
+        list_key(os.path.join(os.path.dirname(secret_id), "sub", ".gpg-id"))
+    )
+    with pytest.raises(StoreError):
+        signed_store.set_key("secret/t", "pw")
+    assert signed_store.get_key("team/sub/t") == "pw\n"

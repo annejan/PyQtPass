@@ -430,6 +430,33 @@ class GpgIdSigner:
             for key in keys:
                 entries.pop(key, None)
 
+    def entry(self, key):
+        """
+        :param key: A record key, from list_key().
+        :return: A copy of the recorded entry, or None.
+        """
+        with self.record.transaction() as entries:
+            entry = entries.get(key)
+            return dict(entry) if entry is not None else None
+
+    def restore_entries(self, previous, written):
+        """
+        Undo record entries written for lists that never took their place:
+        each goes back to what it was before (or away, when there was none),
+        unless another writer has recorded something else there meanwhile.
+
+        :param previous: Dict of record key to its entry before, or None.
+        :param written: Dict of record key to the entry this writer recorded.
+        """
+        with self.record.transaction() as entries:
+            for key, ours in written.items():
+                if entries.get(key) != ours:
+                    continue
+                if previous.get(key) is None:
+                    entries.pop(key, None)
+                else:
+                    entries[key] = previous[key]
+
     def next_generation(self, gpg_id_file, on_disk_generation=0):
         """
         :param gpg_id_file: Path of the .gpg-id file about to be written.

@@ -45,7 +45,9 @@ class StoreActionsMixin:
         store = self.store
         self.run_with_progress(
             QCoreApplication.translate("QtPassGUI", "Re-encrypting passwords..."),
-            lambda progress, _cancelled: store.init(keys, folder, progress=progress),
+            lambda progress, cancelled: store.init(
+                keys, folder, progress=progress, cancelled=cancelled
+            ),
             QCoreApplication.translate(
                 "QtPassGUI", "Re-encrypted passwords in {}"
             ).format(folder or "/"),
