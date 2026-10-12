@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Licensing follows the REUSE specification, like QtPass: `REUSE.toml`
+  records the copyright and licence of every file (GPL-3.0-or-later; the
+  logo WTFPL; the Lato font OFL-1.1), with the licence texts in `LICENSES/`,
+  and CI checks it.
+
 ## 0.4.1
 
 Fixes from the review of 0.3.0 and 0.4.0 (#30), and releases made like
