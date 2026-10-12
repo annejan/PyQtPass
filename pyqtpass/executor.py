@@ -76,6 +76,9 @@ def _notify(args, returncode, output):
 
 _running = set()
 _running_lock = threading.Lock()
+# Set by terminate_all: a command a worker starts after that is refused,
+# so nothing new runs once quitting has ended the running ones.
+_refusing = threading.Event()
 
 # On POSIX every command gets a session of its own: it has no controlling
 # terminal to ask on (git and ssh fail instead of waiting on a hidden tty),
@@ -103,6 +106,7 @@ def terminate_all(grace=2.0):
     :param grace: Seconds to wait after SIGTERM before killing.
     """
     with _running_lock:
+        _refusing.set()
         processes = list(_running)
     for process in processes:
         _end(process)
@@ -112,6 +116,11 @@ def terminate_all(grace=2.0):
             process.wait(max(0.0, deadline - time.monotonic()))
         except subprocess.TimeoutExpired:
             _end(process, getattr(signal, "SIGKILL", signal.SIGTERM))
+
+
+def allow_commands():
+    """Start running commands again after terminate_all (for tests)."""
+    _refusing.clear()
 
 
 def run(
@@ -147,6 +156,8 @@ def run(
         _notify(args, -1, str(error))
         return -1, b"", str(error).encode()
     with _running_lock:
+        if _refusing.is_set():
+            _end(process, getattr(signal, "SIGKILL", signal.SIGTERM))
         _running.add(process)
     try:
         stdout, stderr = process.communicate(input_data, timeout=timeout)

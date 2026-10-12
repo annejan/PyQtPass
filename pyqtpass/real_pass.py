@@ -114,7 +114,7 @@ class RealPassStore(PasswordStore):
         return self._pass_copy_move("cp", old_path, new_path, force)
 
     @locked
-    def init(self, gpg_ids, folder="", progress=None):
+    def init(self, gpg_ids, folder="", progress=None, cancelled=None):
         if not gpg_ids:
             raise StoreError("At least one key is needed")
         clean = self.clean_path(folder)

@@ -14,11 +14,13 @@ import argparse
 import html
 import os
 import sys
+import time
 import weakref
 
 import markdown
 from PyQt6.QtCore import (
     Qt,
+    QCoreApplication,
     QByteArray,
     QTimer,
     pyqtSignal,
@@ -35,6 +37,7 @@ from PyQt6.QtWidgets import (
     QMainWindow,
     QMenu,
     QMessageBox,
+    QProgressDialog,
     QSplitter,
     QSystemTrayIcon,
 )
@@ -52,7 +55,8 @@ from pyqtpass.store_setup import (
     make_store,
 )
 from pyqtpass.single_instance import activate_running_instance, listen_for_instances
-from pyqtpass.tasks import run_task, wait_for_all
+from pyqtpass import tasks
+from pyqtpass.tasks import run_task
 from pyqtpass.templates import template_fields_for
 from pyqtpass.store_actions import StoreActionsMixin
 from pyqtpass.ui_container import UiContainer
@@ -734,6 +738,35 @@ def make_output_listener(window):
     return listener
 
 
+def finish_tasks_on_quit():
+    """
+    Let running git and store changes finish before quitting, showing a
+    window with a way out when that takes more than a moment.
+    """
+    if not tasks.running():
+        return
+    dialog = QProgressDialog(
+        QCoreApplication.translate(
+            "QtPassGUI", "Finishing git and password store changes..."
+        ),
+        QCoreApplication.translate("QtPassGUI", "Quit now"),
+        0,
+        0,
+    )
+    dialog.setWindowTitle("PyQtPass")
+    dialog.setAutoClose(False)
+    start = time.monotonic()
+
+    def idle():
+        if not dialog.isVisible() and time.monotonic() - start > 1:
+            dialog.show()
+        QApplication.processEvents()
+        return dialog.wasCanceled()
+
+    tasks.wait_for_all(idle=idle)
+    dialog.close()
+
+
 def main():
     """
     Main function to start the PyQtPass application.
@@ -769,8 +802,14 @@ def main():
     window = QtPassGUI(verbose=args.verbose)
     server = listen_for_instances(window)  # pylint: disable=unused-variable
     window.show()
-    app.aboutToQuit.connect(wait_for_all)
-    sys.exit(app.exec())
+    app.aboutToQuit.connect(finish_tasks_on_quit)
+    code = app.exec()
+    if tasks.stuck():
+        # A worker thread did not stop even after its commands were ended;
+        # destroying its QThread would abort, so leave without cleanup.
+        # Settings were saved when the window closed.
+        os._exit(code)  # pylint: disable=protected-access
+    sys.exit(code)
 
 
 if __name__ == "__main__":

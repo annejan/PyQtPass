@@ -17,16 +17,32 @@ for package in $PACKAGES; do
   dpkg -s "$package" >/dev/null 2>&1 || missing="$missing $package"
 done
 if [ -n "$missing" ]; then
-  export DEBIAN_FRONTEND=noninteractive
-  apt-get update -qq
-  # shellcheck disable=SC2086
-  apt-get install -y -qq $missing >/dev/null
+  as_root=""
+  if [ "$(id -u)" -ne 0 ]; then
+    if command -v sudo >/dev/null && sudo -n true 2>/dev/null; then
+      as_root="sudo -n"
+    else
+      echo "Not root and no sudo: install these yourself:$missing" >&2
+      missing=""
+    fi
+  fi
+  if [ -n "$missing" ]; then
+    # shellcheck disable=SC2086
+    $as_root env DEBIAN_FRONTEND=noninteractive apt-get update -qq
+    # shellcheck disable=SC2086
+    $as_root env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq $missing >/dev/null
+  fi
 fi
 
 if [ ! -x .venv/bin/python ]; then
   python3 -m venv .venv
 fi
-.venv/bin/pip install -q --disable-pip-version-check -r requirements-dev.txt
+# Only goes to the network when the requirements changed since last time.
+wanted=$(cat requirements.txt requirements-dev.txt | sha256sum)
+if [ "$(cat .venv/.requirements 2>/dev/null)" != "$wanted" ]; then
+  .venv/bin/pip install -q --disable-pip-version-check -r requirements-dev.txt
+  echo "$wanted" > .venv/.requirements
+fi
 
 if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
   {

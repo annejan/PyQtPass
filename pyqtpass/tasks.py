@@ -5,6 +5,7 @@ on the GUI thread.
 """
 
 import threading
+import time
 
 from PyQt6.QtCore import QObject, Qt, QThread, pyqtSignal, pyqtSlot
 
@@ -118,23 +119,48 @@ def running():
     return bool(_running)
 
 
-def wait_for_all(grace_ms=3000, critical_ms=60000, final_ms=10000):
+def stuck():
     """
-    Stop all running tasks, used when quitting. They are asked to cancel
-    and given grace_ms; critical tasks (git, store changes) get critical_ms
-    to finish on their own, since killing them can leave a lock or a half
-    merge behind. What still runs after that has its commands terminated.
+    :return: True when a worker thread is still running after wait_for_all
+             gave up on it; Python must then not destroy its QThread.
+    """
+    return any(task.thread.isRunning() for task in _running)
+
+
+def wait_for_all(grace_ms=3000, critical_ms=60000, final_ms=10000, idle=None):
+    """
+    Stop all running tasks, used when quitting. They are asked to cancel;
+    other tasks get grace_ms to finish, critical tasks (git, store changes)
+    critical_ms in all, since killing them can leave a lock or a half merge
+    behind. What still runs after that has its commands terminated and
+    gets final_ms to end.
 
     :param grace_ms: Milliseconds other tasks get to finish on their own.
-    :param critical_ms: Milliseconds critical tasks get.
+    :param critical_ms: Milliseconds critical tasks get, together.
     :param final_ms: Milliseconds to wait after terminating, at most.
+    :param idle: Optional callable, called about every 100 ms while waiting
+                 (to keep a progress window painted); when it returns True
+                 the wait for critical tasks ends early.
+    :return: True when every task has stopped.
     """
     tasks = list(_running)
     for task in tasks:
         task.cancel()
-    for task in tasks:
-        task.wait(critical_ms if task.critical else grace_ms)
+    start = time.monotonic()
+    deadlines = {False: start + grace_ms / 1000, True: start + critical_ms / 1000}
+    while True:
+        now = time.monotonic()
+        waiting = [
+            task
+            for task in tasks
+            if task.thread.isRunning() and now < deadlines[task.critical]
+        ]
+        if not waiting or (idle is not None and idle()):
+            break
+        waiting[0].wait(100)
     if any(task.thread.isRunning() for task in tasks):
         executor.terminate_all()
+        deadline = time.monotonic() + final_ms / 1000
         for task in tasks:
-            task.wait(final_ms)
+            task.wait(max(0, int((deadline - time.monotonic()) * 1000)))
+    return not any(task.thread.isRunning() for task in tasks)
