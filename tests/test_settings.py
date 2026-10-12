@@ -4,9 +4,6 @@
 
 from profiles_editor import ProfilesEditor
 from settings_manager import profile_options
-from test_gui import (
-    settings,
-)  # noqa: F401  pylint: disable=unused-import,wrong-import-order
 
 FINGERPRINT = "A" * 40
 

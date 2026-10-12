@@ -72,3 +72,24 @@ def qapp():
 
     app = QApplication.instance() or QApplication([])
     yield app
+
+
+@pytest.fixture
+def settings(tmp_path, qapp):  # pylint: disable=redefined-outer-name,unused-argument
+    """A SettingsManager writing to a temporary directory."""
+    # pylint: disable=import-outside-toplevel
+    from PyQt6.QtCore import QSettings
+
+    from settings_manager import SettingsManager
+
+    QSettings.setPath(
+        QSettings.Format.NativeFormat, QSettings.Scope.UserScope, str(tmp_path)
+    )
+    QSettings.setDefaultFormat(QSettings.Format.IniFormat)
+    QSettings.setPath(
+        QSettings.Format.IniFormat, QSettings.Scope.UserScope, str(tmp_path)
+    )
+    SettingsManager._instance = None  # pylint: disable=protected-access
+    manager = SettingsManager()
+    yield manager
+    SettingsManager._instance = None  # pylint: disable=protected-access

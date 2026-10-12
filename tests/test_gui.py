@@ -6,11 +6,9 @@ import os
 import time
 
 import pytest
-from PyQt6.QtCore import QSettings
 from PyQt6.QtWidgets import QApplication, QLineEdit
 
 from conftest import TEST_OTP_SEED
-from settings_manager import SettingsManager
 
 OTP_URI = f"otpauth://totp/Test?secret={TEST_OTP_SEED}"
 
@@ -22,21 +20,6 @@ def wait_until(app, condition, timeout=10):
         if time.time() > deadline:
             raise AssertionError("condition not met in time")
         time.sleep(0.01)
-
-
-@pytest.fixture
-def settings(tmp_path, qapp):
-    QSettings.setPath(
-        QSettings.Format.NativeFormat, QSettings.Scope.UserScope, str(tmp_path)
-    )
-    QSettings.setDefaultFormat(QSettings.Format.IniFormat)
-    QSettings.setPath(
-        QSettings.Format.IniFormat, QSettings.Scope.UserScope, str(tmp_path)
-    )
-    SettingsManager._instance = None  # pylint: disable=protected-access
-    manager = SettingsManager()
-    yield manager
-    SettingsManager._instance = None  # pylint: disable=protected-access
 
 
 @pytest.fixture
