@@ -54,4 +54,33 @@ jobs:
       env:
         QT_QPA_PLATFORM: offscreen
       run: |
-        python -m pytest -v --cov=pyqtpass --cov-report=term-missing:skip-covered --cov-report=markdown-append:"$GITHUB_STEP_SUMMARY"
+        python -m pytest -v --cov --cov-report=term-missing:skip-covered --cov-report=markdown-append:"$GITHUB_STEP_SUMMARY"
+
+    # The PR comment is posted by coverage-comment.yml, which runs after
+    # this workflow with the write access a pull request's own run lacks.
+    - name: Prepare the coverage comment
+      if: github.event_name == 'pull_request' && matrix.python-version == '3.13'
+      env:
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+      run: |
+        mkdir coverage-comment
+        echo "$PR_NUMBER" > coverage-comment/pr-number
+        TOTAL=$(python -m coverage report --format=total)
+        {
+          echo "<!-- pyqtpass-coverage -->"
+          echo "### Test coverage: ${TOTAL}%"
+          echo
+          echo "Lines and branches of \`pyqtpass\` run by the tests on Python ${{ matrix.python-version }}, at ${{ github.event.pull_request.head.sha }}."
+          echo
+          echo "<details><summary>Coverage per file</summary>"
+          echo
+          python -m coverage report --format=markdown
+          echo
+          echo "</details>"
+        } > coverage-comment/comment.md
+    - name: Upload the coverage comment
+      if: github.event_name == 'pull_request' && matrix.python-version == '3.13'
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: coverage-comment
+        path: coverage-comment/

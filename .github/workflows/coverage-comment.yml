@@ -1,0 +1,64 @@
+name: Coverage Comment
+
+# A pull request's own run, from a fork above all, cannot write to the pull
+# request. This one runs after it, from main, and posts the coverage report
+# that run left behind as a comment, updated in place on every push.
+on:
+  workflow_run:
+    workflows: [ "Python Lint, Format and Test" ]
+    types: [ completed ]
+
+permissions:
+  contents: read
+
+jobs:
+  comment:
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion != 'cancelled'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      pull-requests: write
+    steps:
+    # The files come from the pull request's run, so they are only read as
+    # data: nothing from them is executed or checked out.
+    - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+      id: download
+      continue-on-error: true
+      with:
+        name: coverage-comment
+        path: coverage-comment
+        run-id: ${{ github.event.workflow_run.id }}
+        github-token: ${{ github.token }}
+    - name: Post or update the comment
+      if: steps.download.outcome == 'success'
+      env:
+        GH_TOKEN: ${{ github.token }}
+        GH_REPO: ${{ github.repository }}
+        HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+      run: |
+        PR_NUMBER=$(head -c 16 coverage-comment/pr-number | tr -d '[:space:]')
+        if ! [[ "$PR_NUMBER" =~ ^[0-9]+$ ]]; then
+          echo "::error::'$PR_NUMBER' is not a pull request number"
+          exit 1
+        fi
+        # The number is the run's own word; the pull request must really be
+        # the one the run tested, and the report for its newest commit.
+        PR_SHA=$(gh api "repos/$GH_REPO/pulls/$PR_NUMBER" --jq .head.sha)
+        if [ "$PR_SHA" != "$HEAD_SHA" ]; then
+          echo "Pull request #$PR_NUMBER is at $PR_SHA now, not $HEAD_SHA; leaving its comment alone."
+          exit 0
+        fi
+        MARKER='<!-- pyqtpass-coverage -->'
+        if ! head -n 1 coverage-comment/comment.md | grep -qxF "$MARKER"; then
+          echo "::error::The coverage report does not start with its marker"
+          exit 1
+        fi
+        COMMENT_ID=$(gh api --paginate "repos/$GH_REPO/issues/$PR_NUMBER/comments" \
+          --jq ".[] | select(.user.login == \"github-actions[bot]\" and (.body | startswith(\"$MARKER\"))) | .id" | head -n 1)
+        if [ -n "$COMMENT_ID" ]; then
+          gh api --method PATCH "repos/$GH_REPO/issues/comments/$COMMENT_ID" \
+            -F body=@coverage-comment/comment.md >/dev/null
+        else
+          gh api --method POST "repos/$GH_REPO/issues/$PR_NUMBER/comments" \
+            -F body=@coverage-comment/comment.md >/dev/null
+        fi
