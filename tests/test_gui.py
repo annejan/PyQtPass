@@ -85,12 +85,20 @@ def test_filter_and_content_search(qapp, window):
     assert find_index(window, "web/site") is None
 
 
+def wait_for_tasks(app):
+    import tasks  # pylint: disable=import-outside-toplevel
+
+    wait_until(app, lambda: not tasks.running())
+
+
 def test_move_folder_and_delete(qapp, window, store, monkeypatch):
     window.store.create_folder("archive")
     window.on_move_requested("other", "archive", False)
+    wait_for_tasks(qapp)
     assert store.list_dir("archive") == ([], ["other"])
     assert find_index(window, "archive/other") is not None
     window.on_move_requested("archive/other", "", True)
+    wait_for_tasks(qapp)
     assert store.is_entry("other") and store.is_entry("archive/other")
 
 
@@ -167,3 +175,27 @@ def test_signed_profile_store(qapp, window, settings, key_id):
     window.apply_settings()
     assert window.store.signer.enabled
     assert window.store.get_key("signed") == "pw\n"
+
+
+def test_unchanged_edit_is_not_saved(qapp, window, store):
+    from edit_password_window import (  # pylint: disable=import-outside-toplevel
+        EditPasswordDialog,
+    )
+
+    before = os.path.getmtime(store.entry_file("other"))
+    dialog = EditPasswordDialog(store, "other", "other", parent=window)
+    dialog.save()
+    assert dialog.result() == 1 and not dialog.saved
+    assert os.path.getmtime(store.entry_file("other")) == before
+    dialog = EditPasswordDialog(store, "other", "other", parent=window)
+    dialog.info_text_edit.setPlainText("changed")
+    dialog.save()
+    wait_for_tasks(qapp)
+    assert dialog.saved
+    assert "changed" in store.get_key("other")
+
+
+def test_copy_password_runs_in_background(qapp, window):
+    window.ui.tree_view.setCurrentIndex(find_index(window, "web/site"))
+    window.copy_password()
+    wait_until(qapp, lambda: QApplication.clipboard().text() == "secret")

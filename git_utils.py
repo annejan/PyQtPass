@@ -44,6 +44,10 @@ def is_git_repo(path):
 # repository's configuration: whoever can write the store's .git/config could
 # otherwise make every save run a program. Pull and push keep the user's
 # setup, since those are what hooks there are usually for.
+# Never ask for credentials on a terminal nobody sees; a credential helper
+# or SSH agent still works.
+GIT_ENV = {"GIT_TERMINAL_PROMPT": "0"}
+
 NO_HOOKS = ["-c", f"core.hooksPath={os.devnull}", "-c", "core.fsmonitor=false"]
 
 
@@ -61,6 +65,7 @@ def run_git(path, *args, timeout=120, hooks=True):
     prefix = [] if hooks else NO_HOOKS
     returncode, stdout, stderr = executor.run(
         [git_executable(), *prefix, "-C", os.path.expanduser(path)] + list(args),
+        env=GIT_ENV,
         timeout=timeout,
         log_stdout=True,
     )

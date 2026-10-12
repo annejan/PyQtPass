@@ -19,7 +19,7 @@ from PyQt6.QtWidgets import (
 
 from edit_password_window import EditPasswordDialog
 from keygen_dialog import ExportPublicKeyDialog
-from password_store import StoreError
+from password_store import CommitError, StoreError
 from tasks import run_task
 from users_dialog import UsersDialog
 from utilities import get_item_full_path, is_folder_item
@@ -254,6 +254,35 @@ class StoreActionsMixin:
         """
         QMessageBox.warning(self, title, str(error))
 
+    def run_store_change(self, function, done_message, failed_title, on_done=None):
+        """
+        Change the store on a worker thread: gpg and git can take long (a
+        smartcard, a pinentry, a hook), and the store's lock makes a change
+        wait for a running pull instead of racing it.
+
+        :param function: Callable doing the change.
+        :param done_message: Status message on success.
+        :param failed_title: Title of the warning on failure.
+        :param on_done: Optional callable run on the GUI thread on success.
+        """
+        self.show_status(QCoreApplication.translate("QtPassGUI", "Working..."), 0)
+
+        def done(_result, error):
+            if isinstance(error, CommitError):
+                # The change is on disk; only the commit failed.
+                self.store_error(
+                    QCoreApplication.translate("QtPassGUI", "Not committed"), error
+                )
+            elif error is not None:
+                self.store_error(failed_title, error)
+                self.statusBar().clearMessage()
+                return
+            if on_done is not None:
+                on_done()
+            self.after_change(done_message)
+
+        run_task(lambda _progress, _cancelled: function(), done)
+
     def add_item(self, index=None):
         """Add a password in the folder of index or the selection."""
         dialog = EditPasswordDialog(
@@ -294,40 +323,54 @@ class StoreActionsMixin:
         )
 
     def edit_item(self, index=None):
-        """Edit item"""
+        """Decrypt an entry in the background, then open it for editing."""
         path = self.selected_entry_path(index)
         if path is None:
             self.show_status(
                 QCoreApplication.translate("QtPassGUI", "No password selected")
             )
             return
-        try:
-            dialog = EditPasswordDialog(
-                self.store, path, path.rsplit("/", 1)[-1], parent=self
-            )
-        except FileNotFoundError:
-            self.verbose_print(f"Cannot retrieve key for a non-existent key: {path}")
-            return
-        except StoreError as error:
-            self.store_error(
-                QCoreApplication.translate(
-                    "QtPassGUI", "Could not decrypt this password entry"
-                ),
-                error,
-            )
-            return
-        if dialog.exec() == QDialog.DialogCode.Accepted:
-            if (
-                self.settings.get("select_is_open")
-                and path == self.selected_entry_path()
-            ):
-                self.open_item(self.current_index())
-            self.show_status(
-                QCoreApplication.translate("QtPassGUI", "Saved password {}").format(
-                    path
+        store = self.store
+        self.show_status(
+            QCoreApplication.translate("QtPassGUI", "Decrypting {}").format(path), 0
+        )
+
+        def decrypted(data, error):
+            self.statusBar().clearMessage()
+            if isinstance(error, FileNotFoundError):
+                self.verbose_print(f"Cannot retrieve a non-existent key: {path}")
+                return
+            if error is not None:
+                self.store_error(
+                    QCoreApplication.translate(
+                        "QtPassGUI", "Could not decrypt this password entry"
+                    ),
+                    error,
                 )
-            )
-            self.auto_push()
+                return
+            self.open_edit_dialog(store, path, data)
+
+        run_task(lambda _progress, _cancelled: store.get_key(path), decrypted)
+
+    def open_edit_dialog(self, store, path, data):
+        """
+        Show the password dialog for a decrypted entry.
+
+        :param store: The store the entry was read from.
+        :param path: The entry path.
+        :param data: The decrypted contents.
+        """
+        dialog = EditPasswordDialog(
+            store, path, path.rsplit("/", 1)[-1], parent=self, data=data
+        )
+        if dialog.exec() != QDialog.DialogCode.Accepted or not dialog.saved:
+            return
+        if self.settings.get("select_is_open") and path == self.selected_entry_path():
+            self.open_item(self.current_index())
+        self.show_status(
+            QCoreApplication.translate("QtPassGUI", "Saved password {}").format(path)
+        )
+        self.auto_push()
 
     def rename_item(self, index=None):
         """Rename an entry or folder."""
@@ -341,29 +384,23 @@ class StoreActionsMixin:
         item = self.item_from_index(index)
         path = get_item_full_path(item)
         if is_folder_item(item):
-            title, label = QCoreApplication.translate(
-                "QtPassGUI", "Rename folder"
-            ), QCoreApplication.translate("QtPassGUI", "Rename folder to:")
+            title = QCoreApplication.translate("QtPassGUI", "Rename folder")
+            label = QCoreApplication.translate("QtPassGUI", "Rename folder to:")
         else:
-            title, label = QCoreApplication.translate(
-                "QtPassGUI", "Rename password"
-            ), QCoreApplication.translate("QtPassGUI", "Rename password to:")
+            title = QCoreApplication.translate("QtPassGUI", "Rename password")
+            label = QCoreApplication.translate("QtPassGUI", "Rename password to:")
         new_path, ok = QInputDialog.getText(self, title, label, text=path)
         new_path = new_path.strip().strip("/")
         if not ok or not new_path or new_path == path:
             self.verbose_print("Rename cancelled")
             return
-        try:
-            self.store.move_path(path, new_path)
-        except (OSError, StoreError) as error:
-            self.store_error(
-                QCoreApplication.translate("QtPassGUI", "Rename failed"), error
-            )
-            return
-        self.after_change(
+        store = self.store
+        self.run_store_change(
+            lambda: store.move_path(path, new_path),
             QCoreApplication.translate("QtPassGUI", "Renamed {} to {}").format(
                 path, new_path
-            )
+            ),
+            QCoreApplication.translate("QtPassGUI", "Rename failed"),
         )
 
     def duplicate_item(self, index=None):
@@ -380,17 +417,13 @@ class StoreActionsMixin:
         new_path = new_path.strip().strip("/")
         if not ok or not new_path or new_path == path:
             return
-        try:
-            self.store.copy_path(path, new_path)
-        except (OSError, StoreError) as error:
-            self.store_error(
-                QCoreApplication.translate("QtPassGUI", "Copy failed"), error
-            )
-            return
-        self.after_change(
+        store = self.store
+        self.run_store_change(
+            lambda: store.copy_path(path, new_path),
             QCoreApplication.translate("QtPassGUI", "Copied {} to {}").format(
                 path, new_path
-            )
+            ),
+            QCoreApplication.translate("QtPassGUI", "Copy failed"),
         )
 
     def on_move_requested(self, source, folder, copy):
@@ -405,30 +438,22 @@ class StoreActionsMixin:
         target = f"{folder}/{name}" if folder else name
         if target == source:
             return
-        operation = self.store.copy_path if copy else self.store.move_path
-        try:
-            operation(source, target)
-        except (OSError, StoreError) as error:
-            self.store_error(
-                (
-                    QCoreApplication.translate("QtPassGUI", "Copy failed")
-                    if copy
-                    else QCoreApplication.translate("QtPassGUI", "Move failed")
-                ),
-                error,
-            )
-            return
+        store = self.store
         if copy:
-            self.after_change(
+            self.run_store_change(
+                lambda: store.copy_path(source, target),
                 QCoreApplication.translate("QtPassGUI", "Copied {} to {}").format(
                     source, target
-                )
+                ),
+                QCoreApplication.translate("QtPassGUI", "Copy failed"),
             )
         else:
-            self.after_change(
+            self.run_store_change(
+                lambda: store.move_path(source, target),
                 QCoreApplication.translate("QtPassGUI", "Moved {} to {}").format(
                     source, target
-                )
+                ),
+                QCoreApplication.translate("QtPassGUI", "Move failed"),
             )
 
     def delete_item(self, index=None):
@@ -461,14 +486,10 @@ class StoreActionsMixin:
             self.verbose_print("Deletion cancelled")
             return
         self.verbose_print(f"Deleting {path}")
-        try:
-            self.store.remove_path(path, recursive=True)
-        except (OSError, StoreError) as error:
-            self.store_error(
-                QCoreApplication.translate("QtPassGUI", "Delete failed"), error
-            )
-            return
-        self.ui.panel.clear()
-        self.after_change(
-            QCoreApplication.translate("QtPassGUI", "Deleted {}").format(path)
+        store = self.store
+        self.run_store_change(
+            lambda: store.remove_path(path, recursive=True),
+            QCoreApplication.translate("QtPassGUI", "Deleted {}").format(path),
+            QCoreApplication.translate("QtPassGUI", "Delete failed"),
+            on_done=self.ui.panel.clear,
         )

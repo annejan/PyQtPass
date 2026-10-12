@@ -13,7 +13,7 @@ import shutil
 
 import executor
 from fs_utils import is_link
-from password_store import GPG_EXT, PasswordStore, StoreError
+from password_store import GPG_EXT, PasswordStore, StoreError, locked
 
 
 def find_pass(configured=""):
@@ -68,6 +68,7 @@ class RealPassStore(PasswordStore):
             self.recipients(self._folder_of(clean))
         return self.run_pass("show", "--", clean)
 
+    @locked
     def set_key(self, path, key_data, force=False):
         clean = self.clean_path(path)
         absolute = self.entry_file(clean)
@@ -79,6 +80,7 @@ class RealPassStore(PasswordStore):
             key_data += "\n"
         self.run_pass("insert", "-m", "-f", "--", clean, input_data=key_data.encode())
 
+    @locked
     def remove_path(self, path, recursive=False):
         clean = self.clean_path(path)
         parent = self.absolute(self._folder_of(clean))
@@ -103,12 +105,15 @@ class RealPassStore(PasswordStore):
         self.run_pass(command, "-f", "--", old_clean, new_clean)
         return new_clean
 
+    @locked
     def move_path(self, old_path, new_path, force=False):
         return self._pass_copy_move("mv", old_path, new_path, force)
 
+    @locked
     def copy_path(self, old_path, new_path, force=False):
         return self._pass_copy_move("cp", old_path, new_path, force)
 
+    @locked
     def init(self, gpg_ids, folder="", progress=None):
         if not gpg_ids:
             raise StoreError("At least one key is needed")
@@ -122,6 +127,7 @@ class RealPassStore(PasswordStore):
             args += ["-p", clean]
         self.run_pass(*args, "--", *gpg_ids)
 
+    @locked
     def reencrypt(self, folder="", progress=None, cancelled=None, commit=True):
         clean = self.clean_path(folder)
         ids, list_folder = self.recipient_list(clean)
@@ -135,5 +141,6 @@ class RealPassStore(PasswordStore):
     def git_commit(self, paths, message):
         """pass commits its own changes."""
 
+    @locked
     def init_git(self):
         self.run_pass("git", "init")

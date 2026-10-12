@@ -12,8 +12,10 @@ A symbolic link inside the store is not part of it: listing and search skip
 links and every operation refuses a path that is, or lies behind, one.
 """
 
+import functools
 import os
 import re
+import threading
 import shutil
 import tempfile
 
@@ -29,6 +31,27 @@ GPG_ID = ".gpg-id"
 
 class StoreError(Exception):
     """Raised when a password store operation fails."""
+
+
+class CommitError(StoreError):
+    """
+    The change itself was made, but committing it to git failed; the
+    message says so, and the change is not to be retried.
+    """
+
+
+def locked(method):
+    """
+    Run a store method under the store's lock, so changes and git pull or
+    push never run at the same time.
+    """
+
+    @functools.wraps(method)
+    def wrapper(self, *args, **kwargs):
+        with self.lock:
+            return method(self, *args, **kwargs)
+
+    return wrapper
 
 
 class PasswordStore:
@@ -53,6 +76,7 @@ class PasswordStore:
         self.gpg_bin = gpg_bin or which_gpg()
         self.use_git = use_git
         self.signer = GpgIdSigner(signing_keys, self.gpg_bin, record)
+        self.lock = threading.RLock()
         if self.signer.enabled and record is None:
             raise ValueError("Signing keys need a generation record")
 
@@ -386,6 +410,7 @@ class PasswordStore:
             raise FileNotFoundError(f"{path} is not in the password store")
         return self.decrypt_file(absolute)
 
+    @locked
     def set_key(self, path, key_data, force=False):
         """
         Encrypt and store an entry.
@@ -412,6 +437,7 @@ class PasswordStore:
             message = f"Add given password for {clean} to store."
         self.git_commit([clean + GPG_EXT], message)
 
+    @locked
     def create_folder(self, path):
         """
         Create a folder; it inherits the recipients of its parent.
@@ -423,6 +449,7 @@ class PasswordStore:
             raise FileExistsError(f"{path} already exists")
         os.makedirs(absolute)
 
+    @locked
     def remove_path(self, path, recursive=False):
         """
         Remove an entry or a folder. A link is removed, not what it points to.
@@ -557,6 +584,7 @@ class PasswordStore:
             paths.insert(0, self.relative(source))
         return old_clean, new_clean, paths
 
+    @locked
     def move_path(self, old_path, new_path, force=False):
         """
         Move or rename an entry or folder, re-encrypting it when the
@@ -574,6 +602,7 @@ class PasswordStore:
         self.git_commit(paths, f"Rename {old_clean} to {new_clean}.")
         return new_clean
 
+    @locked
     def copy_path(self, old_path, new_path, force=False):
         """
         Copy an entry or folder, re-encrypting it when the destination has
@@ -606,6 +635,7 @@ class PasswordStore:
             if relative != clean:
                 self.list_at(relative)
 
+    @locked
     def init(self, gpg_ids, folder="", progress=None):
         """
         Set the recipients of a (sub)store and re-encrypt its entries, like
@@ -711,6 +741,7 @@ class PasswordStore:
         data = self.decrypt_bytes(absolute)
         self.encrypt_to_file(absolute, data, recipients)
 
+    @locked
     def reencrypt(self, folder="", progress=None, cancelled=None, commit=True):
         """
         Re-encrypt every entry in a folder for its current recipients.
@@ -787,8 +818,40 @@ class PasswordStore:
             return
         success, output = git_utils.git_commit_paths(self.store_dir, paths, message)
         if not success:
-            raise StoreError(f"git commit failed: {output}")
+            raise CommitError(f"The change was made, but git commit failed: {output}")
 
+    def busy(self):
+        """
+        :return: True while another thread is changing the store or running
+                 git pull or push on it.
+        """
+        if not self.lock.acquire(blocking=False):  # pylint: disable=consider-using-with
+            return True
+        self.lock.release()
+        return False
+
+    @locked
+    def pull(self):
+        """
+        Pull from the remote, never while the store is being changed.
+
+        :return: Tuple of (success, output).
+        """
+        return git_utils.git_pull(self.store_dir)
+
+    @locked
+    def push(self, only_with_remote=False):
+        """
+        Push to the remote, never while the store is being changed.
+
+        :param only_with_remote: Do nothing when no remote is configured.
+        :return: Tuple of (success, output); (True, '') when skipped.
+        """
+        if only_with_remote and not git_utils.has_remote(self.store_dir):
+            return True, ""
+        return git_utils.git_push(self.store_dir)
+
+    @locked
     def init_git(self):
         """
         Put the store under git and commit its current contents.

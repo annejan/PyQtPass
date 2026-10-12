@@ -42,11 +42,9 @@ from PyQt6.QtWidgets import (
 )
 
 import executor
-import git_utils
 import otp
 from config_dialog import ConfigDialog
 from entry import parse_entry
-from password_store import StoreError
 from settings_manager import SettingsManager
 from store_setup import (
     apply_executables,
@@ -102,6 +100,7 @@ class QtPassGUI(StoreActionsMixin, WindowActionsMixin, QMainWindow):
         self.opening_path = None
         self.git_task = None
         self.search_task = None
+        self.push_pending = False
         self.clipboard_timer = QTimer(self)
         self.clipboard_timer.setSingleShot(True)
         self.clipboard_timer.timeout.connect(self.clear_clipboard)
@@ -361,6 +360,26 @@ class QtPassGUI(StoreActionsMixin, WindowActionsMixin, QMainWindow):
             self.show_status(self.tr("Clipboard cleared"))
         self.copied_text = ""
 
+    def with_decrypted(self, path, callback):
+        """
+        Decrypt an entry on a worker thread, then hand it to callback on the
+        GUI thread; a slow gpg (smartcard, pinentry) never freezes the window.
+
+        :param path: The entry path.
+        :param callback: Called with the parsed EntryContent.
+        """
+        store = self.store
+
+        def done(data, error):
+            if error is not None:
+                self.show_status(
+                    self.tr("Could not decrypt {}: {}").format(path, error)
+                )
+                return
+            callback(parse_entry(data))
+
+        run_task(lambda _progress, _cancelled: store.get_key(path), done)
+
     def copy_password(self, index=None):
         """
         Copy the password (first line) of the item at index to the clipboard.
@@ -371,15 +390,16 @@ class QtPassGUI(StoreActionsMixin, WindowActionsMixin, QMainWindow):
         if path is None:
             self.show_status(self.tr("No password selected"))
             return
-        try:
-            content = parse_entry(self.store.get_key(path))
-        except (OSError, StoreError) as error:
-            self.show_status(self.tr("Could not decrypt {}: {}").format(path, error))
-            return
-        if not content.password_for_display:
-            self.show_status(self.tr("This entry holds an OTP secret, not a password"))
-            return
-        self.copy_text_to_clipboard(content.password)
+
+        def copy(content):
+            if not content.password_for_display:
+                self.show_status(
+                    self.tr("This entry holds an OTP secret, not a password")
+                )
+                return
+            self.copy_text_to_clipboard(content.password)
+
+        self.with_decrypted(path, copy)
 
     def copy_otp(self, index=None):
         """
@@ -391,16 +411,15 @@ class QtPassGUI(StoreActionsMixin, WindowActionsMixin, QMainWindow):
         if path is None:
             self.show_status(self.tr("No password selected for OTP generation"))
             return
-        try:
-            content = parse_entry(self.store.get_key(path))
-        except (OSError, StoreError) as error:
-            self.show_status(self.tr("Could not decrypt {}: {}").format(path, error))
-            return
-        settings = otp.parse(content.otp)
-        if settings is None:
-            self.show_status(self.tr("No OTP code found in this password entry"))
-            return
-        self.copy_text_to_clipboard(otp.generate(settings), self.tr("OTP code"))
+
+        def copy(content):
+            settings = otp.parse(content.otp)
+            if settings is None:
+                self.show_status(self.tr("No OTP code found in this password entry"))
+                return
+            self.copy_text_to_clipboard(otp.generate(settings), self.tr("OTP code"))
+
+        self.with_decrypted(path, copy)
 
     # Tree events
 
@@ -562,7 +581,7 @@ class QtPassGUI(StoreActionsMixin, WindowActionsMixin, QMainWindow):
         """
         Run a git operation on a worker thread.
 
-        :param function: Callable(store_dir) returning (success, output).
+        :param function: Callable(store) returning (success, output).
         :param done_message: Status message on success.
         :param failed_title: Title of the warning on failure.
         :param refresh: Rebuild the tree on success.
@@ -572,11 +591,14 @@ class QtPassGUI(StoreActionsMixin, WindowActionsMixin, QMainWindow):
             return
         if self.git_task is not None:
             return
-        store_dir = self.store.store_dir
+        store = self.store
 
         def done(result, error):
             self.git_task = None
             self.update_git_actions()
+            if self.push_pending:
+                self.push_pending = False
+                QTimer.singleShot(0, self.auto_push)
             success, output = result if error is None else (False, str(error))
             self.verbose_print(output)
             if success:
@@ -586,7 +608,7 @@ class QtPassGUI(StoreActionsMixin, WindowActionsMixin, QMainWindow):
             else:
                 QMessageBox.warning(self, failed_title, output)
 
-        self.git_task = run_task(lambda _p, _c: function(store_dir), done)
+        self.git_task = run_task(lambda _p, _c: function(store), done)
         self.update_git_actions()
         self.show_status(self.tr("Running git..."), 0)
 
@@ -595,7 +617,7 @@ class QtPassGUI(StoreActionsMixin, WindowActionsMixin, QMainWindow):
         Update the password store from the remote git repository.
         """
         self.run_git(
-            git_utils.git_pull,
+            lambda store: store.pull(),
             self.tr("Password store updated"),
             self.tr("Git pull failed"),
             refresh=True,
@@ -606,7 +628,7 @@ class QtPassGUI(StoreActionsMixin, WindowActionsMixin, QMainWindow):
         Push local changes of the password store to the remote git repository.
         """
         self.run_git(
-            git_utils.git_push,
+            lambda store: store.push(),
             self.tr("Password store pushed"),
             self.tr("Git push failed"),
         )
@@ -617,10 +639,12 @@ class QtPassGUI(StoreActionsMixin, WindowActionsMixin, QMainWindow):
         """
         if not self.git_enabled() or not self.settings.effective("auto_push"):
             return
-        if not git_utils.has_remote(self.store.store_dir):
+        if self.git_task is not None:
+            # Push once the running pull or push is done.
+            self.push_pending = True
             return
         self.run_git(
-            git_utils.git_push,
+            lambda store: store.push(only_with_remote=True),
             self.tr("Pushed changes to remote"),
             self.tr("Git push failed"),
         )
@@ -684,8 +708,11 @@ class QtPassGUI(StoreActionsMixin, WindowActionsMixin, QMainWindow):
             self.search_task.cancel()
         store = self.store
         self.show_status(self.tr("Searching..."), 0)
+        task = None
 
         def done(results, error):
+            if task is not self.search_task:
+                return  # an older, cancelled search: its results are stale
             self.search_task = None
             if error is not None:
                 self.show_status(self.tr("Search failed: {}").format(error))
@@ -704,12 +731,13 @@ class QtPassGUI(StoreActionsMixin, WindowActionsMixin, QMainWindow):
             else:
                 self.show_status(self.tr("No matches found."))
 
-        self.search_task = run_task(
+        task = run_task(
             lambda progress, cancelled: store.search(
                 pattern, progress=progress, cancelled=cancelled
             ),
             done,
         )
+        self.search_task = task
 
     # Profiles
 

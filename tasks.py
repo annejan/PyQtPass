@@ -6,7 +6,9 @@ on the GUI thread.
 
 import threading
 
-from PyQt6.QtCore import QObject, QThread, pyqtSignal, pyqtSlot
+from PyQt6.QtCore import QObject, Qt, QThread, pyqtSignal, pyqtSlot
+
+import executor
 
 
 class _Worker(QObject):
@@ -45,6 +47,12 @@ class Task(QObject):
         self.worker = _Worker(function)
         self.worker.moveToThread(self.thread)
         self.thread.started.connect(self.worker.run)
+        # Ends the thread from the worker itself: when the app is quitting
+        # the GUI thread no longer delivers queued signals, and waiting for
+        # _finished to quit the thread would wait forever.
+        self.worker.finished.connect(
+            self.thread.quit, Qt.ConnectionType.DirectConnection
+        )
         self.worker.finished.connect(self._finished)
         self.worker.progress.connect(self._progress)
 
@@ -57,9 +65,16 @@ class Task(QObject):
         """Ask the task to stop; the function decides when it checks."""
         self.worker.cancel_event.set()
 
-    def wait(self):
-        """Block until the worker thread has stopped."""
-        self.thread.wait()
+    def wait(self, timeout_ms=None):
+        """
+        Block until the worker thread has stopped.
+
+        :param timeout_ms: Give up after this many milliseconds.
+        :return: True when the thread has stopped.
+        """
+        if timeout_ms is None:
+            return self.thread.wait()
+        return self.thread.wait(timeout_ms)
 
     @pyqtSlot(int, int)
     def _progress(self, done, total):
@@ -92,8 +107,22 @@ def run_task(function, on_done, on_progress=None):
     return task
 
 
-def wait_for_all():
-    """Wait for all running tasks, used when quitting."""
-    for task in list(_running):
+def running():
+    """:return: True while any task is running."""
+    return bool(_running)
+
+
+def wait_for_all(grace_ms=3000):
+    """
+    Stop all running tasks, used when quitting: they are asked to cancel,
+    given a moment, and then the commands they run are terminated.
+
+    :param grace_ms: Milliseconds tasks get to finish on their own.
+    """
+    tasks = list(_running)
+    for task in tasks:
         task.cancel()
-        task.wait()
+    if not all(task.wait(grace_ms) for task in tasks):
+        executor.terminate_all()
+        for task in tasks:
+            task.wait()

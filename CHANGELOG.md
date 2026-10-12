@@ -86,6 +86,21 @@ Brings PyQtPass up to date with the QtPass 2.0 feature set.
   needs re-encryption only takes its place once that succeeded.
 - PyQtPass's own git commits run without repository hooks or fsmonitor and
   commit only their own paths; pull and push keep the user's git setup.
+- Commands run in a session of their own with empty standard input and
+  `GIT_TERMINAL_PROMPT=0`, so git and ssh never wait on a hidden terminal;
+  a timeout ends the whole process group.
+- The single-instance socket lives in the private runtime directory, and
+  only an instance that answers with PyQtPass's greeting is taken for one.
+
+### Responsiveness
+
+- Copying, editing, saving, renaming, moving, duplicating and deleting run
+  gpg and git on a worker thread. Store changes and git pull/push share a
+  lock, so they never run at the same time.
+- Quitting while work is running no longer hangs: tasks are cancelled, given
+  a moment, and their commands are then terminated.
+- A save whose commit fails says that the entry was saved but not committed,
+  and closes; an unchanged entry is not written again.
 
 ### Maintenance
 

@@ -27,7 +27,8 @@ from PyQt6.QtWidgets import (
 )
 
 from entry import build_entry, parse_entry
-from password_store import StoreError
+from password_store import CommitError
+from tasks import run_task
 from settings_manager import SettingsManager
 
 CHARACTER_SETS = [
@@ -104,13 +105,16 @@ class EditPasswordDialog(QDialog):
     # pylint: disable=too-many-instance-attributes,too-many-arguments
     # pylint: disable=too-many-positional-arguments
 
-    def __init__(self, store, path, name, create=False, parent=None):
+    def __init__(
+        self, store, path, name, create=False, parent=None, data=None
+    ):  # pylint: disable=too-many-arguments,too-many-positional-arguments
         """
         :param store: The PasswordStore.
         :param path: The entry path, or the initial folder when creating.
         :param name: The entry name for the window title.
         :param create: Whether a new entry is added.
         :param parent: The parent widget.
+        :param data: The decrypted entry, read from the store when None.
         :raises FileNotFoundError, StoreError: when the entry cannot be read.
         """
         super().__init__(parent)
@@ -126,10 +130,14 @@ class EditPasswordDialog(QDialog):
         self.charset_combo_box = QComboBox(self)
         self.length_edit = QSpinBox(self)
         self.info_text_edit = QTextEdit(self)
+        self.buttons = None
+        self.task = None
+        self.dirty = create
+        self.saved = False
         content = None
         if not create:
             content = parse_entry(
-                store.get_key(path),
+                data if data is not None else store.get_key(path),
                 self.settings.template_fields(),
                 self.settings.get("use_template")
                 and self.settings.get("template_all_fields"),
@@ -139,6 +147,13 @@ class EditPasswordDialog(QDialog):
         else:
             self.setWindowTitle(self.tr("Edit {}").format(name))
         self.init_ui(content)
+        for edit in [self.password_edit] + [edit for _, edit in self.field_edits]:
+            edit.textChanged.connect(self.mark_dirty)
+        self.info_text_edit.textChanged.connect(self.mark_dirty)
+
+    def mark_dirty(self):
+        """Remember that something was changed, so OK has to save."""
+        self.dirty = True
 
     def init_ui(self, content):
         """
@@ -165,13 +180,13 @@ class EditPasswordDialog(QDialog):
         self.info_text_edit.setAcceptRichText(False)
         layout.addWidget(self.info_text_edit)
 
-        buttons = QDialogButtonBox(
+        self.buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel,
             self,
         )
-        buttons.accepted.connect(self.save)
-        buttons.rejected.connect(self.reject)
-        layout.addWidget(buttons)
+        self.buttons.accepted.connect(self.save)
+        self.buttons.rejected.connect(self.reject)
+        layout.addWidget(self.buttons)
         if self.create:
             self.generate_password()
         (self.name_edit or self.password_edit).setFocus()
@@ -261,23 +276,54 @@ class EditPasswordDialog(QDialog):
         )
 
     def save(self):
-        """Save the password"""
+        """
+        Save the password on a worker thread; an unchanged entry is not
+        written again (that would re-encrypt and commit it for nothing).
+        """
         if self.create and not self.name_edit.text().strip().strip("/"):
             QMessageBox.warning(
                 self, self.tr("No name"), self.tr("Enter a name for the password.")
             )
             return
+        if not self.dirty:
+            self.accept()
+            return
         path = self.target_path()
-        try:
-            self.store.set_key(path, self.entry_data(), force=not self.create)
-        except FileExistsError:
+        data = self.entry_data()
+        store = self.store
+        force = not self.create
+        self.setEnabled(False)
+        self.task = run_task(
+            lambda _progress, _cancelled: store.set_key(path, data, force=force),
+            lambda _result, error: self.saved_or_failed(path, error),
+        )
+
+    def saved_or_failed(self, path, error):
+        """
+        Close the dialog when the entry was saved, or say why it was not.
+
+        :param path: The entry path.
+        :param error: The exception, or None.
+        """
+        self.task = None
+        self.setEnabled(True)
+        if isinstance(error, FileExistsError):
             QMessageBox.warning(
                 self,
                 self.tr("Password exists"),
                 self.tr("Password already exists at: {}").format(path),
             )
             return
-        except (OSError, StoreError) as error:
+        if isinstance(error, CommitError):
+            # Saved: retrying would only make a second commit.
+            QMessageBox.warning(
+                self,
+                self.tr("Saved, but not committed"),
+                self.tr("{} was saved, but committing it to git failed:\n{}").format(
+                    path, error
+                ),
+            )
+        elif error is not None:
             QMessageBox.critical(
                 self,
                 self.tr("Could not save password"),
@@ -287,4 +333,10 @@ class EditPasswordDialog(QDialog):
             )
             return
         self.path = path
+        self.saved = True
         self.accept()
+
+    def reject(self):
+        """Do not close while the entry is being saved."""
+        if self.task is None:
+            super().reject()

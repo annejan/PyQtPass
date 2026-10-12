@@ -250,3 +250,32 @@ def test_move_is_undone_when_encryption_fails(store):
     assert store.get_key("entry") == "pw\n"
     assert store.get_key("folder/inner") == "pw\n"
     assert os.listdir(os.path.join(store.store_dir, "team")) == [".gpg-id"]
+
+
+def test_failed_commit_is_a_commit_error(tmp_path, key_id):
+    from password_store import CommitError  # pylint: disable=import-outside-toplevel
+
+    repo = str(tmp_path / "locked")
+    make_repo(repo)
+    git_store = PasswordStore(repo)
+    git_store.init([key_id])
+    with open(os.path.join(repo, ".git", "index.lock"), "w", encoding="utf-8"):
+        pass
+    with pytest.raises(CommitError, match="change was made"):
+        git_store.set_key("entry", "pw")
+    assert git_store.get_key("entry") == "pw\n"
+
+
+def test_store_lock_serialises_pull_and_changes(store):
+    import threading  # pylint: disable=import-outside-toplevel
+
+    with store.lock:
+        holder = threading.Thread(target=lambda: None)
+        holder.start()
+        holder.join()
+        assert not store.busy()  # re-entrant for the holding thread
+        seen = []
+        other = threading.Thread(target=lambda: seen.append(store.busy()))
+        other.start()
+        other.join()
+        assert seen == [True]
