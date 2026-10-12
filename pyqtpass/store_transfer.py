@@ -11,6 +11,7 @@ import shutil
 import tempfile
 
 from pyqtpass.fs_utils import atomic_write, is_link
+from pyqtpass.i18n import translate
 from pyqtpass.gpgid_trust import TrustError, list_key
 from pyqtpass.store_base import GPG_EXT, GPG_ID, STAGING_PREFIX, StoreError, locked
 
@@ -24,25 +25,37 @@ class TransferMixin:
         old_clean = self.clean_path(old_path)
         new_clean = self.clean_path(new_path)
         if not old_clean or not new_clean:
-            raise StoreError("Cannot move or copy the store root")
+            raise StoreError(
+                translate("PasswordStore", "Cannot move or copy the store root")
+            )
         if self.is_folder(old_clean):
             source = self.absolute(old_clean)
             if self.is_folder(new_clean) or new_path.endswith("/"):
                 new_clean = f"{new_clean}/{old_clean.rsplit('/', 1)[-1]}"
             target = self.absolute(new_clean)
             if target == source or target.startswith(source + os.sep):
-                raise StoreError(f"Cannot move {old_clean} into itself")
+                raise StoreError(
+                    translate("PasswordStore", "Cannot move {} into itself").format(
+                        old_clean
+                    )
+                )
             relative_target = new_clean
         else:
             source = self.entry_file(old_clean)
             if not os.path.isfile(source):
-                raise FileNotFoundError(f"{old_clean} is not in the password store")
+                raise FileNotFoundError(
+                    translate(
+                        "PasswordStore", "{} is not in the password store"
+                    ).format(old_clean)
+                )
             if self.is_folder(new_clean) or new_path.endswith("/"):
                 new_clean = f"{new_clean}/{old_clean.rsplit('/', 1)[-1]}"
             target = self.entry_file(new_clean)
             relative_target = new_clean + GPG_EXT
         if os.path.lexists(target) and (not force or os.path.isdir(source)):
-            raise FileExistsError(f"{new_clean} already exists")
+            raise FileExistsError(
+                translate("PasswordStore", "{} already exists").format(new_clean)
+            )
         self.absolute(self._folder_of(new_clean))
         return old_clean, new_clean, source, target, relative_target
 
@@ -86,9 +99,12 @@ class TransferMixin:
                 not self.signer.enabled
             ):
                 raise StoreError(
-                    f"/{self._join(old_clean, sub)} has a signed recipient list. "
-                    "Configure the signing key, so it can be signed again for "
-                    "its new place, before moving or copying it."
+                    translate(
+                        "PasswordStore",
+                        "/{} has a signed recipient list. "
+                        "Configure the signing key, so it can be signed again for "
+                        "its new place, before moving or copying it.",
+                    ).format(self._join(old_clean, sub))
                 )
             ids = self.list_at(self._join(old_clean, sub))
             if ids is not None:

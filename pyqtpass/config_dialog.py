@@ -256,6 +256,11 @@ class ConfigDialog(QDialog):
         git_layout.addRow(self.add_field("use_git", QCheckBox(self.tr("Use Git"))))
         git_layout.addRow(
             self.add_field(
+                "add_gpg_id", QCheckBox(self.tr("Automatically add .gpg-id files"))
+            )
+        )
+        git_layout.addRow(
+            self.add_field(
                 "auto_push", QCheckBox(self.tr("Automatically push local changes"))
             )
         )

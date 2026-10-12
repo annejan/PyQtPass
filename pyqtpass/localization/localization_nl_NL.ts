@@ -4,7 +4,7 @@
 <context>
     <name>ConfigDialog</name>
     <message>
-        <location filename="../config_dialog.py" line="425" />
+        <location filename="../config_dialog.py" line="430" />
         <location filename="../config_dialog.py" line="60" />
         <source>Configuration</source>
         <translation>Configuratie</translation>
@@ -195,7 +195,7 @@
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="325" />
+        <location filename="../config_dialog.py" line="330" />
         <location filename="../config_dialog.py" line="254" />
         <source>Git:</source>
         <translation>git:</translation>
@@ -207,141 +207,146 @@
     </message>
     <message>
         <location filename="../config_dialog.py" line="259" />
+        <source>Automatically add .gpg-id files</source>
+        <translation>.gpg-id bestanden automatisch toevoegen</translation>
+    </message>
+    <message>
+        <location filename="../config_dialog.py" line="264" />
         <source>Automatically push local changes</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="264" />
+        <location filename="../config_dialog.py" line="269" />
         <source>Update (git pull) on startup</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="279" />
+        <location filename="../config_dialog.py" line="284" />
         <source>System:</source>
         <translation>Systeem:</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="282" />
+        <location filename="../config_dialog.py" line="287" />
         <source>Use Tray icon</source>
         <translation>Gebruik het ladepictogram</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="285" />
+        <location filename="../config_dialog.py" line="290" />
         <source>Start minimized</source>
         <translation>Begin geminimaliseerd</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="288" />
+        <location filename="../config_dialog.py" line="293" />
         <source>Hide on close</source>
         <translation>Verbergen in plaats van sluiten</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="291" />
+        <location filename="../config_dialog.py" line="296" />
         <source>Always on top</source>
         <translation>Altijd bovenop</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="295" />
+        <location filename="../config_dialog.py" line="300" />
         <source>Locations:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="298" />
+        <location filename="../config_dialog.py" line="303" />
         <source>Password store:</source>
         <translation>Wachtwoordopslag:</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="302" />
+        <location filename="../config_dialog.py" line="307" />
         <source>No signing</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="304" />
+        <location filename="../config_dialog.py" line="309" />
         <source>Full fingerprints of the keys that sign .gpg-id files, like PASSWORD_STORE_SIGNING_KEY; nothing is encrypted to a list whose signature does not verify</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="310" />
+        <location filename="../config_dialog.py" line="315" />
         <source>Signing key:</source>
         <translation>Ondertekening:</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="311" />
+        <location filename="../config_dialog.py" line="316" />
         <source>GnuPG:</source>
         <translation>GnuPG:</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="313" />
+        <location filename="../config_dialog.py" line="318" />
         <source>GnuPG home:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="315" />
+        <location filename="../config_dialog.py" line="320" />
         <source>Default</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="317" />
+        <location filename="../config_dialog.py" line="322" />
         <source>SSH agent socket:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="320" />
+        <location filename="../config_dialog.py" line="325" />
         <source>Used for Git over SSH when the session has no SSH_AUTH_SOCK; when empty, the ssh socket of a running gpg-agent is used</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="327" />
+        <location filename="../config_dialog.py" line="332" />
         <source>qrencode:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="329" />
+        <location filename="../config_dialog.py" line="334" />
         <source>Use the pass command-line tool</source>
         <translation>Het opdrachtregelprogramma pass gebruiken</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="331" />
+        <location filename="../config_dialog.py" line="336" />
         <source>Run the pass script for every change instead of gpg and git directly, for pass extensions and hooks</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="337" />
+        <location filename="../config_dialog.py" line="342" />
         <source>pass:</source>
         <translation>Pass:</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="352" />
+        <location filename="../config_dialog.py" line="357" />
         <source>Found automatically</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="355" />
+        <location filename="../config_dialog.py" line="360" />
         <source>Browse</source>
         <translation>Bladeren</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="359" />
+        <location filename="../config_dialog.py" line="364" />
         <source>Select folder</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="362" />
+        <location filename="../config_dialog.py" line="367" />
         <source>Select executable</source>
         <translation>Uitvoerbaar bestand selecteren</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="377" />
+        <location filename="../config_dialog.py" line="382" />
         <source>OK</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="379" />
+        <location filename="../config_dialog.py" line="384" />
         <source>Cancel</source>
         <translation>Annuleren</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="392" />
+        <location filename="../config_dialog.py" line="397" />
         <source>The signing key must be full fingerprints (40 or 64 hexadecimal digits), separated by spaces.</source>
         <translation type="unfinished" />
     </message>
@@ -472,6 +477,20 @@
         <translation type="vanished">Annuleren</translation>
     </message>
 </context><context>
+    <name>Environment</name>
+    <message>
+        <location filename="../environment.py" line="63" />
+        <source>The GnuPG home folder {} does not exist; using the default one.</source>
+        <translation>De GnuPG-thuismap {} bestaat niet; de standaardmap wordt gebruikt.</translation>
+    </message>
+</context><context>
+    <name>Executor</name>
+    <message>
+        <location filename="../executor.py" line="174" />
+        <source>{0} did not finish within {1} seconds</source>
+        <translation>{0} was niet binnen {1} seconden klaar</translation>
+    </message>
+</context><context>
     <name>ExportPublicKeyDialog</name>
     <message>
         <location filename="../keygen_dialog.py" line="154" />
@@ -562,6 +581,128 @@
         <location filename="../first_run_wizard.py" line="261" />
         <source>Welcome to PyQtPass</source>
         <translation type="unfinished" />
+    </message>
+</context><context>
+    <name>GpgIdTrust</name>
+    <message>
+        <location filename="../gpgid_trust.py" line="108" />
+        <source>The list carries more than one generation line.</source>
+        <translation>De lijst bevat meer dan één generatieregel.</translation>
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="115" />
+        <source>The generation line is malformed: {}</source>
+        <translation>De generatieregel is ongeldig: {0}</translation>
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="123" />
+        <source>The list carries more than one folder line.</source>
+        <translation>De lijst bevat meer dan één mapregel.</translation>
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="130" />
+        <source>The folder line is malformed: {}</source>
+        <translation>De mapregel is ongeldig: {0}</translation>
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="136" />
+        <source>The header line is malformed: {}</source>
+        <translation>De kopregel is ongeldig: {0}</translation>
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="140" />
+        <source>The list carries a generation line but no folder line.</source>
+        <translation>De lijst bevat wel een generatieregel, maar geen mapregel.</translation>
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="216" />
+        <source>The generation record {0} cannot be locked: {1}</source>
+        <translation>Het generatieregister {0} kan niet worden vergrendeld: {1}</translation>
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="225" />
+        <source>The generation record {} is locked by another process.</source>
+        <translation>Het generatieregister {} is vergrendeld door een ander proces.</translation>
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="250" />
+        <source>The generation record {0} cannot be read: {1}</source>
+        <translation>Het generatieregister {0} kan niet worden gelezen: {1}</translation>
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="256" />
+        <source>The generation record {} is malformed.</source>
+        <translation>Het generatieregister {} is ongeldig.</translation>
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="275" />
+        <source>The generation record {0} cannot be written: {1}</source>
+        <translation>Het generatieregister {0} kan niet worden geschreven: {1}</translation>
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="282" />
+        <source>A holder of the signing key gets through by opening Users on the folder and saving the recipients, which writes generation {0}. Removing {1} forgets what this device accepted before.</source>
+        <translation>Wie de ondertekeningssleutel heeft, lost dit op door Gebruikers op de map te openen en de ontvangers op te slaan; dat schrijft generatie {0}. Verwijderen van {1} vergeet wat dit apparaat eerder heeft geaccepteerd.</translation>
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="342" />
+        <source>Signing the recipient list failed: {}</source>
+        <translation>Ondertekenen van de ontvangerslijst is mislukt: {}</translation>
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="344" />
+        <source>gpg wrote nothing</source>
+        <translation>gpg schreef niets</translation>
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="353" />
+        <source>gpg did not sign the recipient list with the signing key {}; is its secret key available?</source>
+        <translation>gpg heeft de ontvangerslijst niet ondertekend met de ondertekeningssleutel {}; is de geheime sleutel beschikbaar?</translation>
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="391" />
+        <source>The recipient list {} has no signature, while a signing key is configured.</source>
+        <translation>De ontvangerslijst {} heeft geen handtekening, terwijl er een ondertekeningssleutel is ingesteld.</translation>
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="399" />
+        <source>The signature of the recipient list {} does not verify with the signing key.</source>
+        <translation>De handtekening van de ontvangerslijst {} klopt niet met de ondertekeningssleutel.</translation>
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="420" />
+        <source>The signed recipient list {0} is not one to trust: {1}</source>
+        <translation>De ondertekende ontvangerslijst {0} is niet te vertrouwen: {1}</translation>
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="427" />
+        <source>The signed recipient list {0} was written for the folder "{1}", not for "{2}", and is not used. If the folder was moved or renamed, a holder of the signing key saves the recipients in Users again.</source>
+        <translation>De ondertekende ontvangerslijst {0} is geschreven voor de map "{1}", niet voor "{2}", en wordt niet gebruikt. Is de map verplaatst of hernoemd, dan slaat iemand met de ondertekeningssleutel de ontvangers opnieuw op in Gebruikers.</translation>
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="443" />
+        <source>The signed recipient list {0} carries no generation line, while generation {1} was accepted here before. {2}</source>
+        <translation>De ondertekende ontvangerslijst {0} heeft geen generatieregel, terwijl hier eerder generatie {1} is geaccepteerd. {2}</translation>
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="453" />
+        <source>The signed recipient list {0} is generation {1}, older than generation {2}, the last one accepted here. It may have been put back by someone else. {3}</source>
+        <translation>De ondertekende ontvangerslijst {0} is generatie {1}, ouder dan generatie {2}, de laatste die hier is geaccepteerd. Mogelijk heeft iemand anders een oude lijst teruggezet. {3}</translation>
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="471" />
+        <source>The signed recipient list {0} is generation {1}, like a different list this device accepted before: two devices saved recipients at the same time, or an authentic list was swapped in. {2}</source>
+        <translation>De ondertekende ontvangerslijst {0} is generatie {1}, net als een andere lijst die dit apparaat eerder accepteerde: twee apparaten hebben tegelijk ontvangers opgeslagen, of er is een echte lijst ingewisseld. {2}</translation>
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="540" />
+        <source>The recipient list {} has reached the highest generation; it cannot be written.</source>
+        <translation>De ontvangerslijst {} heeft de hoogste generatie bereikt; hij kan niet worden geschreven.</translation>
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="566" />
+        <source>The generation record {0} has moved on to generation {1} while generation {2} of {3} was being written; nothing was written.</source>
+        <translation>Het generatieregister {0} is doorgeschoven naar generatie {1} terwijl generatie {2} van {3} werd geschreven; er is niets geschreven.</translation>
     </message>
 </context><context>
     <name>IntroPage</name>
@@ -734,6 +875,147 @@
         <location filename="../password_panel.py" line="312" />
         <source>qrencode failed: {}</source>
         <translation type="unfinished" />
+    </message>
+</context><context>
+    <name>PasswordStore</name>
+    <message>
+        <location filename="../password_store.py" line="116" />
+        <source>{} would resolve outside the password store</source>
+        <translation>{} zou buiten de wachtwoordopslag uitkomen</translation>
+    </message>
+    <message>
+        <location filename="../password_store.py" line="135" />
+        <source>{} is, or lies behind, a symbolic link; links inside the password store are not followed</source>
+        <translation>{} is of ligt achter een symbolische koppeling; koppelingen in de wachtwoordopslag worden niet gevolgd</translation>
+    </message>
+    <message>
+        <location filename="../password_store.py" line="150" />
+        <source>An entry needs a name</source>
+        <translation>Een item heeft een naam nodig</translation>
+    </message>
+    <message>
+        <location filename="../password_store.py" line="268" />
+        <source>The recipient list of {} is a link or not a file. While a signing key is configured the folder does not fall back to its parent's list; a holder of the signing key saves the recipients in Users again.</source>
+        <translation>De ontvangerslijst van {} is een koppeling of geen bestand. Zolang er een ondertekeningssleutel is ingesteld, valt de map niet terug op de lijst van de bovenliggende map; iemand met de ondertekeningssleutel slaat de ontvangers opnieuw op in Gebruikers.</translation>
+    </message>
+    <message>
+        <location filename="../password_store.py" line="287" />
+        <source>The recipient list of {} names no key.</source>
+        <translation>De ontvangerslijst van {} noemt geen sleutel.</translation>
+    </message>
+    <message>
+        <location filename="../password_store.py" line="299" />
+        <source>The signed recipient list of {} was removed; its passwords are not encrypted to the parent folder's keys instead. A holder of the signing key saves the recipients in Users again.</source>
+        <translation>De ondertekende ontvangerslijst van {} is verwijderd; de wachtwoorden worden niet in plaats daarvan versleuteld voor de sleutels van de bovenliggende map. Iemand met de ondertekeningssleutel slaat de ontvangers opnieuw op in Gebruikers.</translation>
+    </message>
+    <message>
+        <location filename="../password_store.py" line="326" />
+        <source>You must initialise the password store first (no .gpg-id file found)</source>
+        <translation>Initialiseer eerst de wachtwoordopslag (geen .gpg-id bestand gevonden)</translation>
+    </message>
+    <message>
+        <location filename="../password_store.py" line="386" />
+        <source>gpg failed to decrypt</source>
+        <translation>gpg kon niet ontsleutelen</translation>
+    </message>
+    <message>
+        <location filename="../password_store.py" line="418" />
+        <source>gpg failed to encrypt</source>
+        <translation>gpg kon niet versleutelen</translation>
+    </message>
+    <message>
+        <location filename="../store_transfer.py" line="47" />
+        <location filename="../real_pass.py" line="109" />
+        <location filename="../real_pass.py" line="67" />
+        <location filename="../password_store.py" line="549" />
+        <location filename="../password_store.py" line="436" />
+        <source>{} is not in the password store</source>
+        <translation>{} staat niet in de wachtwoordopslag</translation>
+    </message>
+    <message>
+        <location filename="../store_transfer.py" line="57" />
+        <location filename="../real_pass.py" line="83" />
+        <location filename="../password_store.py" line="481" />
+        <location filename="../password_store.py" line="458" />
+        <source>{} already exists</source>
+        <translation>{} bestaat al</translation>
+    </message>
+    <message>
+        <location filename="../real_pass.py" line="105" />
+        <location filename="../password_store.py" line="536" />
+        <source>{} is not empty</source>
+        <translation>{} is niet leeg</translation>
+    </message>
+    <message>
+        <location filename="../real_pass.py" line="133" />
+        <location filename="../password_store.py" line="593" />
+        <source>At least one key is needed</source>
+        <translation>Er is minstens één sleutel nodig</translation>
+    </message>
+    <message>
+        <location filename="../password_store.py" line="601" />
+        <source>{} is a symbolic link</source>
+        <translation>{} is een symbolische koppeling</translation>
+    </message>
+    <message>
+        <location filename="../password_store.py" line="618" />
+        <source>it was cancelled</source>
+        <translation>het is geannuleerd</translation>
+    </message>
+    <message>
+        <location filename="../password_store.py" line="627" />
+        <source>The recipients were changed, but re-encrypting stopped: {0}. Committing what was done failed too: {1}</source>
+        <translation>De ontvangers zijn gewijzigd, maar het opnieuw versleutelen is gestopt: {0}. Het vastleggen van wat klaar was is ook mislukt: {1}</translation>
+    </message>
+    <message>
+        <location filename="../password_store.py" line="634" />
+        <source>The recipients were changed and every password was re-encrypted for them, but git commit failed: {}</source>
+        <translation>De ontvangers zijn gewijzigd en alle wachtwoorden zijn voor hen opnieuw versleuteld, maar git commit is mislukt: {}</translation>
+    </message>
+    <message>
+        <location filename="../password_store.py" line="643" />
+        <source>The recipients were changed, but re-encrypting stopped: {}. Some passwords still use the old keys; use Re-encrypt once this is fixed.</source>
+        <translation>De ontvangers zijn gewijzigd, maar het opnieuw versleutelen is gestopt: {}. Sommige wachtwoorden gebruiken nog de oude sleutels; gebruik Opnieuw versleutelen zodra dit is opgelost.</translation>
+    </message>
+    <message>
+        <location filename="../password_store.py" line="667" />
+        <source>The recipient list of /{} is signed. Configure the signing key (Settings, the profile, or PASSWORD_STORE_SIGNING_KEY) to change its recipients; an unsigned list would break the folder for everyone who verifies it.</source>
+        <translation>De ontvangerslijst van /{} is ondertekend. Stel de ondertekeningssleutel in (Instellingen, het profiel of PASSWORD_STORE_SIGNING_KEY) om de ontvangers te wijzigen; een niet-ondertekende lijst maakt de map onbruikbaar voor iedereen die hem controleert.</translation>
+    </message>
+    <message>
+        <location filename="../password_store.py" line="808" />
+        <source>The change was made, but git commit failed: {}</source>
+        <translation>De wijziging is gemaakt, maar git commit is mislukt: {}</translation>
+    </message>
+    <message>
+        <location filename="../password_store.py" line="843" />
+        <source>git init failed: {}</source>
+        <translation>git init is mislukt: {}</translation>
+    </message>
+    <message>
+        <location filename="../real_pass.py" line="59" />
+        <source>pass {} failed</source>
+        <translation>pass {} is mislukt</translation>
+    </message>
+    <message>
+        <location filename="../real_pass.py" line="139" />
+        <source>{0} in {1} is a symbolic link</source>
+        <translation>{0} in {1} is een symbolische koppeling</translation>
+    </message>
+    <message>
+        <location filename="../store_transfer.py" line="29" />
+        <source>Cannot move or copy the store root</source>
+        <translation>De hoofdmap van de opslag kan niet worden verplaatst of gekopieerd</translation>
+    </message>
+    <message>
+        <location filename="../store_transfer.py" line="38" />
+        <source>Cannot move {} into itself</source>
+        <translation>{} kan niet in zichzelf worden verplaatst</translation>
+    </message>
+    <message>
+        <location filename="../store_transfer.py" line="102" />
+        <source>/{} has a signed recipient list. Configure the signing key, so it can be signed again for its new place, before moving or copying it.</source>
+        <translation>/{} heeft een ondertekende ontvangerslijst. Stel de ondertekeningssleutel in, zodat die voor de nieuwe plek opnieuw kan worden ondertekend, voordat je de map verplaatst of kopieert.</translation>
     </message>
 </context><context>
     <name>ProfilesEditor</name>

@@ -4,7 +4,7 @@
 <context>
     <name>ConfigDialog</name>
     <message>
-        <location filename="../config_dialog.py" line="425" />
+        <location filename="../config_dialog.py" line="430" />
         <location filename="../config_dialog.py" line="60" />
         <source>Configuration</source>
         <translation>ضبط</translation>
@@ -17,7 +17,7 @@
     <message>
         <location filename="../config_dialog.py" line="64" />
         <source>Password Generation</source>
-        <translation type="unfinished" />
+        <translation>إنشاء كلمه المرور</translation>
     </message>
     <message>
         <location filename="../config_dialog.py" line="65" />
@@ -37,7 +37,7 @@
     <message>
         <location filename="../config_dialog.py" line="68" />
         <source>System</source>
-        <translation type="unfinished" />
+        <translation>النظام</translation>
     </message>
     <message>
         <location filename="../config_dialog.py" line="90" />
@@ -127,12 +127,12 @@
     <message>
         <location filename="../config_dialog.py" line="171" />
         <source> seconds</source>
-        <translation type="unfinished" />
+        <translation>ثواني</translation>
     </message>
     <message>
         <location filename="../config_dialog.py" line="178" />
         <source>Password Generation:</source>
-        <translation type="unfinished" />
+        <translation>إنشاء كلمه المرور:</translation>
     </message>
     <message>
         <location filename="../config_dialog.py" line="183" />
@@ -142,7 +142,7 @@
     <message>
         <location filename="../config_dialog.py" line="189" />
         <source>Characters:</source>
-        <translation type="unfinished" />
+        <translation>الاحرف:</translation>
     </message>
     <message>
         <location filename="../config_dialog.py" line="198" />
@@ -152,12 +152,12 @@
     <message>
         <location filename="../config_dialog.py" line="210" />
         <source>Use pwgen</source>
-        <translation type="unfinished" />
+        <translation>استخدم pwgen</translation>
     </message>
     <message>
         <location filename="../config_dialog.py" line="214" />
         <source>pwgen:</source>
-        <translation type="unfinished" />
+        <translation>pwgen:</translation>
     </message>
     <message>
         <location filename="../config_dialog.py" line="216" />
@@ -195,7 +195,7 @@
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="325" />
+        <location filename="../config_dialog.py" line="330" />
         <location filename="../config_dialog.py" line="254" />
         <source>Git:</source>
         <translation>Git:</translation>
@@ -207,141 +207,146 @@
     </message>
     <message>
         <location filename="../config_dialog.py" line="259" />
+        <source>Automatically add .gpg-id files</source>
+        <translation>إضافة ملفات gpg-id. تلقائيًا</translation>
+    </message>
+    <message>
+        <location filename="../config_dialog.py" line="264" />
         <source>Automatically push local changes</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="264" />
+        <location filename="../config_dialog.py" line="269" />
         <source>Update (git pull) on startup</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="279" />
+        <location filename="../config_dialog.py" line="284" />
         <source>System:</source>
-        <translation type="unfinished" />
+        <translation>النظام:</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="282" />
+        <location filename="../config_dialog.py" line="287" />
         <source>Use Tray icon</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="285" />
+        <location filename="../config_dialog.py" line="290" />
         <source>Start minimized</source>
         <translation>البدء بالتقليل إلى أدنى حد</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="288" />
+        <location filename="../config_dialog.py" line="293" />
         <source>Hide on close</source>
         <translation>إخفاء عند الإغلاق</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="291" />
+        <location filename="../config_dialog.py" line="296" />
         <source>Always on top</source>
         <translation>دائما على القمة</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="295" />
+        <location filename="../config_dialog.py" line="300" />
         <source>Locations:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="298" />
+        <location filename="../config_dialog.py" line="303" />
         <source>Password store:</source>
-        <translation type="unfinished" />
+        <translation>مخزن كلمات المرور:</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="302" />
+        <location filename="../config_dialog.py" line="307" />
         <source>No signing</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="304" />
+        <location filename="../config_dialog.py" line="309" />
         <source>Full fingerprints of the keys that sign .gpg-id files, like PASSWORD_STORE_SIGNING_KEY; nothing is encrypted to a list whose signature does not verify</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="310" />
+        <location filename="../config_dialog.py" line="315" />
         <source>Signing key:</source>
         <translation>مفتاح التوقيع:</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="311" />
+        <location filename="../config_dialog.py" line="316" />
         <source>GnuPG:</source>
-        <translation type="unfinished" />
+        <translation>GnuPG:</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="313" />
+        <location filename="../config_dialog.py" line="318" />
         <source>GnuPG home:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="315" />
+        <location filename="../config_dialog.py" line="320" />
         <source>Default</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="317" />
+        <location filename="../config_dialog.py" line="322" />
         <source>SSH agent socket:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="320" />
+        <location filename="../config_dialog.py" line="325" />
         <source>Used for Git over SSH when the session has no SSH_AUTH_SOCK; when empty, the ssh socket of a running gpg-agent is used</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="327" />
+        <location filename="../config_dialog.py" line="332" />
         <source>qrencode:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="329" />
+        <location filename="../config_dialog.py" line="334" />
         <source>Use the pass command-line tool</source>
-        <translation type="unfinished" />
+        <translation>استخدام أداة سطر الأوامر pass</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="331" />
+        <location filename="../config_dialog.py" line="336" />
         <source>Run the pass script for every change instead of gpg and git directly, for pass extensions and hooks</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="337" />
+        <location filename="../config_dialog.py" line="342" />
         <source>pass:</source>
         <translation>المرور:</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="352" />
+        <location filename="../config_dialog.py" line="357" />
         <source>Found automatically</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="355" />
+        <location filename="../config_dialog.py" line="360" />
         <source>Browse</source>
-        <translation type="unfinished" />
+        <translation>استعراض</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="359" />
+        <location filename="../config_dialog.py" line="364" />
         <source>Select folder</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="362" />
+        <location filename="../config_dialog.py" line="367" />
         <source>Select executable</source>
-        <translation type="unfinished" />
+        <translation>اختيار الملف التنفيذي</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="377" />
+        <location filename="../config_dialog.py" line="382" />
         <source>OK</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../config_dialog.py" line="379" />
+        <location filename="../config_dialog.py" line="384" />
         <source>Cancel</source>
-        <translation type="unfinished" />
+        <translation>إلغاء</translation>
     </message>
     <message>
-        <location filename="../config_dialog.py" line="392" />
+        <location filename="../config_dialog.py" line="397" />
         <source>The signing key must be full fingerprints (40 or 64 hexadecimal digits), separated by spaces.</source>
         <translation type="unfinished" />
     </message>
@@ -375,7 +380,7 @@
     <message>
         <location filename="../edit_password_window.py" line="250" />
         <source>Folder:</source>
-        <translation type="unfinished" />
+        <translation>المجلد:</translation>
     </message>
     <message>
         <location filename="../edit_password_window.py" line="252" />
@@ -460,6 +465,20 @@
         <translation type="unfinished" />
     </message>
 </context><context>
+    <name>Environment</name>
+    <message>
+        <location filename="../environment.py" line="63" />
+        <source>The GnuPG home folder {} does not exist; using the default one.</source>
+        <translation type="unfinished" />
+    </message>
+</context><context>
+    <name>Executor</name>
+    <message>
+        <location filename="../executor.py" line="174" />
+        <source>{0} did not finish within {1} seconds</source>
+        <translation type="unfinished" />
+    </message>
+</context><context>
     <name>ExportPublicKeyDialog</name>
     <message>
         <location filename="../keygen_dialog.py" line="154" />
@@ -474,7 +493,7 @@
     <message>
         <location filename="../keygen_dialog.py" line="177" />
         <source>Copy to clipboard</source>
-        <translation type="unfinished" />
+        <translation>نسخ إلى الحافظة</translation>
     </message>
     <message>
         <location filename="../keygen_dialog.py" line="179" />
@@ -549,6 +568,128 @@
     <message>
         <location filename="../first_run_wizard.py" line="261" />
         <source>Welcome to PyQtPass</source>
+        <translation type="unfinished" />
+    </message>
+</context><context>
+    <name>GpgIdTrust</name>
+    <message>
+        <location filename="../gpgid_trust.py" line="108" />
+        <source>The list carries more than one generation line.</source>
+        <translation>تحتوي القائمة على أكثر من سطر جيل واحد.</translation>
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="115" />
+        <source>The generation line is malformed: {}</source>
+        <translation>صيغة سطر الجيل غير صحيحة: {0}</translation>
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="123" />
+        <source>The list carries more than one folder line.</source>
+        <translation>تحتوي القائمة على أكثر من سطر مجلد واحد.</translation>
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="130" />
+        <source>The folder line is malformed: {}</source>
+        <translation>صيغة سطر المجلد غير صحيحة: {0}</translation>
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="136" />
+        <source>The header line is malformed: {}</source>
+        <translation>صيغة سطر الترويسة غير صحيحة: {0}</translation>
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="140" />
+        <source>The list carries a generation line but no folder line.</source>
+        <translation>تحتوي القائمة على سطر جيل لكن دون سطر مجلد.</translation>
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="216" />
+        <source>The generation record {0} cannot be locked: {1}</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="225" />
+        <source>The generation record {} is locked by another process.</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="250" />
+        <source>The generation record {0} cannot be read: {1}</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="256" />
+        <source>The generation record {} is malformed.</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="275" />
+        <source>The generation record {0} cannot be written: {1}</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="282" />
+        <source>A holder of the signing key gets through by opening Users on the folder and saving the recipients, which writes generation {0}. Removing {1} forgets what this device accepted before.</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="342" />
+        <source>Signing the recipient list failed: {}</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="344" />
+        <source>gpg wrote nothing</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="353" />
+        <source>gpg did not sign the recipient list with the signing key {}; is its secret key available?</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="391" />
+        <source>The recipient list {} has no signature, while a signing key is configured.</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="399" />
+        <source>The signature of the recipient list {} does not verify with the signing key.</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="420" />
+        <source>The signed recipient list {0} is not one to trust: {1}</source>
+        <translation>قائمة المستلمين الموقَّعة {0} ليست قائمة يُوثَق بها: {1}</translation>
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="427" />
+        <source>The signed recipient list {0} was written for the folder "{1}", not for "{2}", and is not used. If the folder was moved or renamed, a holder of the signing key saves the recipients in Users again.</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="443" />
+        <source>The signed recipient list {0} carries no generation line, while generation {1} was accepted here before. {2}</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="453" />
+        <source>The signed recipient list {0} is generation {1}, older than generation {2}, the last one accepted here. It may have been put back by someone else. {3}</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="471" />
+        <source>The signed recipient list {0} is generation {1}, like a different list this device accepted before: two devices saved recipients at the same time, or an authentic list was swapped in. {2}</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="540" />
+        <source>The recipient list {} has reached the highest generation; it cannot be written.</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../gpgid_trust.py" line="566" />
+        <source>The generation record {0} has moved on to generation {1} while generation {2} of {3} was being written; nothing was written.</source>
         <translation type="unfinished" />
     </message>
 </context><context>
@@ -645,7 +786,7 @@
     <message>
         <location filename="../first_run_wizard.py" line="68" />
         <source>Your key</source>
-        <translation type="unfinished" />
+        <translation>مفتاحك</translation>
     </message>
     <message>
         <location filename="../first_run_wizard.py" line="70" />
@@ -724,6 +865,147 @@
         <translation type="unfinished" />
     </message>
 </context><context>
+    <name>PasswordStore</name>
+    <message>
+        <location filename="../password_store.py" line="116" />
+        <source>{} would resolve outside the password store</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../password_store.py" line="135" />
+        <source>{} is, or lies behind, a symbolic link; links inside the password store are not followed</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../password_store.py" line="150" />
+        <source>An entry needs a name</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../password_store.py" line="268" />
+        <source>The recipient list of {} is a link or not a file. While a signing key is configured the folder does not fall back to its parent's list; a holder of the signing key saves the recipients in Users again.</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../password_store.py" line="287" />
+        <source>The recipient list of {} names no key.</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../password_store.py" line="299" />
+        <source>The signed recipient list of {} was removed; its passwords are not encrypted to the parent folder's keys instead. A holder of the signing key saves the recipients in Users again.</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../password_store.py" line="326" />
+        <source>You must initialise the password store first (no .gpg-id file found)</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../password_store.py" line="386" />
+        <source>gpg failed to decrypt</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../password_store.py" line="418" />
+        <source>gpg failed to encrypt</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../store_transfer.py" line="47" />
+        <location filename="../real_pass.py" line="109" />
+        <location filename="../real_pass.py" line="67" />
+        <location filename="../password_store.py" line="549" />
+        <location filename="../password_store.py" line="436" />
+        <source>{} is not in the password store</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../store_transfer.py" line="57" />
+        <location filename="../real_pass.py" line="83" />
+        <location filename="../password_store.py" line="481" />
+        <location filename="../password_store.py" line="458" />
+        <source>{} already exists</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../real_pass.py" line="105" />
+        <location filename="../password_store.py" line="536" />
+        <source>{} is not empty</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../real_pass.py" line="133" />
+        <location filename="../password_store.py" line="593" />
+        <source>At least one key is needed</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../password_store.py" line="601" />
+        <source>{} is a symbolic link</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../password_store.py" line="618" />
+        <source>it was cancelled</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../password_store.py" line="627" />
+        <source>The recipients were changed, but re-encrypting stopped: {0}. Committing what was done failed too: {1}</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../password_store.py" line="634" />
+        <source>The recipients were changed and every password was re-encrypted for them, but git commit failed: {}</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../password_store.py" line="643" />
+        <source>The recipients were changed, but re-encrypting stopped: {}. Some passwords still use the old keys; use Re-encrypt once this is fixed.</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../password_store.py" line="667" />
+        <source>The recipient list of /{} is signed. Configure the signing key (Settings, the profile, or PASSWORD_STORE_SIGNING_KEY) to change its recipients; an unsigned list would break the folder for everyone who verifies it.</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../password_store.py" line="808" />
+        <source>The change was made, but git commit failed: {}</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../password_store.py" line="843" />
+        <source>git init failed: {}</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../real_pass.py" line="59" />
+        <source>pass {} failed</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../real_pass.py" line="139" />
+        <source>{0} in {1} is a symbolic link</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../store_transfer.py" line="29" />
+        <source>Cannot move or copy the store root</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../store_transfer.py" line="38" />
+        <source>Cannot move {} into itself</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../store_transfer.py" line="102" />
+        <source>/{} has a signed recipient list. Configure the signing key, so it can be signed again for its new place, before moving or copying it.</source>
+        <translation type="unfinished" />
+    </message>
+</context><context>
     <name>ProfilesEditor</name>
     <message>
         <location filename="../profiles_editor.py" line="40" />
@@ -748,7 +1030,7 @@
     <message>
         <location filename="../profiles_editor.py" line="65" />
         <source>Browse</source>
-        <translation type="unfinished" />
+        <translation>استعراض</translation>
     </message>
     <message>
         <location filename="../profiles_editor.py" line="72" />
@@ -758,7 +1040,7 @@
     <message>
         <location filename="../profiles_editor.py" line="73" />
         <source>Folder:</source>
-        <translation type="unfinished" />
+        <translation>المجلد:</translation>
     </message>
     <message>
         <location filename="../profiles_editor.py" line="74" />
@@ -830,7 +1112,7 @@
         <location filename="../profiles_editor.py" line="204" />
         <location filename="../profiles_editor.py" line="202" />
         <source>Profile {}</source>
-        <translation type="unfinished" />
+        <translation>الملف الشخصي {0}</translation>
     </message>
 </context><context>
     <name>QtPassGUI</name>
@@ -898,7 +1180,7 @@
     <message>
         <location filename="../git_actions.py" line="80" />
         <source>Git pull failed</source>
-        <translation type="unfinished" />
+        <translation>فشل Git pull</translation>
     </message>
     <message>
         <location filename="../git_actions.py" line="90" />
@@ -1037,7 +1319,7 @@ Check out the [documentation](https://github.com/annejan/PyQtPass/) for more inf
         <location filename="../store_actions.py" line="76" />
         <location filename="../store_actions.py" line="47" />
         <source>Re-encrypting passwords...</source>
-        <translation type="unfinished" />
+        <translation>تتم إعادة تشفير كلمات المرور...</translation>
     </message>
     <message>
         <location filename="../store_actions.py" line="78" />
@@ -1065,7 +1347,7 @@ Check out the [documentation](https://github.com/annejan/PyQtPass/) for more inf
     <message>
         <location filename="../store_actions.py" line="94" />
         <source>Cancel</source>
-        <translation type="unfinished" />
+        <translation>إلغاء</translation>
     </message>
     <message>
         <location filename="../store_actions.py" line="124" />
@@ -1188,7 +1470,7 @@ Check out the [documentation](https://github.com/annejan/PyQtPass/) for more inf
     <message>
         <location filename="../store_actions.py" line="305" />
         <source>New folder</source>
-        <translation type="unfinished" />
+        <translation>مجلد جديد</translation>
     </message>
     <message>
         <location filename="../store_actions.py" line="306" />
@@ -1266,12 +1548,12 @@ Check out the [documentation](https://github.com/annejan/PyQtPass/) for more inf
     <message>
         <location filename="../store_actions.py" line="465" />
         <source>Are you sure you want to delete {} and the whole content?</source>
-        <translation type="unfinished" />
+        <translation>هل أنت متأكد من أنك تريد حذف {0} وكل محتواه؟</translation>
     </message>
     <message>
         <location filename="../store_actions.py" line="469" />
         <source>Are you sure you want to delete {}?</source>
-        <translation type="unfinished" />
+        <translation>هل أنت متأكد من أنك تريد حذف {0}؟</translation>
     </message>
     <message>
         <location filename="../store_actions.py" line="474" />
@@ -1286,7 +1568,7 @@ Check out the [documentation](https://github.com/annejan/PyQtPass/) for more inf
     <message>
         <location filename="../store_actions.py" line="487" />
         <source>Delete failed</source>
-        <translation type="unfinished" />
+        <translation>فشل الحذف</translation>
     </message>
     <message>
         <location filename="../window_actions.py" line="67" />
@@ -1356,27 +1638,27 @@ Check out the [documentation](https://github.com/annejan/PyQtPass/) for more inf
     <message>
         <location filename="../window_actions.py" line="188" />
         <source>Profile</source>
-        <translation type="unfinished" />
+        <translation>الملف الشخصي</translation>
     </message>
     <message>
         <location filename="../window_actions.py" line="199" />
         <source>&amp;File</source>
-        <translation type="unfinished" />
+        <translation>&amp;ملف</translation>
     </message>
     <message>
         <location filename="../window_actions.py" line="209" />
         <source>&amp;Store</source>
-        <translation type="unfinished" />
+        <translation>م&amp;خزن</translation>
     </message>
     <message>
         <location filename="../window_actions.py" line="219" />
         <source>S&amp;ettings</source>
-        <translation type="unfinished" />
+        <translation>&amp;إعدادات</translation>
     </message>
     <message>
         <location filename="../window_actions.py" line="225" />
         <source>&amp;Help</source>
-        <translation type="unfinished" />
+        <translation>م&amp;ساعدة</translation>
     </message>
     <message>
         <location filename="../window_actions.py" line="233" />
@@ -1393,7 +1675,7 @@ Check out the [documentation](https://github.com/annejan/PyQtPass/) for more inf
     <message>
         <location filename="../first_run_wizard.py" line="148" />
         <source>Password store</source>
-        <translation type="unfinished" />
+        <translation>مخزن كلمات المرور</translation>
     </message>
     <message>
         <location filename="../first_run_wizard.py" line="150" />
@@ -1403,22 +1685,22 @@ Check out the [documentation](https://github.com/annejan/PyQtPass/) for more inf
     <message>
         <location filename="../first_run_wizard.py" line="159" />
         <source>Browse</source>
-        <translation type="unfinished" />
+        <translation>استعراض</translation>
     </message>
     <message>
         <location filename="../first_run_wizard.py" line="161" />
         <source>Keep the store under Git</source>
-        <translation type="unfinished" />
+        <translation>إبقاء المخزن تحت إدارة Git</translation>
     </message>
     <message>
         <location filename="../first_run_wizard.py" line="182" />
         <source>Choose the password store folder</source>
-        <translation type="unfinished" />
+        <translation>اختر مجلد مخزن كلمات المرور</translation>
     </message>
     <message>
         <location filename="../first_run_wizard.py" line="192" />
         <source>Enter a folder.</source>
-        <translation type="unfinished" />
+        <translation>أدخل مجلدًا.</translation>
     </message>
     <message>
         <location filename="../first_run_wizard.py" line="194" />
@@ -1438,7 +1720,7 @@ Check out the [documentation](https://github.com/annejan/PyQtPass/) for more inf
     <message>
         <location filename="../first_run_wizard.py" line="203" />
         <source>The folder does not exist yet; it will be created.</source>
-        <translation type="unfinished" />
+        <translation>المجلد غير موجود بعد؛ سيتم إنشاؤه.</translation>
     </message>
     <message>
         <location filename="../first_run_wizard.py" line="225" />
@@ -1453,7 +1735,7 @@ or untick Git.
     <message>
         <location filename="../first_run_wizard.py" line="241" />
         <source>Password store not initialised</source>
-        <translation type="unfinished" />
+        <translation>مخزن كلمة السر غير مبدئي</translation>
     </message>
     <message>
         <location filename="../first_run_wizard.py" line="242" />
@@ -1519,7 +1801,7 @@ or untick Git.
     <message>
         <location filename="../users_dialog.py" line="106" />
         <source>From clipboard</source>
-        <translation type="unfinished" />
+        <translation>من الحافظة</translation>
     </message>
     <message>
         <location filename="../users_dialog.py" line="108" />

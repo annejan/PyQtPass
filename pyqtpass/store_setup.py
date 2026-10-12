@@ -36,6 +36,7 @@ def make_store(settings, store_dir=None):
     options = {
         "gpg_bin": gpg_utils.which_gpg(),
         "use_git": bool(settings.effective("use_git")),
+        "add_gpg_id": bool(settings.get("add_gpg_id")),
         "signing_keys": settings.signing_keys(),
         "record": GenerationRecord(settings.generation_record_path()),
     }
