@@ -6,6 +6,9 @@
 # is uploaded next to it. Run it on the draft release the Build and Release
 # workflow made, then publish the release.
 #
+# Push the final release tag (a signed one, too) before signing: a tag push
+# builds the release again, and refuses to once its files are signed.
+#
 #   scripts/sign-release-assets.sh [--dryrun] v0.4.0
 #
 # --dryrun signs in a temporary folder and uploads nothing. Files that

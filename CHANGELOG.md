@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Release builds
+
+- A workflow run no longer replaces the files of a draft release that already
+  has signatures. Re-pushing the release tag (say, to sign it) used to rebuild
+  the files after they were signed, so the `.asc` files no longer matched.
 - PyQtPass is published on PyPI: `pipx install pyqtpass`. Publishing a
   release uploads its sdist and wheel, with the translations, using trusted
   publishing; every pull request builds and checks the package.
