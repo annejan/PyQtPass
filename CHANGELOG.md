@@ -1,6 +1,17 @@
 # Changelog
 
-## Unreleased
+## 0.4.0
+
+The rest of the QtPass 2.0 feature set (field editing, store templates,
+pwgen, GnuPG home, ssh agent, WSL), an installable package, sturdier release
+builds and a redrawn icon.
+
+### Upgrade notes
+
+- Release files are named by version and platform, like
+  `PyQtPass-0.4.0-windows-x64.exe`; check them against `SHA256SUMS`.
+- Running from a checkout is now `python -m pyqtpass` (or `pip install .`
+  and `pyqtpass`); the old `pyqtpass.py` script is gone.
 
 ### New features
 
