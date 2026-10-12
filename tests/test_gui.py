@@ -7,6 +7,7 @@ import os
 from PyQt6.QtWidgets import QApplication, QLineEdit
 
 from conftest import OTP_URI, find_index, wait_for_tasks, wait_until
+from pyqtpass.utilities import PATH_ROLE
 
 
 def test_open_entry_shows_fields_and_otp(qapp, window):
@@ -25,7 +26,7 @@ def test_open_entry_shows_fields_and_otp(qapp, window):
 def test_search_for_fills_the_search_box_and_selects(qapp, window):
     window.search_for("site")
     assert window.ui.filter_text_box.text() == "site"
-    assert window.ui.tree_view.currentIndex().isValid()
+    assert window.ui.tree_view.currentIndex().data(PATH_ROLE) == "web/site"
     assert find_index(window, "other") is None
 
 
@@ -78,6 +79,59 @@ def test_filter_and_content_search(qapp, window):
     wait_until(qapp, lambda: window.search_task is None)
     assert find_index(window, "other") is not None
     assert find_index(window, "web/site") is None
+
+
+def search_result_lines(window):
+    lines = {}
+    for row in range(window.ui.search_results.topLevelItemCount()):
+        item = window.ui.search_results.topLevelItem(row)
+        lines[item.text(0)] = [
+            item.child(line).text(0) for line in range(item.childCount())
+        ]
+    return lines
+
+
+def content_search(qapp, window, pattern):
+    window.ui.filter_text_box.setText(pattern)
+    window.on_search_return()
+    wait_until(qapp, lambda: window.search_task is None)
+    return search_result_lines(window)
+
+
+def test_content_search_lists_the_matching_lines(qapp, window, settings):
+    settings.set("use_grep_search", True)
+    window.update_search_placeholder()
+    assert not window.ui.match_case_button.isHidden()
+    window.show()
+    assert content_search(qapp, window, "FINDME|secret") == {
+        "other": ["note: findme"],
+        "web/site": ["secret", "********"],  # the OTP secret stays hidden
+    }
+    assert window.ui.search_results.isVisible()
+    assert not window.ui.tree_view.isVisible()
+
+    window.ui.match_case_button.setChecked(True)
+    wait_until(qapp, lambda: window.search_task is None)
+    assert search_result_lines(window) == {"web/site": ["secret", "********"]}
+
+    settings.set("hide_password", True)
+    assert content_search(qapp, window, "^secret") == {"web/site": ["********"]}
+    settings.set("hide_content", True)
+    assert content_search(qapp, window, "findme") == {"other": ["Content hidden"]}
+
+    item = window.ui.search_results.topLevelItem(0).child(0)
+    window.ui.search_results.itemClicked.emit(item, 0)
+    window.ui.search_results.itemActivated.emit(item, 0)
+    wait_until(qapp, window.ui.search_results.isHidden)
+    assert not window.ui.search_results.isVisible()
+    assert window.ui.tree_view.isVisible()
+    assert window.ui.tree_view.currentIndex().data(PATH_ROLE) == "other"
+
+
+def test_enter_selects_the_first_password_not_a_folder(qapp, window):
+    window.ui.filter_text_box.setText("site")
+    window.on_search_return()
+    assert window.ui.tree_view.currentIndex().data(PATH_ROLE) == "web/site"
 
 
 def test_move_folder_and_delete(qapp, window, store, monkeypatch):

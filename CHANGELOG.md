@@ -4,6 +4,14 @@
 
 ### Search
 
+- The content search lists the matching lines under each password, like
+  QtPass; clicking one opens that password. With "Hide content" on the
+  lines are hidden, with "Hide password" a matching password is, and an
+  OTP secret never shows. An "Aa" button next to the search box makes the
+  content search match case (#48).
+- Enter in the search box, and a search text from the command line, open
+  the first matching password instead of selecting its folder, like
+  QtPass.
 - `pyqtpass github` starts with "github" in the search box, like QtPass.
   When PyQtPass is already running, the text goes to that window, which
   comes to the front and searches; this makes launchers and global hotkeys

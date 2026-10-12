@@ -986,17 +986,17 @@
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../password_store.py" line="809" />
+        <location filename="../password_store.py" line="817" />
         <source>The change was made, but git commit failed: {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../password_store.py" line="841" />
+        <location filename="../password_store.py" line="849" />
         <source>The pull left the store with unmerged files. Resolve the conflict with git first.</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../password_store.py" line="869" />
+        <location filename="../password_store.py" line="877" />
         <source>git init failed: {}</source>
         <translation type="unfinished" />
     </message>
@@ -1157,7 +1157,7 @@
         <translation>Starpliktuve notīrīta</translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="298" />
+        <location filename="../main_window.py" line="312" />
         <location filename="../clipboard_actions.py" line="95" />
         <source>Could not decrypt {}: {}</source>
         <translation type="unfinished" />
@@ -1222,96 +1222,101 @@
     <message>
         <location filename="../store_actions.py" line="491" />
         <location filename="../store_actions.py" line="407" />
-        <location filename="../main_window.py" line="252" />
+        <location filename="../main_window.py" line="266" />
         <source>No password selected</source>
         <translation type="unfinished" />
     </message>
     <message>
         <location filename="../store_actions.py" line="353" />
-        <location filename="../main_window.py" line="280" />
+        <location filename="../main_window.py" line="294" />
         <source>Decrypting {}</source>
         <translation type="unfinished" />
     </message>
     <message>
         <location filename="../store_actions.py" line="368" />
-        <location filename="../main_window.py" line="300" />
+        <location filename="../main_window.py" line="314" />
         <source>Could not decrypt this password entry</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../main_window.py" line="703" />
-        <location filename="../main_window.py" line="426" />
+        <location filename="../main_window.py" line="844" />
+        <location filename="../main_window.py" line="456" />
         <source>PyQtPass</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../main_window.py" line="430" />
+        <location filename="../main_window.py" line="460" />
         <source>Open PyQtPass</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../main_window.py" line="432" />
+        <location filename="../main_window.py" line="462" />
         <source>Exit</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../main_window.py" line="513" />
+        <location filename="../main_window.py" line="544" />
         <source>Filter passwords, Enter searches the content (regex)</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../main_window.py" line="517" />
+        <location filename="../main_window.py" line="548" />
         <source>Type here to filter passwords...</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../main_window.py" line="531" />
+        <location filename="../main_window.py" line="563" />
         <source>Searching...</source>
         <translation>Meklē…</translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="539" />
+        <location filename="../main_window.py" line="571" />
         <source>Search failed: {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../main_window.py" line="548" />
+        <location filename="../main_window.py" line="581" />
         <source>Found {} matches in {} entries</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../main_window.py" line="553" />
+        <location filename="../main_window.py" line="586" />
         <source>No matches found.</source>
         <translation>Nav atrastu atbilstošus rezultātus.</translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="608" />
+        <location filename="../main_window.py" line="636" />
+        <source>Content hidden</source>
+        <translation type="unfinished">Saturs paslēpts</translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="745" />
         <source>Store not initialised</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../main_window.py" line="609" />
+        <location filename="../main_window.py" line="746" />
         <source>{} is not a password store yet. Use Users to choose the keys to encrypt it with.</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../main_window.py" line="619" />
+        <location filename="../main_window.py" line="756" />
         <source>Switched to password store {}</source>
         <translation type="unfinished" />
     </message>
     <message>
         <location filename="../window_actions.py" line="227" />
-        <location filename="../main_window.py" line="646" />
+        <location filename="../main_window.py" line="783" />
         <source>About PyQtPass</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../main_window.py" line="647" />
+        <location filename="../main_window.py" line="784" />
         <source>&lt;b&gt;PyQtPass {}&lt;/b&gt;&lt;br&gt;&lt;br&gt;A cross-platform GUI for pass, the standard Unix password manager, written in Python. A port of &lt;a href="https://qtpass.org/"&gt;QtPass&lt;/a&gt;.&lt;br&gt;&lt;br&gt;Please report any issues you might have with this software at &lt;a href="https://github.com/annejan/PyQtPass"&gt;GitHub&lt;/a&gt;.</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../main_window.py" line="669" />
+        <location filename="../main_window.py" line="806" />
         <source># Welcome to PyQtPass!
 
 PyQtPass is your password manager. With it, managing passwords is a breeze.
@@ -1327,12 +1332,12 @@ Check out the [documentation](https://github.com/annejan/PyQtPass/) for more inf
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../main_window.py" line="752" />
+        <location filename="../main_window.py" line="893" />
         <source>Finishing git and password store changes...</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../main_window.py" line="755" />
+        <location filename="../main_window.py" line="896" />
         <source>Quit now</source>
         <translation type="unfinished" />
     </message>
@@ -1767,8 +1772,23 @@ or untick Git.
 </context><context>
     <name>UiContainer</name>
     <message>
-        <location filename="../ui_container.py" line="162" />
+        <location filename="../ui_container.py" line="165" />
         <source>Type here to filter passwords...</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../ui_container.py" line="173" />
+        <source>Match case in content search</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../ui_container.py" line="174" />
+        <source>Match case</source>
+        <translation type="unfinished" />
+    </message>
+    <message>
+        <location filename="../ui_container.py" line="177" />
+        <source>Search results</source>
         <translation type="unfinished" />
     </message>
 </context><context>

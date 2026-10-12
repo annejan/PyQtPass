@@ -758,7 +758,9 @@ class PasswordStore(TransferMixin):
 
     # Search
 
-    def search(self, pattern, folder="", progress=None, cancelled=None):
+    def search(
+        self, pattern, folder="", progress=None, cancelled=None, match_case=False
+    ):
         """
         Search the decrypted contents of all entries, like 'pass grep'.
 
@@ -766,10 +768,12 @@ class PasswordStore(TransferMixin):
         :param folder: Folder to search in.
         :param progress: Optional callable(done, total).
         :param cancelled: Optional callable returning True to stop early.
-        :return: Dict of entry path to list of matching lines.
+        :param match_case: Match upper and lower case exactly.
+        :return: Dict of entry path to a list of (line number, line) of the
+                 matching lines; line 1 is the password.
         :raises re.error: when the pattern is invalid.
         """
-        regex = re.compile(pattern, re.IGNORECASE)
+        regex = re.compile(pattern, 0 if match_case else re.IGNORECASE)
         entries = list(self.iter_entries(folder))
         results = {}
         for done, entry in enumerate(entries, 1):
@@ -779,7 +783,11 @@ class PasswordStore(TransferMixin):
                 content = self.get_key(entry)
             except (OSError, StoreError):
                 continue
-            matches = [line for line in content.splitlines() if regex.search(line)]
+            matches = [
+                (number, line)
+                for number, line in enumerate(content.splitlines(), 1)
+                if regex.search(line)
+            ]
             if matches:
                 results[entry] = matches
             if progress:
