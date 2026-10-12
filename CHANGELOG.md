@@ -8,6 +8,8 @@
 - Help → FAQ (F1) opens the frequently asked questions on qtpass.org.
 - The configuration dialog opens with its last size and position.
 - The tray menu has Hide, Minimize, Maximize and Restore.
+- An Autodetect button on the System tab fills in where gpg, git, pass,
+  pwgen and qrencode are found in the PATH.
 
 ### Search
 

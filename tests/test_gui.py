@@ -271,6 +271,24 @@ def test_config_dialog_remembers_its_size(qapp, window, settings):
     assert ConfigDialog(window).size().width() == 700
 
 
+def test_config_dialog_autodetects_programs(qapp, window, tmp_path, monkeypatch):
+    from pyqtpass.config_dialog import ConfigDialog
+
+    for name in ("gpg", "git"):
+        program = tmp_path / name
+        program.write_text("#!/bin/sh\n")
+        program.chmod(0o755)
+    monkeypatch.setenv("PATH", str(tmp_path))
+    dialog = ConfigDialog(window)
+    dialog.fields["pass_executable"].setText("/opt/pass")
+    dialog.autodetect_programs()
+    assert dialog.fields["gpg_executable"].text() == str(tmp_path / "gpg")
+    assert dialog.fields["git_executable"].text() == str(tmp_path / "git")
+    # Programs that are not found keep what was there.
+    assert dialog.fields["pass_executable"].text() == "/opt/pass"
+    dialog.reject()
+
+
 def test_signed_profile_store(qapp, window, settings, key_id):
     from pyqtpass.store_setup import (
         make_store,
