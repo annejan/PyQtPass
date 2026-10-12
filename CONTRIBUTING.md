@@ -12,14 +12,14 @@ black --check .
 QT_QPA_PLATFORM=offscreen python -m pytest --cov=pyqtpass
 ```
 
-CI runs the same checks on Python 3.11 and 3.13.
+CI runs the same checks on Python 3.11 and 3.13. The tests make their own
+GnuPG home and key, and never touch your keyring or password store.
 
 Licensing follows [REUSE](https://reuse.software): `REUSE.toml` says who
 holds the copyright of each file and under which licence it is, and the
 licence texts are in `LICENSES/`. A new file under GPL-3.0-or-later needs
 nothing extra; for anything else, add it to `REUSE.toml`. Check with
-`pipx run reuse lint`. The tests make their own
-GnuPG home and key, and never touch your keyring or password store.
+`pipx run reuse lint`.
 
 The code lives in the `pyqtpass` package. `main_window.py` holds the main
 window; its menus, store changes, clipboard and git actions are mixins in

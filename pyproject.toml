@@ -8,6 +8,7 @@ dynamic = ["version"]
 description = "A cross-platform GUI for pass, the standard Unix password manager; a Python port of QtPass"
 readme = "README.md"
 license = "GPL-3.0-or-later"
+license-files = ["LICENSE", "LICENSES/*.txt"]
 requires-python = ">=3.11"
 authors = [{ name = "Anne Jan Brouwer" }]
 keywords = ["pass", "password manager", "password-store", "gpg", "qt", "qtpass"]
