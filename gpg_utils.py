@@ -36,7 +36,18 @@ def which_gpg():
     """
     if _gpg_binary["path"]:
         return _gpg_binary["path"]
-    return "gpg2" if shutil.which("gpg2") else "gpg"
+    for name in ("gpg2", "gpg"):
+        if shutil.which(name):
+            return name
+    if os.name == "nt":
+        # Gpg4win does not always end up on the PATH.
+        for base in ("ProgramFiles(x86)", "ProgramFiles"):
+            candidate = os.path.join(
+                os.environ.get(base, ""), "GnuPG", "bin", "gpg.exe"
+            )
+            if os.path.isfile(candidate):
+                return candidate
+    return "gpg"
 
 
 def unescape_colon_field(value):
@@ -122,31 +133,6 @@ def parse_gpg_id_lines(text):
         if gpg_id:
             ids.append(gpg_id)
     return ids
-
-
-def read_gpg_ids(store_dir, folder=""):
-    """
-    Read the GPG ids that apply to a folder in the password store.
-
-    Walks up from the given folder to the store root looking for the
-    nearest .gpg-id file, the same way pass resolves keys. A .gpg-id that
-    is a symbolic link is not a recipient list.
-
-    :param store_dir: Root directory of the password store.
-    :param folder: Folder relative to the store root, '' for the root.
-    :return: Tuple of (list of gpg ids, folder the .gpg-id file was found in).
-    """
-    store_dir = os.path.expanduser(store_dir)
-    parts = [part for part in folder.split("/") if part]
-    while True:
-        candidate = os.path.join(store_dir, *parts, ".gpg-id")
-        if os.path.isfile(candidate) and not os.path.islink(candidate):
-            with open(candidate, "r", encoding="utf-8") as gpg_id_file:
-                ids = parse_gpg_id_lines(gpg_id_file.read())
-            return ids, "/".join(parts)
-        if not parts:
-            return [], ""
-        parts.pop()
 
 
 def key_matches_id(key, gpg_id):

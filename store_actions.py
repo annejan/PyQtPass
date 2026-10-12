@@ -38,7 +38,7 @@ class StoreActionsMixin:
         :param index: The index in the proxy model, or None for the selection.
         """
         folder = self.selected_folder(index)
-        dialog = UsersDialog(self.store.store_dir, folder, self)
+        dialog = UsersDialog(self.store, folder, self)
         if dialog.exec() != QDialog.DialogCode.Accepted:
             return
         keys = dialog.selected_ids

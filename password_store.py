@@ -15,11 +15,12 @@ links and every operation refuses a path that is, or lies behind, one.
 import os
 import re
 import shutil
-import tempfile
 
 import executor
 import git_utils
 from gpg_utils import parse_gpg_id_lines, which_gpg
+from gpgid_trust import GpgIdSigner, TrustError, parse_header, with_header
+from fs_utils import atomic_write, is_link
 
 GPG_EXT = ".gpg"
 GPG_ID = ".gpg-id"
@@ -36,10 +37,23 @@ class PasswordStore:
 
     # pylint: disable=too-many-public-methods
 
-    def __init__(self, store_dir, gpg_bin=None, use_git=True):
+    def __init__(
+        self, store_dir, gpg_bin=None, use_git=True, signing_keys=(), record=None
+    ):
+        """
+        :param store_dir: Root directory of the store, may contain '~'.
+        :param gpg_bin: The gpg executable, found automatically when None.
+        :param use_git: Commit changes when the store is a git repository.
+        :param signing_keys: Fingerprints that sign the .gpg-id files, like
+                             PASSWORD_STORE_SIGNING_KEY; empty to not sign.
+        :param record: The GenerationRecord used with signing keys.
+        """
         self.store_dir = os.path.abspath(os.path.expanduser(store_dir))
         self.gpg_bin = gpg_bin or which_gpg()
         self.use_git = use_git
+        self.signer = GpgIdSigner(signing_keys, self.gpg_bin, record)
+        if self.signer.enabled and record is None:
+            raise ValueError("Signing keys need a generation record")
 
     # Paths
 
@@ -48,7 +62,7 @@ class PasswordStore:
         :return: True when the store root has a .gpg-id file.
         """
         root_id = os.path.join(self.store_dir, GPG_ID)
-        return os.path.isfile(root_id) and not os.path.islink(root_id)
+        return os.path.isfile(root_id) and not is_link(root_id)
 
     def has_entries(self):
         """
@@ -84,7 +98,7 @@ class PasswordStore:
         current = self.store_dir
         for part in clean.split("/") if clean else []:
             current = os.path.join(current, part)
-            if os.path.islink(current):
+            if is_link(current):
                 raise StoreError(
                     f"{clean} is, or lies behind, a symbolic link; "
                     "links inside the password store are not followed"
@@ -119,7 +133,7 @@ class PasswordStore:
             absolute = self.absolute(path)
         except StoreError:
             return False
-        return os.path.isdir(absolute) and not os.path.islink(absolute)
+        return os.path.isdir(absolute) and not is_link(absolute)
 
     def is_entry(self, path):
         """
@@ -130,7 +144,7 @@ class PasswordStore:
             absolute = self.entry_file(path)
         except StoreError:
             return False
-        return os.path.isfile(absolute) and not os.path.islink(absolute)
+        return os.path.isfile(absolute) and not is_link(absolute)
 
     # Listing
 
@@ -149,7 +163,7 @@ class PasswordStore:
             if name.startswith("."):
                 continue
             full = os.path.join(absolute, name)
-            if os.path.islink(full):
+            if is_link(full):
                 continue
             if os.path.isdir(full):
                 directories.append(name)
@@ -165,7 +179,7 @@ class PasswordStore:
                     name
                     for name in dirs
                     if not name.startswith(".")
-                    and not os.path.islink(os.path.join(current, name))
+                    and not is_link(os.path.join(current, name))
                 ),
                 key=str.lower,
             )
@@ -185,7 +199,7 @@ class PasswordStore:
                     name.endswith(GPG_EXT)
                     and not name.startswith(".")
                     and os.path.isfile(full)
-                    and not os.path.islink(full)
+                    and not is_link(full)
                 ):
                     yield self.relative(full)[: -len(GPG_EXT)]
 
@@ -197,28 +211,47 @@ class PasswordStore:
 
     # Recipients
 
-    def recipients(self, folder=""):
+    def recipient_list(self, folder=""):
         """
-        Find the gpg ids for a folder from the nearest .gpg-id file.
+        Find the recipient list that applies to a folder: the nearest
+        .gpg-id file, verified when signing keys are configured.
 
         :param folder: Folder relative to the store root.
-        :return: List of gpg ids.
-        :raises StoreError: when no .gpg-id applies to the folder.
+        :return: Tuple of (gpg ids, folder of the .gpg-id file).
+        :raises StoreError: when no list applies or the list is not trusted.
         """
         parts = [part for part in self.clean_path(folder).split("/") if part]
         while True:
             candidate = os.path.join(self.store_dir, *parts, GPG_ID)
-            if os.path.isfile(candidate) and not os.path.islink(candidate):
-                with open(candidate, "r", encoding="utf-8") as gpg_id_file:
-                    ids = parse_gpg_id_lines(gpg_id_file.read())
+            if os.path.isfile(candidate) and not is_link(candidate):
+                with open(candidate, "rb") as gpg_id_file:
+                    contents = gpg_id_file.read()
+                list_folder = "/".join(parts)
+                if self.signer.enabled:
+                    try:
+                        self.signer.accept(candidate, contents, list_folder)
+                    except TrustError as error:
+                        raise StoreError(str(error)) from error
+                ids = parse_gpg_id_lines(contents.decode("utf-8", errors="replace"))
                 if ids:
-                    return ids
+                    return ids, list_folder
             if not parts:
                 raise StoreError(
                     "You must initialise the password store first "
                     "(no .gpg-id file found)"
                 )
             parts.pop()
+
+    def recipients(self, folder=""):
+        """
+        Find the gpg ids for a folder from the nearest .gpg-id file.
+
+        :param folder: Folder relative to the store root.
+        :return: List of gpg ids.
+        :raises StoreError: when no .gpg-id applies to the folder, or it is
+                            not trusted.
+        """
+        return self.recipient_list(folder)[0]
 
     def _folder_of(self, entry_path):
         clean = self.clean_path(entry_path)
@@ -350,8 +383,8 @@ class PasswordStore:
         name = clean.rsplit("/", 1)[-1]
         folder = os.path.join(parent, name)
         entry = os.path.join(parent, name + GPG_EXT)
-        if os.path.islink(folder) or os.path.islink(entry):
-            link = folder if os.path.islink(folder) else entry
+        if is_link(folder) or is_link(entry):
+            link = folder if is_link(folder) else entry
             staged = clean if link == folder else clean + GPG_EXT
             os.unlink(link)
         elif os.path.isdir(folder) and clean:
@@ -452,7 +485,7 @@ class PasswordStore:
                 target,
                 symlinks=True,
                 ignore=lambda folder, names: [
-                    name for name in names if os.path.islink(os.path.join(folder, name))
+                    name for name in names if is_link(os.path.join(folder, name))
                 ],
             )
         else:
@@ -478,12 +511,16 @@ class PasswordStore:
         absolute = self.absolute(clean)
         os.makedirs(absolute, exist_ok=True)
         gpg_id_path = os.path.join(absolute, GPG_ID)
-        if os.path.islink(gpg_id_path):
-            raise StoreError(f"{gpg_id_path} is a symbolic link")
-        atomic_write(gpg_id_path, ("\n".join(gpg_ids) + "\n").encode("utf-8"))
         relative_id = f"{clean}/{GPG_ID}" if clean else GPG_ID
+        for path in (gpg_id_path, gpg_id_path + ".sig"):
+            if is_link(path):
+                raise StoreError(f"{path} is a symbolic link")
+        try:
+            self.write_gpg_id(gpg_id_path, clean, gpg_ids)
+        except TrustError as error:
+            raise StoreError(str(error)) from error
         joined = ", ".join(gpg_ids)
-        self.git_commit([relative_id], f"Set GPG id to {joined}.")
+        self.git_commit([relative_id, relative_id + ".sig"], f"Set GPG id to {joined}.")
         if next(self.iter_entries(clean), None) is not None:
             self.reencrypt(clean, progress=progress, commit=False)
             self.git_commit(
@@ -491,16 +528,56 @@ class PasswordStore:
                 f"Reencrypt password store using new GPG id {joined}.",
             )
 
-    def reencrypt_entry(self, path):
+    def write_gpg_id(self, gpg_id_path, folder, gpg_ids):
+        """
+        Write a recipient list: signed and with a generation header when
+        signing keys are configured, a plain list like pass writes otherwise.
+
+        :param gpg_id_path: Path of the .gpg-id file.
+        :param folder: Its folder relative to the store root.
+        :param gpg_ids: The recipients.
+        """
+        signature = gpg_id_path + ".sig"
+        if not self.signer.enabled:
+            atomic_write(gpg_id_path, ("\n".join(gpg_ids) + "\n").encode("utf-8"))
+            if os.path.isfile(signature):
+                # The old signature does not cover the new list.
+                os.remove(signature)
+            return
+        on_disk = 0
+        if os.path.isfile(gpg_id_path):
+            with open(gpg_id_path, "rb") as gpg_id_file:
+                current = gpg_id_file.read()
+            try:
+                self.signer.verify(gpg_id_path, current)
+                on_disk = parse_header(current.decode("utf-8"))[0]
+            except (TrustError, UnicodeDecodeError):
+                on_disk = 0
+        generation = self.signer.reserve_next(gpg_id_path, on_disk)
+        contents = with_header(generation, folder, gpg_ids).encode("utf-8")
+        atomic_write(gpg_id_path, contents)
+        self.signer.sign(gpg_id_path, contents)
+        self.signer.record_written(gpg_id_path, contents)
+
+    def reencrypt_entry(self, path, cache=None):
         """
         Re-encrypt one entry for the recipients of its folder.
 
         :param path: Entry path relative to the store root.
+        :param cache: Optional dict of folder to recipients, so a list is
+                      read (and verified) once per re-encryption run.
         """
         clean = self.clean_path(path)
         absolute = self.entry_file(clean)
+        folder = self._folder_of(clean)
+        if cache is None:
+            recipients = self.recipients(folder)
+        else:
+            if folder not in cache:
+                cache[folder] = self.recipients(folder)
+            recipients = cache[folder]
         data = self.decrypt_file(absolute)
-        self.encrypt_to_file(absolute, data, self.recipients(self._folder_of(clean)))
+        self.encrypt_to_file(absolute, data, recipients)
 
     def reencrypt(self, folder="", progress=None, cancelled=None, commit=True):
         """
@@ -514,10 +591,11 @@ class PasswordStore:
         """
         entries = list(self.iter_entries(folder))
         done = 0
+        cache = {}
         for entry in entries:
             if cancelled and cancelled():
                 break
-            self.reencrypt_entry(entry)
+            self.reencrypt_entry(entry, cache)
             done += 1
             if progress:
                 progress(done, len(entries))
@@ -587,27 +665,3 @@ class PasswordStore:
         if not success:
             raise StoreError(f"git init failed: {output}")
         self.git_commit(["."], "Add current contents of password store.")
-
-
-def atomic_write(path, data, mode=0o600):
-    """
-    Write bytes to a file atomically: a temporary file next to it is
-    written, flushed and renamed over the target.
-
-    :param path: The file to write.
-    :param data: The bytes to write.
-    :param mode: Permission bits for the new file.
-    """
-    directory = os.path.dirname(path)
-    descriptor, temporary = tempfile.mkstemp(dir=directory, prefix=".pyqtpass-")
-    try:
-        with os.fdopen(descriptor, "wb") as handle:
-            handle.write(data)
-            handle.flush()
-            os.fsync(handle.fileno())
-        os.chmod(temporary, mode)
-        os.replace(temporary, path)
-    except BaseException:
-        if os.path.exists(temporary):
-            os.remove(temporary)
-        raise

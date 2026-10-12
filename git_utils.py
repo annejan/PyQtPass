@@ -102,13 +102,23 @@ def git_commit_paths(path, paths, message):
     """
     Stage the given paths (additions, changes and removals) and commit them.
 
-    Nothing is committed when staging did not change anything.
+    Paths that neither exist nor are tracked are skipped, and nothing is
+    committed when staging did not change anything.
 
     :param path: Directory of the git repository.
     :param paths: Paths relative to the repository to stage.
     :param message: The commit message.
     :return: Tuple of (success, combined output).
     """
+    root = os.path.expanduser(path)
+    paths = [
+        name
+        for name in paths
+        if os.path.lexists(os.path.join(root, name))
+        or run_git(path, "ls-files", "--", name)[1]
+    ]
+    if not paths:
+        return True, ""
     success, output = run_git(path, "add", "-A", "--", *paths)
     if not success:
         return success, output

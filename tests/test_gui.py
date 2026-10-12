@@ -2,15 +2,17 @@
 
 # pylint: disable=missing-function-docstring,redefined-outer-name,unused-argument
 
+import os
 import time
 
 import pytest
 from PyQt6.QtCore import QSettings
 from PyQt6.QtWidgets import QApplication, QLineEdit
 
+from conftest import TEST_OTP_SEED
 from settings_manager import SettingsManager
 
-OTP_URI = "otpauth://totp/Test?secret=GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ"
+OTP_URI = f"otpauth://totp/Test?secret={TEST_OTP_SEED}"
 
 
 def wait_until(app, condition, timeout=10):
@@ -71,7 +73,7 @@ def test_open_entry_shows_fields_and_otp(qapp, window):
     panel = window.ui.panel
     wait_until(qapp, lambda: panel.fields_layout.rowCount() >= 4)
     values = [edit.text() for edit in panel.fields_widget.findChildren(QLineEdit)]
-    assert "secret" in values and "me" in values and "https://example.org" in values
+    assert {"secret", "me", "https://example.org"} <= set(values)
     code = panel.current_otp_code()
     assert len(code) == 6 and code in values
     assert OTP_URI not in panel.text_browser.toPlainText()
@@ -123,7 +125,7 @@ def test_dialogs_construct(qapp, window, store):
     add = EditPasswordDialog(store, "web", "", create=True, parent=window)
     assert add.folder_combo.currentText() == "/web"
     assert add.password_edit.text()
-    users = UsersDialog(store.store_dir, "", window)
+    users = UsersDialog(store, "", window)
     assert users.selected_key_ids()
     keygen = KeyGenDialog(window, "A", "a@example.org")
     assert not keygen.status.text() == ""
@@ -133,15 +135,23 @@ def test_dialogs_construct(qapp, window, store):
     FirstRunWizard(store.store_dir, window)
 
 
-def test_users_dialog_reencrypts(qapp, window, store, key_id):
+def test_reencrypt_in_background(qapp, window, store, key_id, monkeypatch):
+    import tasks  # pylint: disable=import-outside-toplevel
+
+    failures = []
+    monkeypatch.setattr(
+        "store_actions.QMessageBox.critical",
+        lambda _parent, _title, text: failures.append(text),
+    )
     store.create_folder("team")
     store.set_key("team/x", "pw")
-    window.ui.tree_view.clearSelection()
     window.run_with_progress(
         "test",
         lambda progress, _cancelled: store.init([key_id], "team", progress=progress),
         "done",
         "failed",
     )
-    wait_until(qapp, lambda: store.recipients("team") == [key_id])
+    wait_until(qapp, lambda: not tasks._running)  # pylint: disable=protected-access
+    assert not failures
+    assert os.path.isfile(os.path.join(store.store_dir, "team", ".gpg-id"))
     assert store.get_key("team/x") == "pw\n"

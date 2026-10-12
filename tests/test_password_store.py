@@ -125,3 +125,11 @@ def test_git_commits(tmp_path, key_id):
     ]
     ok, status = git_utils.run_git(git_store.store_dir, "status", "--porcelain")
     assert ok and status == ""
+
+
+def test_reencrypt_folder(store, key_id):
+    store.set_key("team/a", "1")
+    store.set_key("team/b", "2")
+    store.init([key_id], "team")
+    assert store.reencrypt("team") == 2
+    assert store.get_key("team/b") == "2\n"

@@ -26,14 +26,9 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
 )
 
-from gpg_utils import (
-    import_keys,
-    key_matches_id,
-    key_problem,
-    list_gpg_keys,
-    read_gpg_ids,
-)
+from gpg_utils import import_keys, key_matches_id, key_problem, list_gpg_keys
 from keygen_dialog import KeyGenDialog
+from password_store import StoreError
 
 
 class UsersDialog(QDialog):
@@ -43,14 +38,14 @@ class UsersDialog(QDialog):
 
     # pylint: disable=too-many-instance-attributes
 
-    def __init__(self, store_dir, folder="", parent=None):
+    def __init__(self, store, folder="", parent=None):
         """
-        :param store_dir: Root directory of the password store.
+        :param store: The PasswordStore.
         :param folder: Folder relative to the store root, '' for the root.
         :param parent: The parent widget.
         """
         super().__init__(parent)
-        self.store_dir = store_dir
+        self.store = store
         self.folder = folder
         self.selected_ids = []
         self.key_list = QListWidget(self)
@@ -60,7 +55,14 @@ class UsersDialog(QDialog):
         self.filter_edit.textChanged.connect(self.apply_filter)
         self.show_all = QCheckBox(self.tr("Show keys that cannot be used"), self)
         self.show_all.toggled.connect(self.populate_keys)
-        self.current_ids, self.ids_folder = read_gpg_ids(store_dir, folder)
+        self.trust_problem = ""
+        try:
+            self.current_ids, self.ids_folder = store.recipient_list(folder)
+        except StoreError as error:
+            # An untrusted list preselects nothing; saving writes a new one.
+            self.current_ids, self.ids_folder = [], folder.strip("/")
+            if store.is_initialised() or store.signer.enabled:
+                self.trust_problem = str(error)
         self.setWindowTitle(self.tr("Users for {}").format(folder or "/"))
         self.init_ui()
 
@@ -79,6 +81,16 @@ class UsersDialog(QDialog):
         label = QLabel(intro, self)
         label.setWordWrap(True)
         layout.addWidget(label)
+        if self.trust_problem:
+            problem = QLabel(
+                self.tr("The current recipient list is not used: {}").format(
+                    self.trust_problem
+                ),
+                self,
+            )
+            problem.setWordWrap(True)
+            problem.setStyleSheet("color: #c0392b")
+            layout.addWidget(problem)
         layout.addWidget(self.filter_edit)
         layout.addWidget(self.key_list)
         layout.addWidget(self.show_all)
