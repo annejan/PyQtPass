@@ -98,6 +98,37 @@ def test_fields_editor_rename_add_remove(qapp):
     assert changes and ("code", "1234") not in editor.fields()
 
 
+def test_fields_editor_checks_otp(qapp):
+    from pyqtpass.fields_editor import FieldsEditor
+
+    editor = FieldsEditor()
+    editor.otp_label = lambda: "site"
+    editor.set_fields(["login", "otp"], [("login", "me"), ("totp", "23456723")])
+    template_otp, totp = editor.rows[1]["value_edit"], editor.rows[2]["value_edit"]
+    # The filled TOTP field is the OTP one, not the empty template field.
+    assert totp.placeholderText() == "otpauth:// URI or base32 secret"
+    assert template_otp.placeholderText() == ""
+    assert not totp.actions() and not totp.toolTip()
+    # A value that was already there and is no URI is left alone.
+    editor.normalize_otp()
+    assert totp.text() == "23456723"
+    totp.setText("not a secret!")
+    assert totp.actions() and totp.toolTip() == "Invalid OTP secret"
+    totp.clear()
+    assert not totp.actions() and not totp.toolTip()
+    assert template_otp.placeholderText() == "otpauth:// URI or base32 secret"
+    template_otp.textEdited.emit("jbswy3dpehpk3pxp")
+    template_otp.setText("jbswy3dpehpk3pxp")
+    template_otp.editingFinished.emit()
+    assert template_otp.text() == (
+        "otpauth://totp/site?secret=JBSWY3DPEHPK3PXP&digits=6&period=30"
+    )
+    # Renaming a field away from 'totp' drops its check.
+    editor.rows[2]["name_edit"].setText("code")
+    totp.setText("not a secret!")
+    assert not totp.actions() and totp.placeholderText() == "Value"
+
+
 def test_edit_dialog_switches_template(qapp, settings, store):
     from pyqtpass.edit_password_window import EditPasswordDialog
 

@@ -18,6 +18,13 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from pyqtpass import otp
+
+# Set on a value input the user typed in: only such a value, or an otpauth
+# URI, is rewritten as a canonical URI (a backup code like 12345678 is
+# valid base32 too and should be left alone).
+EDITED_PROPERTY = "pyqtpass_otp_edited"
+
 
 def field_rows(template_fields, fields):
     """
@@ -52,6 +59,7 @@ class FieldsEditor(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.rows = []
+        self.otp_label = lambda: ""
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         self.form = QFormLayout()
@@ -80,6 +88,7 @@ class FieldsEditor(QWidget):
                 self.add_template_field(name, value)
             else:
                 self.add_field(name, value)
+        self.check_otp()
 
     def add_template_field(self, name, value=""):
         """
@@ -90,9 +99,10 @@ class FieldsEditor(QWidget):
         """
         edit = QLineEdit(value, self)
         edit.setAccessibleName(name)
-        edit.textChanged.connect(self.changed.emit)
         self.form.addRow(QLabel(f"{name}:", self), edit)
-        self.rows.append({"name": name, "name_edit": None, "value_edit": edit})
+        entry = {"name": name, "name_edit": None, "value_edit": edit}
+        self.watch_value(entry)
+        self.rows.append(entry)
 
     def add_field(self, name="", value="", focus=False):
         """
@@ -125,9 +135,11 @@ class FieldsEditor(QWidget):
         entry = {"name": None, "name_edit": name_edit, "value_edit": value_edit}
         remove.clicked.connect(lambda: self.remove_field(row, entry))
         name_edit.textChanged.connect(self.changed.emit)
-        value_edit.textChanged.connect(self.changed.emit)
+        name_edit.textChanged.connect(self.check_otp)
+        self.watch_value(entry)
         self.form.addRow(row)
         self.rows.append(entry)
+        self.check_otp()
         if focus:
             name_edit.setFocus()
 
@@ -140,7 +152,90 @@ class FieldsEditor(QWidget):
         """
         self.rows.remove(entry)
         self.form.removeRow(row)
+        self.check_otp()
         self.changed.emit()
+
+    def watch_value(self, entry):
+        """
+        Connect a value input: changes mark the entry dirty and the OTP field
+        is checked and normalised.
+
+        :param entry: The row's entry in self.rows.
+        """
+        edit = entry["value_edit"]
+        entry["placeholder"] = edit.placeholderText()
+        entry["warning"] = None
+        edit.textChanged.connect(self.changed.emit)
+        edit.textChanged.connect(self.check_otp)
+        edit.textEdited.connect(lambda: edit.setProperty(EDITED_PROPERTY, True))
+        edit.editingFinished.connect(lambda: self.normalize_otp(entry))
+
+    def otp_entry(self):
+        """
+        :return: The row of the 'otp' or 'totp' field, preferring one with a
+                 value (an empty template field would otherwise shadow it), or
+                 None.
+        """
+        first = None
+        for entry in self.rows:
+            if not otp.is_otp_field_name(self.field_name(entry) or ""):
+                continue
+            if entry["value_edit"].text().strip():
+                return entry
+            first = first or entry
+        return first
+
+    def check_otp(self):
+        """
+        Give the OTP field its placeholder, and a warning when its value is
+        not an otpauth URI or base32 secret, like QtPass.
+        """
+        otp_entry = self.otp_entry()
+        for entry in self.rows:
+            edit = entry["value_edit"]
+            is_otp = entry is otp_entry
+            edit.setPlaceholderText(
+                self.tr("otpauth:// URI or base32 secret")
+                if is_otp
+                else entry["placeholder"]
+            )
+            text = edit.text().strip()
+            bad = is_otp and bool(text) and otp.parse(text) is None
+            if bad and entry["warning"] is None:
+                icon = QIcon.fromTheme("dialog-warning")
+                if icon.isNull():
+                    icon = self.style().standardIcon(
+                        QStyle.StandardPixmap.SP_MessageBoxWarning
+                    )
+                entry["warning"] = edit.addAction(
+                    icon, QLineEdit.ActionPosition.TrailingPosition
+                )
+                edit.setToolTip(self.tr("Invalid OTP secret"))
+            elif not bad and entry["warning"] is not None:
+                edit.removeAction(entry["warning"])
+                entry["warning"] = None
+                edit.setToolTip("")
+
+    def normalize_otp(self, entry=None):
+        """
+        Rewrite the OTP field as a canonical otpauth URI, like QtPass: only
+        an otpauth URI or a value the user typed, so a bare secret that was
+        already there is left alone.
+
+        :param entry: The row that finished editing; None for the OTP field.
+        """
+        otp_entry = self.otp_entry()
+        if otp_entry is None or (entry is not None and entry is not otp_entry):
+            return
+        edit = otp_entry["value_edit"]
+        text = edit.text().strip()
+        if not text:
+            return
+        if not edit.property(EDITED_PROPERTY) and not otp.is_otp_uri(text):
+            return
+        canonical = otp.normalize(text, self.otp_label())
+        if canonical and canonical != edit.text():
+            edit.setText(canonical)
 
     @staticmethod
     def field_name(entry):
