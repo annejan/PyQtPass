@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Release builds
+
+- A workflow run no longer replaces the files of a draft release that already
+  has signatures. Re-pushing the release tag (say, to sign it) used to rebuild
+  the files after they were signed, so the `.asc` files no longer matched.
+
 ## 0.4.1
 
 Fixes from the review of 0.3.0 and 0.4.0 (#30), and releases made like
