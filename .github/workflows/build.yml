@@ -9,6 +9,10 @@ on:
       version:
         description: 'Version to release, like v0.3.0. An existing tag is built as it is; otherwise the tag is made on the commit this runs on'
         required: true
+      dry_run:
+        description: 'Only build, from the commit this runs on: no tag, no release, no attestation'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -29,12 +33,13 @@ jobs:
       id: tag
       env:
         REQUESTED: ${{ inputs.version || github.ref_name }}
+        DRY_RUN: ${{ inputs.dry_run && 'true' || 'false' }}
       run: |
         if ! [[ "$REQUESTED" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
           echo "::error::'$REQUESTED' is not a version like v0.3.0"
           exit 1
         fi
-        if git rev-parse -q --verify "refs/tags/$REQUESTED" >/dev/null; then
+        if [ "$DRY_RUN" != "true" ] && git rev-parse -q --verify "refs/tags/$REQUESTED" >/dev/null; then
           # An existing tag is released as it is, from its own commit.
           git checkout -q "refs/tags/$REQUESTED"
         fi
@@ -67,6 +72,7 @@ jobs:
         `gh attestation verify <file> --repo annejan/PyQtPass`.
         NOTES
     - name: Create the release and its tag
+      if: ${{ !inputs.dry_run }}
       uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
       with:
         tag_name: ${{ steps.tag.outputs.tag }}
@@ -82,7 +88,7 @@ jobs:
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
-        ref: refs/tags/${{ needs.release.outputs.tag }}
+        ref: ${{ inputs.dry_run && github.sha || format('refs/tags/{0}', needs.release.outputs.tag) }}
     - name: Set up Python
       uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
       with:
@@ -122,7 +128,7 @@ jobs:
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
-        ref: refs/tags/${{ needs.release.outputs.tag }}
+        ref: ${{ inputs.dry_run && github.sha || format('refs/tags/{0}', needs.release.outputs.tag) }}
     - name: Set up Python
       uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
       with:
@@ -158,7 +164,7 @@ jobs:
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
-        ref: refs/tags/${{ needs.release.outputs.tag }}
+        ref: ${{ inputs.dry_run && github.sha || format('refs/tags/{0}', needs.release.outputs.tag) }}
     - name: Set up Python
       uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
       with:
@@ -212,16 +218,25 @@ jobs:
         sha256sum -- * > SHA256SUMS
         cat SHA256SUMS
     - name: Attest build provenance
+      if: ${{ !inputs.dry_run }}
       id: attest
       uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
       with:
         subject-path: 'out/PyQtPass-*'
     - name: Attach the provenance bundle
+      if: ${{ !inputs.dry_run }}
       run: cp "${{ steps.attest.outputs.bundle-path }}" "out/PyQtPass-${{ needs.release.outputs.version }}.intoto.jsonl"
     - name: Upload to the release
+      if: ${{ !inputs.dry_run }}
       uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
       with:
         tag_name: ${{ needs.release.outputs.tag }}
         files: out/*
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Keep the dry run's files
+      if: ${{ inputs.dry_run }}
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: release-dry-run
+        path: out/
