@@ -235,6 +235,42 @@ def test_menu_bar_toggle_and_peek(qapp, window):
     assert not window.menuBar().isHidden()
 
 
+def test_escape_clears_the_search_box(qapp, window):
+    from PyQt6.QtCore import Qt
+    from PyQt6.QtTest import QTest
+
+    window.ui.filter_text_box.setText("site")
+    QTest.keyClick(window.ui.filter_text_box, Qt.Key.Key_Escape)
+    assert window.ui.filter_text_box.text() == ""
+
+
+def test_tray_menu_and_faq_like_qtpass(qapp, window):
+    from PyQt6.QtGui import QKeySequence
+
+    tray_texts = [
+        action.text() for action in window.ui.tray_icon.contextMenu().actions()
+    ]
+    for text in ("&Hide", "Mi&nimize", "Ma&ximize", "&Restore"):
+        assert text in tray_texts
+    faq = [
+        action
+        for action in window.menuBar().actions()[-1].menu().actions()
+        if action.text() == "&FAQ"
+    ]
+    assert faq and faq[0].shortcut() == QKeySequence(
+        QKeySequence.StandardKey.HelpContents
+    )
+
+
+def test_config_dialog_remembers_its_size(qapp, window, settings):
+    from pyqtpass.config_dialog import ConfigDialog
+
+    dialog = ConfigDialog(window)
+    dialog.resize(700, 600)
+    dialog.reject()
+    assert ConfigDialog(window).size().width() == 700
+
+
 def test_signed_profile_store(qapp, window, settings, key_id):
     from pyqtpass.store_setup import (
         make_store,
