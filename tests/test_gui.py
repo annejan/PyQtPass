@@ -167,6 +167,12 @@ def test_dialogs_construct(qapp, window, store):
     assert not keygen.status.text() == ""
     keygen.no_passphrase.setChecked(True)
     assert keygen.status.text() == ""
+    assert keygen.template_edit.isHidden()
+    keygen.expert.setChecked(True)
+    assert not keygen.template_edit.isHidden()
+    keygen.name_edit.setText("Anne Jan")
+    batch = keygen.template_edit.toPlainText().splitlines()
+    assert "Name-Real: Anne Jan" in batch and "Name-Email: a@example.org" in batch
     assert "PUBLIC KEY" in ExportPublicKeyDialog(window).key_text.toPlainText()
     FirstRunWizard(store.store_dir, window)
 

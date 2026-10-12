@@ -20,7 +20,14 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
 )
 
-from pyqtpass.gpg_utils import export_public_key, generate_key, list_gpg_keys
+from pyqtpass.gpg_utils import (
+    DEFAULT_KEY_TEMPLATE,
+    export_public_key,
+    generate_key,
+    generate_key_batch,
+    list_gpg_keys,
+    set_batch_parameter,
+)
 from pyqtpass.tasks import run_task
 
 
@@ -46,6 +53,17 @@ class KeyGenDialog(QDialog):
         self.no_passphrase.setToolTip(
             self.tr("Anyone with access to the key file can then use it")
         )
+        self.expert = QCheckBox(self.tr("Expert"), self)
+        self.template_edit = QPlainTextEdit(self)
+        self.template_edit.setPlainText(DEFAULT_KEY_TEMPLATE)
+        self.expert_info = QLabel(
+            self.tr(
+                # pylint: disable-next=line-too-long
+                'For expert options check out the <a href="https://www.gnupg.org/documentation/manuals/gnupg/Unattended-GPG-key-generation.html">GnuPG manual</a>'
+            ),
+            self,
+        )
+        self.expert_info.setOpenExternalLinks(True)
         self.status = QLabel(self)
         self.status.setWordWrap(True)
         self.busy = QProgressBar(self)
@@ -66,6 +84,9 @@ class KeyGenDialog(QDialog):
         form.addRow(self.tr("Repeat passphrase:"), self.confirm_edit)
         form.addRow(self.no_passphrase)
         layout.addLayout(form)
+        layout.addWidget(self.expert)
+        layout.addWidget(self.template_edit)
+        layout.addWidget(self.expert_info)
         layout.addWidget(self.status)
         layout.addWidget(self.busy)
         layout.addWidget(self.buttons)
@@ -77,7 +98,39 @@ class KeyGenDialog(QDialog):
         ):
             widget.textChanged.connect(self.validate)
         self.no_passphrase.toggled.connect(self.validate)
+        self.name_edit.textChanged.connect(
+            lambda text: self.set_parameter("Name-Real", text)
+        )
+        self.email_edit.textChanged.connect(
+            lambda text: self.set_parameter("Name-Email", text)
+        )
+        self.expert.toggled.connect(self.set_expert_mode)
+        self.set_parameter("Name-Real", name)
+        self.set_parameter("Name-Email", email)
+        self.set_expert_mode(False)
         self.validate()
+
+    def set_expert_mode(self, checked):
+        """
+        Show the key generation parameters to edit, like QtPass's expert
+        mode. The passphrase is never shown in them: it is added when the
+        key is generated.
+
+        :param checked: Whether expert mode is on.
+        """
+        self.template_edit.setVisible(checked)
+        self.expert_info.setVisible(checked)
+
+    def set_parameter(self, key, value):
+        """
+        Keep the name and e-mail in the parameters in step with the fields.
+
+        :param key: The parameter name.
+        :param value: Its value.
+        """
+        self.template_edit.setPlainText(
+            set_batch_parameter(self.template_edit.toPlainText(), key, value.strip())
+        )
 
     def validate(self):
         """Enable OK only when the input is complete."""
@@ -110,10 +163,17 @@ class KeyGenDialog(QDialog):
             "" if self.no_passphrase.isChecked() else self.passphrase_edit.text()
         )
         self.buttons.setEnabled(False)
+        self.expert.setEnabled(False)
+        self.template_edit.setReadOnly(True)
         self.busy.show()
         self.status.setText(self.tr("Generating key pair, this can take a while..."))
+        batch = self.template_edit.toPlainText() if self.expert.isChecked() else ""
         self.task = run_task(
-            lambda _progress, _cancelled: generate_key(name, email, passphrase),
+            lambda _progress, _cancelled: (
+                generate_key_batch(batch, passphrase)
+                if batch
+                else generate_key(name, email, passphrase)
+            ),
             self.generated,
         )
 
@@ -127,6 +187,8 @@ class KeyGenDialog(QDialog):
         self.task = None
         self.busy.hide()
         self.buttons.setEnabled(True)
+        self.expert.setEnabled(True)
+        self.template_edit.setReadOnly(False)
         if error is None and result[0]:
             self.accept()
             return

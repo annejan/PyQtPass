@@ -204,6 +204,95 @@ def generate_key(name, email, passphrase=None, comment=""):
     return False, output
 
 
+# The parameters QtPass's expert mode starts from; gpg's unattended key
+# generation reads them (see the GnuPG manual).
+DEFAULT_KEY_TEMPLATE = """%echo Generating a default key
+Key-Type: EdDSA
+Key-Curve: Ed25519
+Subkey-Type: ECDH
+Subkey-Curve: Curve25519
+Name-Real:
+Name-Comment: PyQtPass
+Name-Email:
+Expire-Date: 0
+%no-protection
+%commit
+%echo done"""
+
+
+def set_batch_parameter(batch, key, value):
+    """
+    :param batch: Unattended key generation parameters.
+    :param key: A parameter name, like 'Name-Real'.
+    :param value: Its new value.
+    :return: The parameters with every 'key:' line set to value.
+    """
+    lines = []
+    for line in batch.splitlines():
+        if line.strip().lower().startswith(key.lower() + ":"):
+            line = f"{key}: {value}"
+        lines.append(line)
+    return "\n".join(lines)
+
+
+def _is_control(line, control):
+    word = line.strip().split(maxsplit=1)
+    return bool(word) and word[0].lower() == control
+
+
+def apply_passphrase(batch, passphrase):
+    """
+    Put the passphrase into unattended key generation parameters, like
+    QtPass: it replaces any %no-protection or Passphrase: line (gpg would
+    make an unprotected key while %no-protection is left), and goes before
+    %commit when there is none.
+
+    :param batch: The parameters.
+    :param passphrase: The passphrase, '' for an unprotected key.
+    :return: The parameters to give gpg.
+    """
+    protection = f"Passphrase: {passphrase}" if passphrase else "%no-protection"
+    lines = []
+    spliced = False
+    for line in batch.splitlines():
+        if not line.strip():
+            continue
+        if _is_control(line, "%no-protection") or line.strip().lower().startswith(
+            "passphrase:"
+        ):
+            if not spliced:
+                lines.append(protection)
+                spliced = True
+            continue
+        lines.append(line)
+    if not spliced and passphrase:
+        position = next(
+            (n for n, line in enumerate(lines) if _is_control(line, "%commit")),
+            len(lines),
+        )
+        lines.insert(position, protection)
+    return "\n".join(lines) + "\n"
+
+
+def generate_key_batch(batch, passphrase=None):
+    """
+    Generate a key pair from unattended key generation parameters, for
+    QtPass's expert mode.
+
+    :param batch: The parameters (see DEFAULT_KEY_TEMPLATE).
+    :param passphrase: The passphrase, or None/'' for an unprotected key.
+    :return: Tuple of (success, gpg output).
+    """
+    if passphrase and ("\n" in passphrase or "\r" in passphrase):
+        raise ValueError("A passphrase cannot contain a line break")
+    returncode, _, stderr = executor.run(
+        [which_gpg(), "--batch", "--pinentry-mode", "loopback", "--generate-key"],
+        input_data=apply_passphrase(batch, passphrase or "").encode(),
+        timeout=300,
+    )
+    return returncode == 0, stderr.decode(errors="replace").strip()
+
+
 def export_public_key(key_id):
     """
     Export a public key in ASCII armor.

@@ -506,42 +506,42 @@
 </context><context>
     <name>ExportPublicKeyDialog</name>
     <message>
-        <location filename="../keygen_dialog.py" line="154" />
+        <location filename="../keygen_dialog.py" line="216" />
         <source>Export public key</source>
         <translation>Voer openbare sleutel uit</translation>
     </message>
     <message>
-        <location filename="../keygen_dialog.py" line="166" />
+        <location filename="../keygen_dialog.py" line="228" />
         <source>Send this public key to the people you share a store with, so they can add you as a recipient. It does not contain anything secret.</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../keygen_dialog.py" line="177" />
+        <location filename="../keygen_dialog.py" line="239" />
         <source>Copy to clipboard</source>
         <translation>Kopieer na knipbord</translation>
     </message>
     <message>
-        <location filename="../keygen_dialog.py" line="179" />
+        <location filename="../keygen_dialog.py" line="241" />
         <source>Save...</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../keygen_dialog.py" line="189" />
+        <location filename="../keygen_dialog.py" line="251" />
         <source>You have no secret key yet.</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../keygen_dialog.py" line="197" />
+        <location filename="../keygen_dialog.py" line="259" />
         <source>Could not export the public key: {}</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../keygen_dialog.py" line="208" />
+        <location filename="../keygen_dialog.py" line="270" />
         <source>Save public key</source>
         <translation>Stoor openbare sleutel</translation>
     </message>
     <message>
-        <location filename="../keygen_dialog.py" line="210" />
+        <location filename="../keygen_dialog.py" line="272" />
         <source>ASCII armored keys (*.asc);;All files (*)</source>
         <translation type="unfinished" />
     </message>
@@ -747,72 +747,82 @@
 </context><context>
     <name>KeyGenDialog</name>
     <message>
-        <location filename="../keygen_dialog.py" line="37" />
+        <location filename="../keygen_dialog.py" line="44" />
         <source>Generate GnuPG key pair</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../keygen_dialog.py" line="45" />
+        <location filename="../keygen_dialog.py" line="52" />
         <source>No passphrase</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../keygen_dialog.py" line="47" />
+        <location filename="../keygen_dialog.py" line="54" />
         <source>Anyone with access to the key file can then use it</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../keygen_dialog.py" line="63" />
+        <location filename="../keygen_dialog.py" line="56" />
+        <source>Expert</source>
+        <translation>Kenner</translation>
+    </message>
+    <message>
+        <location filename="../keygen_dialog.py" line="60" />
+        <source>For expert options check out the &lt;a href="https://www.gnupg.org/documentation/manuals/gnupg/Unattended-GPG-key-generation.html"&gt;GnuPG manual&lt;/a&gt;</source>
+        <translation>Raadpleeg vir kundige opsies die &lt;a href="https://www.gnupg.org/documentation/manuals/gnupg/Unattended-GPG-key-generation.html"&gt; GnuPG handleiding&lt;/a&gt;</translation>
+    </message>
+    <message>
+        <location filename="../keygen_dialog.py" line="81" />
         <source>Name:</source>
         <translation>Naam:</translation>
     </message>
     <message>
-        <location filename="../keygen_dialog.py" line="64" />
+        <location filename="../keygen_dialog.py" line="82" />
         <source>E-mail:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../keygen_dialog.py" line="65" />
+        <location filename="../keygen_dialog.py" line="83" />
         <source>Passphrase:</source>
         <translation>Wagwoordfrase:</translation>
     </message>
     <message>
-        <location filename="../keygen_dialog.py" line="66" />
+        <location filename="../keygen_dialog.py" line="84" />
         <source>Repeat passphrase:</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../keygen_dialog.py" line="89" />
+        <location filename="../keygen_dialog.py" line="142" />
         <source>Enter a name.</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../keygen_dialog.py" line="91" />
+        <location filename="../keygen_dialog.py" line="144" />
         <source>Enter an e-mail address.</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../keygen_dialog.py" line="93" />
+        <location filename="../keygen_dialog.py" line="146" />
         <source>Type a passphrase twice, or tick 'No passphrase'.</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../keygen_dialog.py" line="97" />
+        <location filename="../keygen_dialog.py" line="150" />
         <source>The passphrases differ.</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../keygen_dialog.py" line="101" />
+        <location filename="../keygen_dialog.py" line="154" />
         <source>The passphrase cannot contain a line break.</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../keygen_dialog.py" line="114" />
+        <location filename="../keygen_dialog.py" line="169" />
         <source>Generating key pair, this can take a while...</source>
         <translation type="unfinished" />
     </message>
     <message>
-        <location filename="../keygen_dialog.py" line="135" />
+        <location filename="../keygen_dialog.py" line="197" />
         <source>Key generation failed</source>
         <translation type="unfinished" />
     </message>

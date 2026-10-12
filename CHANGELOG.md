@@ -14,6 +14,10 @@
   not an otpauth:// URI or base32 secret. An otpauth URI, or a secret you
   type, is saved as a canonical otpauth URI labelled with the entry name;
   parameters PyQtPass doesn't use, like `image=`, are kept.
+- The key generation dialog has QtPass's Expert mode: tick Expert to edit
+  the gpg key generation parameters (key type, curve, expiry and so on)
+  before the key is made. Name and e-mail stay in step with the fields, and
+  the passphrase is added when the key is generated, never shown there.
 
 ### Search
 
