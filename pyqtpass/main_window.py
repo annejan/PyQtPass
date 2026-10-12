@@ -54,6 +54,7 @@ from pyqtpass.store_setup import (
 )
 from pyqtpass.single_instance import activate_running_instance, listen_for_instances
 from pyqtpass.tasks import run_task, wait_for_all
+from pyqtpass.templates import template_fields_for
 from pyqtpass.store_actions import StoreActionsMixin
 from pyqtpass.ui_container import UiContainer
 from pyqtpass.window_actions import WindowActionsMixin
@@ -280,22 +281,24 @@ class QtPassGUI(StoreActionsMixin, WindowActionsMixin, QMainWindow):
             self.ui.panel.show_message(f"<i>{html.escape(message)}</i>")
             self.show_status(self.tr("Could not decrypt this password entry"))
             return
-        self.show_key_content(data)
+        self.show_key_content(data, path)
         self.verbose_print(f"Opened: {path}")
         self.statusBar().clearMessage()
         if self.settings.get("always_copy_to_clipboard"):
             self.copy_text_to_clipboard(data.split("\n", 1)[0])
 
-    def show_key_content(self, key_data):
+    def show_key_content(self, key_data, path=""):
         """
         Display decrypted key data in the content panel, honouring the
         display settings and the panel autoclear timeout.
 
         :param key_data: The decrypted contents of a password entry.
+        :param path: The entry path, for the template of its folder.
         """
+        folder = path.rsplit("/", 1)[0] if "/" in path else ""
         content = parse_entry(
             key_data,
-            self.settings.template_fields(),
+            template_fields_for(self.store.store_dir, folder, self.settings),
             self.settings.get("use_template")
             and self.settings.get("template_all_fields"),
         )

@@ -27,9 +27,11 @@ from PyQt6.QtWidgets import (
 )
 
 from pyqtpass.entry import build_entry, parse_entry
+from pyqtpass.fields_editor import FieldsEditor
 from pyqtpass.password_store import CommitError
-from pyqtpass.tasks import run_task
 from pyqtpass.settings_manager import SettingsManager
+from pyqtpass.tasks import run_task
+from pyqtpass.templates import default_template, read_templates
 
 CHARACTER_SETS = [
     string.ascii_letters + string.digits + string.punctuation,
@@ -72,29 +74,6 @@ def random_password(charset_index, length, custom_chars=""):
     return "".join(secrets.choice(characters) for _ in range(length))
 
 
-def field_rows(template_fields, fields):
-    """
-    Decide which field inputs the dialog shows: one per template field,
-    filled from the entry when it has that field, then one for every other
-    field of the entry. Repeated fields each keep their own input.
-
-    :param template_fields: The template field names.
-    :param fields: List of (name, value) tuples parsed from the entry.
-    :return: List of (name, value) tuples.
-    """
-    remaining = list(fields)
-    rows = []
-    for name in template_fields:
-        value = ""
-        for position, (field_name, field_value) in enumerate(remaining):
-            if field_name == name:
-                value = field_value
-                del remaining[position]
-                break
-        rows.append((name, value))
-    return rows + remaining
-
-
 class EditPasswordDialog(QDialog):
     """
     A EditPasswordDialog dialog class that inherits from QDialog.
@@ -124,7 +103,9 @@ class EditPasswordDialog(QDialog):
         self.create = create
         self.folder_combo = None
         self.name_edit = None
-        self.field_edits = []
+        self.fields_editor = FieldsEditor(self)
+        self.template_combo = QComboBox(self)
+        self.templates = read_templates(store.store_dir)
         self.password_edit = QLineEdit(self)
         self.show_password_checkbox = QCheckBox(self.tr("Show password"), self)
         self.charset_combo_box = QComboBox(self)
@@ -134,22 +115,85 @@ class EditPasswordDialog(QDialog):
         self.task = None
         self.dirty = create
         self.saved = False
+        self.all_fields = bool(
+            self.settings.get("use_template")
+            and self.settings.get("template_all_fields")
+        )
         content = None
         if not create:
             content = parse_entry(
                 data if data is not None else store.get_key(path),
-                self.settings.template_fields(),
-                self.settings.get("use_template")
-                and self.settings.get("template_all_fields"),
+                self.template_fields(),
+                self.all_fields,
             )
         if create:
             self.setWindowTitle(self.tr("Add password"))
         else:
             self.setWindowTitle(self.tr("Edit {}").format(name))
         self.init_ui(content)
-        for edit in [self.password_edit] + [edit for _, edit in self.field_edits]:
-            edit.textChanged.connect(self.mark_dirty)
+        self.password_edit.textChanged.connect(self.mark_dirty)
+        self.fields_editor.changed.connect(self.mark_dirty)
         self.info_text_edit.textChanged.connect(self.mark_dirty)
+
+    @property
+    def field_edits(self):
+        """:return: List of (name, value QLineEdit) for every field row."""
+        return [
+            (self.fields_editor.field_name(entry), entry["value_edit"])
+            for entry in self.fields_editor.rows
+        ]
+
+    def entry_folder(self):
+        """:return: The folder the entry is (or will be) in."""
+        if self.create:
+            if self.folder_combo is not None:
+                return self.folder_combo.currentText().strip("/")
+            return self.path.strip("/")
+        return self.path.rsplit("/", 1)[0] if "/" in self.path else ""
+
+    def template_fields(self):
+        """
+        :return: The field names of the selected template; before the
+                 template box exists, of the folder's default template.
+        """
+        if self.template_combo.count():
+            name = self.template_combo.currentData()
+        else:
+            name = default_template(self.store.store_dir, self.entry_folder())
+        if name and name in self.templates:
+            return self.templates[name]
+        return self.settings.template_fields()
+
+    def init_template_row(self, form):
+        """
+        Add the template choice when the store has a .templates file.
+
+        :param form: The QFormLayout to add to.
+        """
+        if not self.templates:
+            self.template_combo.hide()
+            return
+        self.template_combo.addItem(self.tr("As configured"), "")
+        for name in sorted(self.templates):
+            self.template_combo.addItem(name, name)
+        default = default_template(self.store.store_dir, self.entry_folder())
+        index = self.template_combo.findData(default) if default else 0
+        self.template_combo.setCurrentIndex(max(index, 0))
+        self.template_combo.currentIndexChanged.connect(self.apply_template)
+        form.addRow(self.tr("Template:"), self.template_combo)
+
+    def apply_template(self):
+        """
+        Show the fields of another template, keeping everything typed:
+        the entry is put together and parsed again for the new template.
+        """
+        content = parse_entry(
+            self.entry_data(), self.template_fields(), self.all_fields
+        )
+        self.fields_editor.set_fields(self.template_fields(), content.fields)
+        self.info_text_edit.blockSignals(True)
+        self.info_text_edit.setPlainText(content.remaining)
+        self.info_text_edit.blockSignals(False)
 
     def mark_dirty(self):
         """Remember that something was changed, so OK has to save."""
@@ -166,17 +210,15 @@ class EditPasswordDialog(QDialog):
         layout.addLayout(form)
         if self.create:
             self.init_location_rows(form)
+        self.init_template_row(form)
         self.init_password_rows(form)
         if content is not None:
             self.password_edit.setText(content.password)
             self.info_text_edit.setPlainText(content.remaining)
-        for name, value in field_rows(
-            self.settings.template_fields(), content.fields if content else []
-        ):
-            edit = QLineEdit(value, self)
-            edit.setAccessibleName(name)
-            form.addRow(f"{name}:", edit)
-            self.field_edits.append((name, edit))
+        self.fields_editor.set_fields(
+            self.template_fields(), content.fields if content else []
+        )
+        layout.addWidget(self.fields_editor)
         self.info_text_edit.setAcceptRichText(False)
         layout.addWidget(self.info_text_edit)
 
@@ -270,7 +312,7 @@ class EditPasswordDialog(QDialog):
         """
         :return: The entry contents assembled from the dialog.
         """
-        fields = [(name, edit.text().strip()) for name, edit in self.field_edits]
+        fields = self.fields_editor.fields()
         return build_entry(
             self.password_edit.text(), fields, self.info_text_edit.toPlainText()
         )
@@ -287,6 +329,10 @@ class EditPasswordDialog(QDialog):
             return
         if not self.dirty:
             self.accept()
+            return
+        problem = self.fields_editor.problem()
+        if problem:
+            QMessageBox.warning(self, self.tr("Check the fields"), problem)
             return
         path = self.target_path()
         data = self.entry_data()
