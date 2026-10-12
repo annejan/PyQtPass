@@ -3,54 +3,10 @@
 # pylint: disable=missing-function-docstring,redefined-outer-name,unused-argument,import-outside-toplevel
 
 import os
-import time
 
-import pytest
 from PyQt6.QtWidgets import QApplication, QLineEdit
 
-from conftest import TEST_OTP_SEED
-
-OTP_URI = f"otpauth://totp/Test?secret={TEST_OTP_SEED}"
-
-
-def wait_until(app, condition, timeout=10):
-    deadline = time.time() + timeout
-    while not condition():
-        app.processEvents()
-        if time.time() > deadline:
-            raise AssertionError("condition not met in time")
-        time.sleep(0.01)
-
-
-@pytest.fixture
-def window(qapp, settings, store):
-    from pyqtpass.main_window import (
-        QtPassGUI,
-    )  # pylint: disable=import-outside-toplevel
-
-    settings.set("pass_store", store.store_dir)
-    settings.set("use_template", True)
-    settings.set("use_tray_icon", False)
-    store.set_key("web/site", f"secret\nlogin: me\nurl: https://example.org\n{OTP_URI}")
-    store.set_key("other", "pw2\nnote: findme")
-    gui = QtPassGUI()
-    yield gui
-    gui.close()
-    gui.deleteLater()
-    qapp.processEvents()
-
-
-def find_index(gui, path):
-    from pyqtpass.utilities import PATH_ROLE  # pylint: disable=import-outside-toplevel
-
-    model = gui.ui.proxy_model
-    pending = [model.index(row, 0) for row in range(model.rowCount())]
-    while pending:
-        index = pending.pop()
-        if index.data(PATH_ROLE) == path:
-            return index
-        pending += [model.index(row, 0, index) for row in range(model.rowCount(index))]
-    return None
+from conftest import OTP_URI, find_index, wait_for_tasks, wait_until
 
 
 def test_open_entry_shows_fields_and_otp(qapp, window):
@@ -91,12 +47,6 @@ def test_filter_and_content_search(qapp, window):
     wait_until(qapp, lambda: window.search_task is None)
     assert find_index(window, "other") is not None
     assert find_index(window, "web/site") is None
-
-
-def wait_for_tasks(app):
-    from pyqtpass import tasks  # pylint: disable=import-outside-toplevel
-
-    wait_until(app, lambda: not tasks.running())
 
 
 def test_move_folder_and_delete(qapp, window, store, monkeypatch):
