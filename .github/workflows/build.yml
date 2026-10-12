@@ -258,7 +258,9 @@ jobs:
         cat SHA256SUMS
     # A published release is left alone: its files may already be signed
     # and downloaded, and new bytes under the same names would not match.
-    - name: Check that the release is still a draft
+    # So is a draft the maintainer has signed (re-pushing a signed tag runs
+    # this again): the old signatures would not match the new files.
+    - name: Check that the release is still an unsigned draft
       if: ${{ !inputs.dry_run }}
       env:
         GH_TOKEN: ${{ github.token }}
@@ -267,6 +269,12 @@ jobs:
       run: |
         if [ "$(gh release view "$TAG" --json isDraft --jq .isDraft)" != "true" ]; then
           echo "::error::$TAG is already published; its files are not replaced"
+          exit 1
+        fi
+        signed="$(gh release view "$TAG" --json assets \
+          --jq '[.assets[].name | select(endswith(".asc"))] | length')"
+        if [ "$signed" != "0" ]; then
+          echo "::error::$TAG already has signed files; its files are not replaced. Delete the release's .asc files to rebuild it."
           exit 1
         fi
     - name: Attest build provenance
