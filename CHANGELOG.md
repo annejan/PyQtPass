@@ -11,7 +11,8 @@
   release uploads its sdist and wheel, with the translations, using trusted
   publishing; every pull request builds and checks the package.
 - The package metadata names the supported Python versions and platforms,
-  and the README's picture and links work on PyPI too.
+  and the README's picture and links work on PyPI too. The package carries
+  every licence text and names the logo's and font's licences as well.
 - Licensing follows the REUSE specification, like QtPass: `REUSE.toml`
   records the copyright and licence of every file (GPL-3.0-or-later; the
   logo WTFPL; the Lato font OFL-1.1), with the licence texts in `LICENSES/`,

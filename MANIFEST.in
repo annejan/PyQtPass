@@ -1,4 +1,4 @@
 # The sdist also carries what is needed to rebuild the translations and to
 # read what changed; the compiled .qm files come in as package data.
-include CHANGELOG.md CONTRIBUTING.md
+include CHANGELOG.md CONTRIBUTING.md REUSE.toml
 include pyqtpass/localization/*.ts

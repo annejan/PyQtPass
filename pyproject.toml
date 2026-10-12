@@ -7,8 +7,15 @@ name = "pyqtpass"
 dynamic = ["version"]
 description = "A cross-platform GUI for pass, the standard Unix password manager; a Python port of QtPass"
 readme = "README.md"
-license = "GPL-3.0-or-later"
-license-files = ["LICENSE", "LICENSES/*.txt"]
+# The code is GPL; the wheel also ships the logo (WTFPL) and the Lato font
+# (OFL-1.1). REUSE.toml says which file has which licence.
+license = "GPL-3.0-or-later AND WTFPL AND OFL-1.1"
+license-files = [
+    "LICENSE",
+    "LICENSES/GPL-3.0-or-later.txt",
+    "LICENSES/OFL-1.1.txt",
+    "LICENSES/WTFPL.txt",
+]
 requires-python = ">=3.11"
 authors = [{ name = "Anne Jan Brouwer" }]
 keywords = ["pass", "password manager", "password-store", "gpg", "qt", "qtpass"]
