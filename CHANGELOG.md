@@ -64,6 +64,14 @@ Brings PyQtPass up to date with the QtPass 2.0 feature set.
 - The menu bar can be hidden with Ctrl+M (also in the tray menu); Alt shows
   it for as long as it is used.
 
+### Translations
+
+- The translations of QtPass's Weblate translators are reused for every
+  string PyQtPass shares with QtPass: 64 languages, around 75 strings each
+  (`scripts/import_qtpass_translations.py`). Existing translations are kept.
+- Translations load for the system's UI languages, with a language-only
+  file (`localization_it`) serving its regional variants.
+
 ### Fixes
 
 - Translations were never loaded (wrong directory, and the translator was

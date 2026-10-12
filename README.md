@@ -51,6 +51,7 @@ PyQtPass follows the feature set of [QtPass 2.0](https://github.com/IJHack/QtPas
 - A menu bar that can be hidden (Ctrl+M); Alt shows it while you use it.
 - System tray icon, start minimized, hide on close, always on top and a single running instance.
 - Cross-platform compatibility, thanks to the Python and PyQt6 combination.
+- Available in the 64 languages QtPass is translated into, for the strings both programs share.
 
 ## Installation
 
@@ -70,7 +71,14 @@ Git is optional (for synchronisation) and so is `qrencode` (for QR codes). Then:
    pip install -r requirements.txt
    ```
 
-3. Run the application:
+3. Optionally compile the translations (Qt's `lrelease`, e.g. from the
+   `qt6-l10n-tools` package; release builds include them):
+
+   ```sh
+   lrelease localization/*.ts
+   ```
+
+4. Run the application:
 
    ```sh
    python pyqtpass.py
@@ -133,5 +141,9 @@ Should you encounter any issues or have feature suggestions, please feel free to
 - `Qt Framework`: PyQtPass utilizes the Qt Framework, specifically Qt 6, a comprehensive set of C++ libraries and development tools that enable the creation of cross-platform applications.
   Discover more about the Qt Framework at [qt.io](https://www.qt.io/).
 - `QtPass`: Qt GUI for Pass, written in C++, can be found at [qtpass.org](https://qtpass.org/).
+- Translations: PyQtPass reuses the translations QtPass's translators made on
+  [Weblate](https://hosted.weblate.org/projects/qtpass/) for the strings both programs share
+  (GPL-3.0-or-later, like PyQtPass). `scripts/import_qtpass_translations.py` imports them again
+  from a QtPass checkout.
 - Co-Authorship: This project includes code and documentation co-written with the assistance of ChatGPT from OpenAI.
 - Co-Authorship: The QtPass feature-parity work (clipboard, content panel, git sync, GPG user management, profiles, the native store backend, TOTP, templates, the first-run wizard and key management) and the PyQt6 migration were co-written with the assistance of Claude from Anthropic.

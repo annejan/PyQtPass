@@ -56,9 +56,12 @@ def set_locale():
     The translators are kept referenced, otherwise Python would garbage
     collect them and Qt would silently fall back to English.
     """
-    language_code = QLocale.system().name()
+    system = QLocale.system()
+    language_code = system.name()
     app_translator = QTranslator()
-    if app_translator.load(f"localization_{language_code}", get_localization_dir()):
+    # Tries every UI language, each with and without its country, so a
+    # language-only translation (localization_it) serves it_IT too.
+    if app_translator.load(system, "localization", "_", get_localization_dir()):
         QCoreApplication.installTranslator(app_translator)
         _translators.append(app_translator)
     qt_translator = QTranslator()
