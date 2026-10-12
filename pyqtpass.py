@@ -1,79 +1,128 @@
 """
-This module provides a PyQt6 GUI for interfacing with the passpy library, which is a Python
-wrapper for the standard Unix password manager 'pass'. It allows users to interact with their
-password store through a graphical interface, displaying passwords in a tree view and allowing
-password retrieval by double-clicking on a password entry.
+This module provides a PyQt6 GUI for 'pass', the standard Unix password
+manager. It is a Python port of QtPass: it shows the password store in a
+tree view, the selected entry with its fields and one-time password in a
+content panel, and talks to gpg and git directly to change the store.
 
 Dependencies:
     - PyQt6
-    - passpy
+    - Markdown
+    - gpg (and optionally git and qrencode) on the PATH
 """
 
 import argparse
+import html
 import os
 import sys
+import weakref
 
-import passpy
 import markdown
 from PyQt6.QtCore import (
     Qt,
     QByteArray,
+    QMimeData,
     QTimer,
+    pyqtSignal,
 )
-from PyQt6.QtGui import QAction, QIcon, QFontDatabase, QFont
+from PyQt6.QtGui import (
+    QAction,
+    QClipboard,
+    QFont,
+    QFontDatabase,
+    QIcon,
+)
 from PyQt6.QtWidgets import (
     QApplication,
-    QComboBox,
     QDialog,
     QMainWindow,
-    QSplitter,
-    QStyle,
-    QSystemTrayIcon,
     QMenu,
     QMessageBox,
-    QInputDialog,
+    QSplitter,
+    QSystemTrayIcon,
 )
 
+import executor
 import git_utils
-from settings_manager import SettingsManager
+import gpg_utils
+import otp
 from config_dialog import ConfigDialog
+from entry import parse_entry
+from first_run_wizard import FirstRunWizard
+from password_store import PasswordStore, StoreError
+from settings_manager import SettingsManager
+from single_instance import activate_running_instance, listen_for_instances
+from tasks import run_task, wait_for_all
+from store_actions import StoreActionsMixin
 from ui_container import UiContainer
-from edit_password_window import EditPasswordDialog
-from users_dialog import UsersDialog
-from gpg_utils import which_gpg
+from window_actions import WindowActionsMixin
 from utilities import (
-    format_key_html,
-    get_icon_path,
-    get_lato_font_path,
-    set_locale,
     create_tree_model,
+    get_icon_path,
     get_item_folder,
     get_item_full_path,
-    set_widgets_enabled,
+    get_lato_font_path,
+    is_folder_item,
+    set_locale,
 )
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 DEFAULT_STORE_DIR = "~/.password-store"
 
+# Clipboard formats that ask clipboard managers not to keep a copy.
+SECRET_CLIPBOARD_HINTS = {
+    "x-kde-passwordManagerHint": b"secret",
+    "ExcludeClipboardContentFromMonitorProcessing": b"1",
+    "org.nspasteboard.ConcealedType": b"",
+}
 
-class QtPassGUI(QMainWindow):
+
+def configured_store_dir(settings):
     """
-    PyQt GUI class for the passpy password store.
+    :param settings: The SettingsManager.
+    :return: The store directory of the current profile, or the configured
+             password store when no profile is selected.
+    """
+    profiles = settings.get("profiles") or {}
+    current = settings.get("current_profile")
+    if current and current in profiles:
+        return profiles[current]
+    return settings.get("pass_store") or DEFAULT_STORE_DIR
+
+
+def apply_executables(settings):
+    """
+    Point the gpg and git helpers at the configured executables.
+
+    :param settings: The SettingsManager.
+    """
+    gpg_utils.set_gpg_executable(settings.get("gpg_executable"))
+    git_utils.set_git_executable(settings.get("git_executable"))
+
+
+class QtPassGUI(StoreActionsMixin, WindowActionsMixin, QMainWindow):
+    """
+    PyQt GUI class for the password store.
     """
 
     # pylint: disable=too-many-instance-attributes,too-many-public-methods
 
+    process_output = pyqtSignal(str, int, str)
+
     def __init__(self, verbose=False):
         super().__init__()
-        set_locale()
         self.splitter = None
         self.ui = UiContainer()
         self.verbose = verbose
         self.settings = SettingsManager()
         self.actions = {}
         self.profile_combo = None
+        self.output_dock = None
+        self.output_view = None
         self.copied_text = ""
+        self.opening_path = None
+        self.git_task = None
+        self.search_task = None
         self.clipboard_timer = QTimer(self)
         self.clipboard_timer.setSingleShot(True)
         self.clipboard_timer.timeout.connect(self.clear_clipboard)
@@ -81,34 +130,41 @@ class QtPassGUI(QMainWindow):
         self.panel_timer.setSingleShot(True)
         self.panel_timer.timeout.connect(self.clear_panel)
         self.store = None
+        apply_executables(self.settings)
         self.load_store()
         self.init_ui()
         self.restore_settings()
+        self.process_output.connect(self.append_process_output)
+        self.output_listener = make_output_listener(self)
+        executor.add_listener(self.output_listener)
         if self.git_enabled() and self.settings.get("git_pull_on_start"):
-            self.on_git_pull()
+            QTimer.singleShot(0, self.on_git_pull)
 
     def get_store_dir(self):
         """
         :return: The store directory of the currently selected profile.
         """
-        profiles = self.settings.get("profiles") or {}
-        current = self.settings.get("current_profile")
-        if current and current in profiles:
-            return profiles[current]
-        return DEFAULT_STORE_DIR
+        return configured_store_dir(self.settings)
+
+    def new_store(self, store_dir):
+        """
+        :param store_dir: The store directory.
+        :return: A PasswordStore for it with the current settings.
+        """
+        return PasswordStore(
+            store_dir,
+            gpg_bin=gpg_utils.which_gpg(),
+            use_git=bool(self.settings.get("use_git")),
+        )
 
     def load_store(self):
         """
         Open the password store of the current profile.
         """
-        try:
-            self.store = passpy.Store(
-                gpg_bin=which_gpg(), store_dir=self.get_store_dir()
-            )
-            self.ui.tree_model = create_tree_model(self.store)
-        except passpy.StoreNotInitialisedError as e:
-            print(self.tr("Error initializing passpy store: {}").format(e))
-            sys.exit(1)
+        self.store = self.new_store(self.get_store_dir())
+        if not os.path.isdir(self.store.store_dir):
+            os.makedirs(self.store.store_dir, exist_ok=True)
+        self.ui.tree_model = create_tree_model(self.store)
 
     def closeEvent(self, event):  # pylint: disable=invalid-name
         """
@@ -132,17 +188,24 @@ class QtPassGUI(QMainWindow):
             event.ignore()
         else:
             self.save_settings()
+            executor.remove_listener(self.output_listener)
             event.accept()
+            QApplication.instance().quit()
 
     def save_settings(self):
         """
         Saves the current settings of the application.
 
-        This method stores the current window geometry and splitter sizes into the settings
-        so that these can be restored the next time the application is started.
+        This method stores the current window geometry, toolbar and dock
+        state and splitter sizes into the settings so that these can be
+        restored the next time the application is started.
         """
         self.settings.set("window_geometry", self.saveGeometry())
+        self.settings.set("window_state", self.saveState())
         self.settings.set("splitter_sizes", self.splitter.sizes())
+        self.settings.set(
+            "show_process_output", self.actions["process_output"].isChecked()
+        )
         self.settings.save()
 
     def restore_settings(self):
@@ -156,7 +219,13 @@ class QtPassGUI(QMainWindow):
         geometry = self.settings.get("window_geometry")
         if isinstance(geometry, QByteArray):
             self.restoreGeometry(geometry)
+        state = self.settings.get("window_state")
+        if isinstance(state, QByteArray):
+            self.restoreState(state)
         self.splitter.setSizes(self.settings.get("splitter_sizes"))
+        self.output_dock.setVisible(bool(self.settings.get("show_process_output")))
+
+    # Tree helpers
 
     def item_from_index(self, index):
         """
@@ -171,50 +240,91 @@ class QtPassGUI(QMainWindow):
         :return: The currently selected index in the tree view or None.
         """
         index = self.ui.tree_view.currentIndex()
-        if index.isValid():
+        if index.isValid() and self.ui.tree_view.selectionModel().isSelected(index):
             return index
         return None
 
+    def selected_entry_path(self, index=None):
+        """
+        :param index: The index in the proxy model, or None for the selection.
+        :return: The path of the entry at index, or None for a folder or none.
+        """
+        if index is None:
+            index = self.current_index()
+        if index is None:
+            return None
+        item = self.item_from_index(index)
+        if item is None or is_folder_item(item):
+            return None
+        return get_item_full_path(item)
+
+    def selected_folder(self, index=None):
+        """
+        :param index: The index in the proxy model, or None for the selection.
+        :return: The folder of the item at index, '' for the root.
+        """
+        if index is None:
+            index = self.current_index()
+        if index is None:
+            return ""
+        return get_item_folder(self.item_from_index(index)).strip("/")
+
+    # Showing entries
+
     def open_item(self, index):
         """
-        Show the content of the item at index in the content panel.
+        Decrypt the entry at index in the background and show it in the
+        content panel.
 
         :param index: The index of the item in the proxy model.
         """
-        item = self.item_from_index(index)
-        path = get_item_full_path(item)
+        path = self.selected_entry_path(index)
+        if path is None:
+            return
+        self.opening_path = path
+        store = self.store
+        self.show_status(self.tr("Decrypting {}").format(path))
+        run_task(
+            lambda _progress, _cancelled: store.get_key(path),
+            lambda data, error: self.on_item_decrypted(path, data, error),
+        )
 
-        set_widgets_enabled(self, False)
-        try:
-            password = self.store.get_key(path)
-            self.show_key_content(password)
-            self.verbose_print(f"Opened: {path}")
-            set_widgets_enabled(self, True)
-            if self.settings.get("always_copy_to_clipboard"):
-                self.copy_text_to_clipboard(password.split("\n", 1)[0])
-        except FileNotFoundError:
-            self.verbose_print(
-                f"Cannot retrieve key for a directory or non-existent key: {path}"
-            )
-            set_widgets_enabled(self, True)
+    def on_item_decrypted(self, path, data, error):
+        """
+        Show a decrypted entry, unless another one was selected meanwhile.
+
+        :param path: The entry path.
+        :param data: The decrypted contents.
+        :param error: An exception when decryption failed.
+        """
+        if path != self.opening_path:
+            return
+        self.opening_path = None
+        if error is not None:
+            message = self.tr("Could not decrypt {}: {}").format(path, error)
+            self.ui.panel.show_message(f"<i>{html.escape(message)}</i>")
+            self.show_status(self.tr("Could not decrypt this password entry"))
+            return
+        self.show_key_content(data)
+        self.verbose_print(f"Opened: {path}")
+        self.statusBar().clearMessage()
+        if self.settings.get("always_copy_to_clipboard"):
+            self.copy_text_to_clipboard(data.split("\n", 1)[0])
 
     def show_key_content(self, key_data):
         """
         Display decrypted key data in the content panel, honouring the
-        hide password/content settings and the panel autoclear timeout.
+        display settings and the panel autoclear timeout.
 
         :param key_data: The decrypted contents of a password entry.
         """
-        if self.settings.get("hide_content"):
-            hidden = self.tr("Content hidden")
-            self.ui.text_edit.setHtml(f"<i>{hidden}</i>")
-        else:
-            fixed_font = QFont("monospace", 10, QFont.Weight.Normal)
-            fixed_font.setFixedPitch(True)
-            self.ui.text_edit.setFont(fixed_font)
-            self.ui.text_edit.setHtml(
-                format_key_html(key_data, self.settings.get("hide_password"))
-            )
+        content = parse_entry(
+            key_data,
+            self.settings.template_fields(),
+            self.settings.get("use_template")
+            and self.settings.get("template_all_fields"),
+        )
+        self.ui.panel.show_entry(content, self.settings)
         if self.settings.get("autoclear_panel"):
             self.panel_timer.start(int(self.settings.get("panel_timeout")) * 1000)
 
@@ -222,32 +332,54 @@ class QtPassGUI(QMainWindow):
         """
         Clear the content panel, called by the panel autoclear timer.
         """
-        self.ui.text_edit.clear()
+        self.ui.panel.clear()
 
-    def copy_text_to_clipboard(self, text):
+    # Clipboard
+
+    def copy_text_to_clipboard(self, text, what=None):
         """
-        Copy text to the clipboard and start the autoclear timer.
+        Copy text to the clipboard, marked as secret for clipboard managers,
+        and start the autoclear timer.
 
         :param text: The text to copy.
+        :param what: Optional name of what was copied, for the status bar.
         """
-        QApplication.clipboard().setText(text)
+        clipboard = QApplication.clipboard()
+        modes = [QClipboard.Mode.Clipboard]
+        if self.settings.get("use_selection") and clipboard.supportsSelection():
+            modes.append(QClipboard.Mode.Selection)
+        for mode in modes:
+            mime = QMimeData()
+            mime.setText(text)
+            for hint, value in SECRET_CLIPBOARD_HINTS.items():
+                mime.setData(hint, QByteArray(value))
+            clipboard.setMimeData(mime, mode)
         self.copied_text = text
+        what = what or self.tr("Password")
         if self.settings.get("autoclear_clipboard"):
             timeout = int(self.settings.get("clipboard_timeout"))
             self.clipboard_timer.start(timeout * 1000)
             self.show_status(
-                self.tr("Copied to clipboard, clearing in {} seconds").format(timeout)
+                self.tr("{} copied to clipboard, clearing in {} seconds").format(
+                    what, timeout
+                )
             )
         else:
-            self.show_status(self.tr("Copied to clipboard"))
+            self.show_status(self.tr("{} copied to clipboard").format(what))
 
     def clear_clipboard(self):
         """
         Clear the clipboard if it still holds the text we copied.
         """
         clipboard = QApplication.clipboard()
-        if clipboard.text() == self.copied_text:
-            clipboard.clear()
+        cleared = False
+        for mode in (QClipboard.Mode.Clipboard, QClipboard.Mode.Selection):
+            if mode == QClipboard.Mode.Selection and not clipboard.supportsSelection():
+                continue
+            if self.copied_text and clipboard.text(mode) == self.copied_text:
+                clipboard.clear(mode)
+                cleared = True
+        if cleared:
             self.show_status(self.tr("Clipboard cleared"))
         self.copied_text = ""
 
@@ -257,18 +389,42 @@ class QtPassGUI(QMainWindow):
 
         :param index: The index in the proxy model, or None for the selection.
         """
-        if index is None:
-            index = self.current_index()
-        if index is None:
+        path = self.selected_entry_path(index)
+        if path is None:
             self.show_status(self.tr("No password selected"))
             return
-        path = get_item_full_path(self.item_from_index(index))
         try:
-            password = self.store.get_key(path).split("\n", 1)[0]
-        except FileNotFoundError:
-            self.show_status(self.tr("No password selected"))
+            content = parse_entry(self.store.get_key(path))
+        except (OSError, StoreError) as error:
+            self.show_status(self.tr("Could not decrypt {}: {}").format(path, error))
             return
-        self.copy_text_to_clipboard(password)
+        if not content.password_for_display:
+            self.show_status(self.tr("This entry holds an OTP secret, not a password"))
+            return
+        self.copy_text_to_clipboard(content.password)
+
+    def copy_otp(self, index=None):
+        """
+        Copy the current one-time password of the item at index.
+
+        :param index: The index in the proxy model, or None for the selection.
+        """
+        path = self.selected_entry_path(index)
+        if path is None:
+            self.show_status(self.tr("No password selected for OTP generation"))
+            return
+        try:
+            content = parse_entry(self.store.get_key(path))
+        except (OSError, StoreError) as error:
+            self.show_status(self.tr("Could not decrypt {}: {}").format(path, error))
+            return
+        settings = otp.parse(content.otp)
+        if settings is None:
+            self.show_status(self.tr("No OTP code found in this password entry"))
+            return
+        self.copy_text_to_clipboard(otp.generate(settings), self.tr("OTP code"))
+
+    # Tree events
 
     def on_item_double_clicked(self, index):
         """
@@ -276,7 +432,8 @@ class QtPassGUI(QMainWindow):
 
         :param index: The index of the double-clicked item in the proxy model.
         """
-        self.edit_item(index)
+        if self.selected_entry_path(index) is not None:
+            self.edit_item(index)
 
     def on_selection_changed(self, selected, _deselected):
         """
@@ -286,11 +443,17 @@ class QtPassGUI(QMainWindow):
         :param _deselected: The old selection (unused)
         """
         indexes = selected.indexes()
-        if indexes:
-            item = self.item_from_index(indexes[0])
-            self.verbose_print(f"Selected: {get_item_full_path(item)}")
-            if self.settings.get("select_is_open"):
-                self.open_item(indexes[0])
+        if not indexes:
+            self.opening_path = None
+            self.show_welcome()
+            return
+        item = self.item_from_index(indexes[0])
+        self.verbose_print(f"Selected: {get_item_full_path(item)}")
+        if is_folder_item(item):
+            self.opening_path = None
+            self.ui.panel.clear()
+        elif self.settings.get("select_is_open"):
+            self.open_item(indexes[0])
 
     def on_tray_icon_clicked(self, reason):
         """
@@ -311,7 +474,17 @@ class QtPassGUI(QMainWindow):
             if self.isVisible():
                 self.hide()
             else:
-                self.show()
+                self.show_and_raise()
+
+    def show_and_raise(self):
+        """Show the window and bring it to the front."""
+        self.show()
+        self.setWindowState(
+            self.windowState() & ~Qt.WindowState.WindowMinimized
+            | Qt.WindowState.WindowActive
+        )
+        self.raise_()
+        self.activateWindow()
 
     def verbose_print(self, *args, **kwargs):
         """
@@ -320,13 +493,14 @@ class QtPassGUI(QMainWindow):
         if self.verbose:
             print(*args, **kwargs)
 
-    def show_status(self, message):
+    def show_status(self, message, timeout=5000):
         """
         Show a message in the status bar.
 
         :param message: The message to show.
+        :param timeout: Milliseconds to show it for.
         """
-        self.statusBar().showMessage(message, 5000)
+        self.statusBar().showMessage(message, timeout)
         self.verbose_print(message)
 
     def exit(self):
@@ -346,69 +520,117 @@ class QtPassGUI(QMainWindow):
         self.ui.tray_icon.setToolTip(self.tr("PyQtPass"))
         self.ui.tray_icon.activated.connect(self.on_tray_icon_clicked)
 
-        tray_menu = QMenu()
+        tray_menu = QMenu(self)
         open_action = QAction(self.tr("Open PyQtPass"), self)
-        open_action.triggered.connect(self.show)
+        open_action.triggered.connect(self.show_and_raise)
         exit_action = QAction(self.tr("Exit"), self)
         exit_action.triggered.connect(self.exit)
         tray_menu.addAction(open_action)
+        tray_menu.addAction(self.actions["add"])
+        tray_menu.addSeparator()
         tray_menu.addAction(exit_action)
         self.ui.tray_icon.setContextMenu(tray_menu)
 
     def refresh_tree(self):
-        """Refresh the tree_view"""
+        """Rebuild the tree, keeping the filter and expanded folders."""
+        expanded = set()
+        model = self.ui.proxy_model
+        for row in range(model.rowCount()):
+            self.collect_expanded(model.index(row, 0), expanded)
         self.ui.tree_model = create_tree_model(self.store)
         self.ui.proxy_model.setSourceModel(self.ui.tree_model)
-        self.ui.tree_view.setModel(self.ui.proxy_model)
+        for row in range(model.rowCount()):
+            self.restore_expanded(model.index(row, 0), expanded)
+        if self.ui.filter_text_box.text():
+            self.ui.tree_view.expandAll()
+
+    def collect_expanded(self, index, expanded):
+        """Collect the paths of the expanded folders below index."""
+        if self.ui.tree_view.isExpanded(index):
+            expanded.add(get_item_full_path(self.item_from_index(index)))
+            for row in range(self.ui.proxy_model.rowCount(index)):
+                self.collect_expanded(
+                    self.ui.proxy_model.index(row, 0, index), expanded
+                )
+
+    def restore_expanded(self, index, expanded):
+        """Expand the folders below index whose paths were collected."""
+        if get_item_full_path(self.item_from_index(index)) in expanded:
+            self.ui.tree_view.setExpanded(index, True)
+            for row in range(self.ui.proxy_model.rowCount(index)):
+                self.restore_expanded(
+                    self.ui.proxy_model.index(row, 0, index), expanded
+                )
+
+    # Git
 
     def git_enabled(self):
         """
         :return: True when git support is on and the store is a git repository.
         """
-        return self.settings.get("use_git") and git_utils.is_git_repo(
-            self.store.store_dir
-        )
+        return self.store.git_enabled()
 
     def update_git_actions(self):
         """
-        Enable or disable the git actions based on the current settings.
+        Show the git actions only when git is used for this store.
         """
         enabled = self.git_enabled()
-        self.actions["git_pull"].setEnabled(enabled)
-        self.actions["git_push"].setEnabled(enabled)
+        for name in ("git_pull", "git_push"):
+            self.actions[name].setVisible(enabled)
+            self.actions[name].setEnabled(enabled and self.git_task is None)
+
+    def run_git(self, function, done_message, failed_title, refresh=False):
+        """
+        Run a git operation on a worker thread.
+
+        :param function: Callable(store_dir) returning (success, output).
+        :param done_message: Status message on success.
+        :param failed_title: Title of the warning on failure.
+        :param refresh: Rebuild the tree on success.
+        """
+        if not self.git_enabled():
+            self.show_status(self.tr("Git is not available for this store"))
+            return
+        if self.git_task is not None:
+            return
+        store_dir = self.store.store_dir
+
+        def done(result, error):
+            self.git_task = None
+            self.update_git_actions()
+            success, output = result if error is None else (False, str(error))
+            self.verbose_print(output)
+            if success:
+                if refresh:
+                    self.refresh_tree()
+                self.show_status(done_message)
+            else:
+                QMessageBox.warning(self, failed_title, output)
+
+        self.git_task = run_task(lambda _p, _c: function(store_dir), done)
+        self.update_git_actions()
+        self.show_status(self.tr("Running git..."), 0)
 
     def on_git_pull(self):
         """
         Update the password store from the remote git repository.
         """
-        if not self.git_enabled():
-            self.show_status(self.tr("Git is not available for this store"))
-            return
-        set_widgets_enabled(self, False)
-        success, output = git_utils.git_pull(self.store.store_dir)
-        set_widgets_enabled(self, True)
-        self.verbose_print(output)
-        if success:
-            self.refresh_tree()
-            self.show_status(self.tr("Password store updated"))
-        else:
-            QMessageBox.warning(self, self.tr("Git pull failed"), output)
+        self.run_git(
+            git_utils.git_pull,
+            self.tr("Password store updated"),
+            self.tr("Git pull failed"),
+            refresh=True,
+        )
 
     def on_git_push(self):
         """
         Push local changes of the password store to the remote git repository.
         """
-        if not self.git_enabled():
-            self.show_status(self.tr("Git is not available for this store"))
-            return
-        set_widgets_enabled(self, False)
-        success, output = git_utils.git_push(self.store.store_dir)
-        set_widgets_enabled(self, True)
-        self.verbose_print(output)
-        if success:
-            self.show_status(self.tr("Password store pushed"))
-        else:
-            QMessageBox.warning(self, self.tr("Git push failed"), output)
+        self.run_git(
+            git_utils.git_push,
+            self.tr("Password store pushed"),
+            self.tr("Git push failed"),
+        )
 
     def auto_push(self):
         """
@@ -418,12 +640,13 @@ class QtPassGUI(QMainWindow):
             return
         if not git_utils.has_remote(self.store.store_dir):
             return
-        success, output = git_utils.git_push(self.store.store_dir)
-        self.verbose_print(output)
-        if success:
-            self.show_status(self.tr("Pushed changes to remote"))
-        else:
-            QMessageBox.warning(self, self.tr("Git push failed"), output)
+        self.run_git(
+            git_utils.git_push,
+            self.tr("Pushed changes to remote"),
+            self.tr("Git push failed"),
+        )
+
+    # Dialogs
 
     def open_config_dialog(self):
         """
@@ -437,6 +660,9 @@ class QtPassGUI(QMainWindow):
         """
         Apply the current settings to the running application.
         """
+        apply_executables(self.settings)
+        self.store.gpg_bin = gpg_utils.which_gpg()
+        self.store.use_git = bool(self.settings.get("use_git"))
         if self.settings.get("use_tray_icon"):
             self.ui.tray_icon.show()
         else:
@@ -451,157 +677,64 @@ class QtPassGUI(QMainWindow):
             self.setWindowFlags(flags)
             self.show()
 
+        self.update_search_placeholder()
         self.update_profile_combo()
         self.update_git_actions()
         self.switch_store_if_needed()
 
-    def open_users_dialog(self, index=None):
-        """
-        Open the users dialog to select the GPG keys for a folder.
+    # Search
 
-        :param index: The index in the proxy model, or None for the selection.
-        """
-        folder = ""
-        if index is None:
-            index = self.current_index()
-        if index is not None:
-            folder = get_item_folder(self.item_from_index(index)).strip("/")
-        dialog = UsersDialog(self.store, folder, self)
-        if dialog.exec() == QDialog.DialogCode.Accepted:
-            self.refresh_tree()
-            self.show_status(
-                self.tr("Re-encrypted passwords in {}").format(folder or "/")
+    def update_search_placeholder(self):
+        """Say in the search box whether Enter searches the content."""
+        if self.settings.get("use_grep_search"):
+            self.ui.filter_text_box.setPlaceholderText(
+                self.tr("Filter passwords, Enter searches the content (regex)")
             )
-            self.auto_push()
-
-    def show_context_menu(self, position):
-        """Create context menu"""
-        context_menu = QMenu(self.ui.tree_view)
-
-        add_action = context_menu.addAction(self.tr("Add"))
-        add_action.triggered.connect(lambda: self.add_item(index))
-
-        index = self.ui.tree_view.indexAt(position)
-        if not index.isValid():
-            index = None
-            users_action = context_menu.addAction(self.tr("Users"))
-            users_action.triggered.connect(lambda: self.open_users_dialog(None))
-            context_menu.exec(self.ui.tree_view.mapToGlobal(position))
-            return
-
-        copy_action = context_menu.addAction(self.tr("Copy password"))
-        open_action = context_menu.addAction(self.tr("Open"))
-        edit_action = context_menu.addAction(self.tr("Edit"))
-        rename_action = context_menu.addAction(self.tr("Rename"))
-        delete_action = context_menu.addAction(self.tr("Delete"))
-        users_action = context_menu.addAction(self.tr("Users"))
-
-        copy_action.triggered.connect(lambda: self.copy_password(index))
-        open_action.triggered.connect(lambda: self.open_item(index))
-        edit_action.triggered.connect(lambda: self.edit_item(index))
-        rename_action.triggered.connect(lambda: self.rename_item(index))
-        delete_action.triggered.connect(lambda: self.delete_item(index))
-        users_action.triggered.connect(lambda: self.open_users_dialog(index))
-
-        context_menu.exec(self.ui.tree_view.mapToGlobal(position))
-
-    def add_item(self, index=None):
-        """Add item"""
-        folder = ""
-        if index is None:
-            index = self.current_index()
-        if index is not None:
-            item = self.item_from_index(index)
-            if item:
-                folder = get_item_folder(item)
-        folder = folder.lstrip("/")
-
-        name, ok = QInputDialog.getText(
-            self, self.tr("New password"), self.tr("Enter password name:"), text=folder
-        )
-        if not ok or not name or name.endswith("/"):
-            return
-        dialog = EditPasswordDialog(self.store, name, name.split("/")[-1], create=True)
-        if dialog.exec() == QDialog.DialogCode.Accepted:
-            self.refresh_tree()
-            self.show_status(self.tr("Added password {}").format(name))
-            self.auto_push()
-
-    def edit_item(self, index=None):
-        """Edit item"""
-        if index is None:
-            index = self.current_index()
-        if index is None:
-            self.show_status(self.tr("No password selected"))
-            return
-        item = self.item_from_index(index)
-        path = get_item_full_path(item)
-        try:
-            dialog = EditPasswordDialog(self.store, path, item.text())
-        except FileNotFoundError:
-            self.verbose_print(
-                f"Cannot retrieve key for a directory or non-existent key: {path}"
+        else:
+            self.ui.filter_text_box.setPlaceholderText(
+                self.tr("Type here to filter passwords...")
             )
-            return
-        if dialog.exec() == QDialog.DialogCode.Accepted:
-            if self.settings.get("select_is_open") and index == self.current_index():
-                self.open_item(index)
-            self.show_status(self.tr("Saved password {}").format(path))
-            self.auto_push()
 
-    def rename_item(self, index=None):
-        """Rename item"""
-        if index is None:
-            index = self.current_index()
-        if index is None:
-            self.show_status(self.tr("No password selected"))
+    def on_search_return(self):
+        """Search the content of all entries when content search is on."""
+        pattern = self.ui.filter_text_box.text()
+        if not self.settings.get("use_grep_search") or not pattern:
+            index = self.ui.proxy_model.index(0, 0)
+            if index.isValid():
+                self.ui.tree_view.setCurrentIndex(index)
             return
-        path = get_item_full_path(self.item_from_index(index))
-        new_path, ok = QInputDialog.getText(
-            self, self.tr("Rename Item"), self.tr("New Path:"), text=path
-        )
-        if ok and new_path and new_path != path:
-            try:
-                self.store.move_path(path, new_path)
-            except (FileNotFoundError, FileExistsError) as e:
-                QMessageBox.warning(self, self.tr("Rename failed"), str(e))
+        if self.search_task is not None:
+            self.search_task.cancel()
+        store = self.store
+        self.show_status(self.tr("Searching..."), 0)
+
+        def done(results, error):
+            self.search_task = None
+            if error is not None:
+                self.show_status(self.tr("Search failed: {}").format(error))
                 return
-            self.refresh_tree()
-            self.show_status(self.tr("Renamed {} to {}").format(path, new_path))
-            self.auto_push()
-        else:
-            self.verbose_print("Rename cancelled")
+            if pattern != self.ui.filter_text_box.text():
+                return
+            self.ui.proxy_model.set_content_matches(set(results))
+            self.ui.tree_view.expandAll()
+            lines = sum(len(found) for found in results.values())
+            if results:
+                self.show_status(
+                    self.tr("Found {} matches in {} entries").format(
+                        lines, len(results)
+                    )
+                )
+            else:
+                self.show_status(self.tr("No matches found."))
 
-    def delete_item(self, index=None):
-        """Delete item"""
-        if index is None:
-            index = self.current_index()
-        if index is None:
-            self.show_status(self.tr("No password selected"))
-            return
-        source_index = self.ui.proxy_model.mapToSource(index)
-        item = self.ui.tree_model.itemFromIndex(source_index)
-        path = get_item_full_path(item)
-
-        reply = QMessageBox.question(
-            self,
-            self.tr("Confirm Delete"),
-            self.tr("Are you sure you want to delete {}?").format(path),
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            QMessageBox.StandardButton.No,
+        self.search_task = run_task(
+            lambda progress, cancelled: store.search(
+                pattern, progress=progress, cancelled=cancelled
+            ),
+            done,
         )
-        if reply == QMessageBox.StandardButton.Yes:
-            self.verbose_print(f"Deleting {path}")
-            try:
-                self.store.remove_path(path, True)
-                source_model = self.ui.proxy_model.sourceModel()
-                source_model.removeRow(source_index.row(), source_index.parent())
-                self.show_status(self.tr("Deleted {}").format(path))
-                self.auto_push()
-            except FileNotFoundError as e:
-                print(f"Failure to delete {path}: {e}")
-        else:
-            self.verbose_print("Deletion cancelled")
+
+    # Profiles
 
     def update_profile_combo(self):
         """
@@ -615,7 +748,7 @@ class QtPassGUI(QMainWindow):
         if current in profiles:
             self.profile_combo.setCurrentText(current)
         self.profile_combo.blockSignals(False)
-        self.profile_combo.setVisible(bool(profiles))
+        self.actions["profile"].setVisible(bool(profiles))
 
     def on_profile_changed(self, name):
         """
@@ -633,137 +766,44 @@ class QtPassGUI(QMainWindow):
         """
         Reopen the password store when the current profile points elsewhere.
         """
-        new_dir = os.path.expanduser(self.get_store_dir())
+        new_dir = os.path.abspath(os.path.expanduser(self.get_store_dir()))
         if new_dir == self.store.store_dir:
             return
-        try:
-            self.store = passpy.Store(gpg_bin=which_gpg(), store_dir=new_dir)
-        except passpy.StoreNotInitialisedError as e:
+        store = self.new_store(new_dir)
+        if not store.is_initialised():
             QMessageBox.warning(
                 self,
                 self.tr("Store not initialised"),
-                self.tr("Cannot open password store {}: {}").format(new_dir, e),
+                self.tr(
+                    "{} is not a password store yet. Use Users to choose the "
+                    "keys to encrypt it with."
+                ).format(new_dir),
             )
-            return
+            os.makedirs(new_dir, exist_ok=True)
+        self.store = store
         self.refresh_tree()
+        self.ui.panel.clear()
         self.update_git_actions()
         self.show_status(self.tr("Switched to password store {}").format(new_dir))
 
-    def make_action(self, text, icon, slot, shortcut=None):
-        """
-        Create a QAction with a themed icon.
+    # Process output
 
-        :param text: The visible text of the action.
-        :param icon: Tuple of (icon theme name, QStyle standard pixmap fallback).
-        :param slot: The slot to connect the action to.
-        :param shortcut: Optional key sequence.
-        :return: The created QAction.
+    def append_process_output(self, label, returncode, output):
         """
-        theme_name, standard_pixmap = icon
-        qicon = QIcon.fromTheme(theme_name)
-        if qicon.isNull():
-            qicon = self.style().standardIcon(standard_pixmap)
-        action = QAction(qicon, text, self)
-        action.triggered.connect(slot)
-        if shortcut:
-            action.setShortcut(shortcut)
-            action.setShortcutContext(Qt.ShortcutContext.WidgetWithChildrenShortcut)
-            self.ui.tree_view.addAction(action)
-        return action
+        Add a finished command to the process output panel.
 
-    def setup_actions(self):
+        :param label: The command line.
+        :param returncode: Its exit status.
+        :param output: What it printed (never decrypted data).
         """
-        Create the actions shared by the toolbar and the menus.
-        """
-        self.actions["add"] = self.make_action(
-            self.tr("Add password"),
-            ("list-add", QStyle.StandardPixmap.SP_FileDialogNewFolder),
-            self.add_item,
-            "Ctrl+N",
+        colour = "palette(text)" if returncode == 0 else "#c0392b"
+        escaped = output.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        self.output_view.appendHtml(
+            f"<b>$ {label.replace('&', '&amp;').replace('<', '&lt;')}</b>"
         )
-        self.actions["edit"] = self.make_action(
-            self.tr("Edit password"),
-            ("document-edit", QStyle.StandardPixmap.SP_FileDialogDetailedView),
-            self.edit_item,
-            "Ctrl+E",
-        )
-        self.actions["delete"] = self.make_action(
-            self.tr("Delete password"),
-            ("edit-delete", QStyle.StandardPixmap.SP_TrashIcon),
-            self.delete_item,
-            "Del",
-        )
-        self.actions["copy"] = self.make_action(
-            self.tr("Copy password to clipboard"),
-            ("edit-copy", QStyle.StandardPixmap.SP_FileDialogContentsView),
-            self.copy_password,
-            "Ctrl+C",
-        )
-        self.actions["users"] = self.make_action(
-            self.tr("Users"),
-            ("system-users", QStyle.StandardPixmap.SP_FileDialogInfoView),
-            self.open_users_dialog,
-        )
-        self.actions["git_pull"] = self.make_action(
-            self.tr("Update from git remote"),
-            ("go-down", QStyle.StandardPixmap.SP_ArrowDown),
-            self.on_git_pull,
-            "F5",
-        )
-        self.actions["git_push"] = self.make_action(
-            self.tr("Push to git remote"),
-            ("go-up", QStyle.StandardPixmap.SP_ArrowUp),
-            self.on_git_push,
-        )
-        self.actions["config"] = self.make_action(
-            self.tr("Configuration"),
-            ("preferences-system", QStyle.StandardPixmap.SP_ComputerIcon),
-            self.open_config_dialog,
-        )
-
-    def setup_toolbar(self):
-        """
-        Create the main toolbar with the shared actions and profile selector.
-        """
-        toolbar = self.addToolBar(self.tr("Main"))
-        toolbar.setMovable(False)
-        for name in ("add", "edit", "delete", "copy"):
-            toolbar.addAction(self.actions[name])
-        toolbar.addSeparator()
-        for name in ("users", "git_pull", "git_push"):
-            toolbar.addAction(self.actions[name])
-        toolbar.addSeparator()
-        toolbar.addAction(self.actions["config"])
-
-        self.profile_combo = QComboBox(toolbar)
-        self.profile_combo.currentTextChanged.connect(self.on_profile_changed)
-        toolbar.addWidget(self.profile_combo)
-        self.update_profile_combo()
-
-    def setup_menus(self):
-        """
-        Create the menu bar.
-        """
-        menubar = self.menuBar()
-        system_menu = menubar.addMenu(self.tr("System"))
-        system_menu.addAction(self.actions["config"])
-        system_menu.addAction(self.actions["users"])
-        system_menu.addSeparator()
-        system_menu.addAction(self.actions["git_pull"])
-        system_menu.addAction(self.actions["git_push"])
-        system_menu.addSeparator()
-        quit_action = QAction(self.tr("Quit"), self)
-        quit_action.setShortcut("Ctrl+Q")
-        quit_action.triggered.connect(self.exit)
-        system_menu.addAction(quit_action)
-
-        help_menu = menubar.addMenu(self.tr("Help"))
-        about_action = QAction(self.tr("About PyQtPass"), self)
-        about_action.triggered.connect(self.show_about)
-        help_menu.addAction(about_action)
-        about_qt_action = QAction(self.tr("About Qt"), self)
-        about_qt_action.triggered.connect(QApplication.instance().aboutQt)
-        help_menu.addAction(about_qt_action)
+        if escaped:
+            self.output_view.appendHtml(f'<pre style="color:{colour}">{escaped}</pre>')
+        self.output_view.ensureCursorVisible()
 
     def show_about(self):
         """
@@ -793,18 +833,21 @@ class QtPassGUI(QMainWindow):
         else:
             lato = QFontDatabase.applicationFontFamilies(font_id)[0]
 
-        self.ui.text_edit.setText(markdown.markdown(self.tr("""# Welcome to PyQtPass!
+        self.ui.panel.show_message(
+            markdown.markdown(self.tr("""# Welcome to PyQtPass!
 
 PyQtPass is your password manager. With it, managing passwords is a breeze.
 
 - Generate secure passwords
 - Manage passwords with ease
+- Built-in one-time passwords (TOTP)
 - Clipboard integration for quick access
-- Supports multiple password stores
+- Supports multiple password stores and sharing them with others
 
 Check out the [documentation](https://github.com/annejan/PyQtPass/) for more info.
-""")))
-        self.ui.text_edit.setFont(QFont(lato, 16))
+""")),
+            QFont(lato, 16),
+        )
 
     def init_ui(self):
         """
@@ -817,17 +860,23 @@ Check out the [documentation](https://github.com/annejan/PyQtPass/) for more inf
             self.on_selection_changed
         )
         self.ui.tree_view.customContextMenuRequested.connect(self.show_context_menu)
+        self.ui.tree_view.move_requested.connect(self.on_move_requested)
+        self.ui.filter_text_box.returnPressed.connect(self.on_search_return)
+        self.ui.panel.copy_requested.connect(self.copy_text_to_clipboard)
+        self.ui.panel.edit_requested.connect(self.edit_item)
 
         self.setCentralWidget(self.ui.central_widget)
 
         self.setGeometry(300, 300, 768, 596)
         self.setWindowTitle(self.tr("PyQtPass"))
 
+        self.setup_output_dock()
         self.setup_actions()
         self.setup_toolbar()
         self.setup_menus()
         self.show_welcome()
         self.update_git_actions()
+        self.update_search_placeholder()
 
         self.setup_tray_icon()
         if self.settings.get("use_tray_icon"):
@@ -838,6 +887,52 @@ Check out the [documentation](https://github.com/annejan/PyQtPass/) for more inf
 
         if self.settings.get("always_on_top"):
             self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
+
+
+def make_output_listener(window):
+    """
+    Create an executor listener forwarding commands to the window's process
+    output panel. It holds the window weakly, so a closed window is not
+    kept alive or called into.
+
+    :param window: The main window.
+    :return: The listener.
+    """
+    window_ref = weakref.ref(window)
+
+    def listener(label, returncode, output):
+        target = window_ref()
+        if target is not None:
+            target.process_output.emit(label, returncode, output)
+
+    return listener
+
+
+def ensure_store(settings):
+    """
+    Run the first-run wizard when the configured store is not set up.
+
+    :param settings: The SettingsManager.
+    :return: False when the user cancelled the wizard.
+    """
+    store = PasswordStore(configured_store_dir(settings), use_git=False)
+    if store.is_initialised():
+        return True
+    wizard = FirstRunWizard(store.store_dir)
+    if wizard.exec() != QDialog.DialogCode.Accepted:
+        return False
+    store_dir = wizard.store_dir()
+    profiles = settings.get("profiles") or {}
+    current = settings.get("current_profile")
+    if current and current in profiles:
+        profiles = dict(profiles)
+        profiles[current] = store_dir
+        settings.set("profiles", profiles)
+    else:
+        settings.set("pass_store", store_dir)
+    settings.set("use_git", wizard.use_git())
+    settings.save()
+    return True
 
 
 def main():
@@ -853,13 +948,29 @@ def main():
     parser.add_argument(
         "--version", action="version", version=f"PyQtPass {__version__}"
     )
+    parser.add_argument(
+        "--new-instance",
+        action="store_true",
+        help="Start even when PyQtPass is already running.",
+    )
     args = parser.parse_args()
 
     app = QApplication(sys.argv)
-
+    app.setApplicationName("PyQtPass")
+    app.setApplicationVersion(__version__)
+    app.setOrganizationName("IJHack")
     app.setWindowIcon(QIcon(get_icon_path()))
-    ex = QtPassGUI(verbose=args.verbose)
-    ex.show()
+    set_locale()
+    if not args.new_instance and activate_running_instance():
+        return
+    settings = SettingsManager()
+    apply_executables(settings)
+    if not ensure_store(settings):
+        return
+    window = QtPassGUI(verbose=args.verbose)
+    server = listen_for_instances(window)  # pylint: disable=unused-variable
+    window.show()
+    app.aboutToQuit.connect(wait_for_all)
     sys.exit(app.exec())
 
 

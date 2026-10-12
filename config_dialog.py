@@ -15,8 +15,12 @@ from PyQt6.QtWidgets import (
     QGroupBox,
     QHBoxLayout,
     QInputDialog,
+    QLabel,
+    QLineEdit,
+    QPlainTextEdit,
     QPushButton,
     QSpinBox,
+    QToolButton,
     QTabWidget,
     QTableWidget,
     QTableWidgetItem,
@@ -24,6 +28,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from edit_password_window import CUSTOM_CHARSET, charset_names
 from settings_manager import SettingsManager
 
 
@@ -57,13 +62,14 @@ class ConfigDialog(QDialog):
         tabs = QTabWidget(self)
         tabs.addTab(self.create_behaviour_tab(), self.tr("Behaviour"))
         tabs.addTab(self.create_password_tab(), self.tr("Password Generation"))
+        tabs.addTab(self.create_template_tab(), self.tr("Templates"))
         tabs.addTab(self.create_git_tab(), self.tr("Git"))
         tabs.addTab(self.create_profiles_tab(), self.tr("Profiles"))
         tabs.addTab(self.create_system_tab(), self.tr("System"))
         layout.addWidget(tabs)
         self.init_buttons(layout)
         self.setLayout(layout)
-        self.resize(500, 400)
+        self.resize(560, 480)
 
     def add_field(self, key, widget):
         """
@@ -86,6 +92,14 @@ class ConfigDialog(QDialog):
         treeview_layout.addRow(
             self.add_field("select_is_open", QCheckBox(self.tr("Select is open")))
         )
+        search_box = QCheckBox(self.tr("Search the content of passwords too"))
+        search_box.setToolTip(
+            self.tr(
+                "Pressing Enter in the search box decrypts every entry and shows "
+                "the ones whose content matches the regular expression"
+            )
+        )
+        treeview_layout.addRow(self.add_field("use_grep_search", search_box))
         layout.addWidget(treeview_group)
 
         panel_group = QGroupBox(self.tr("Content panel behavior:"), tab)
@@ -95,6 +109,26 @@ class ConfigDialog(QDialog):
         )
         panel_layout.addRow(
             self.add_field("hide_password", QCheckBox(self.tr("Hide password")))
+        )
+        panel_layout.addRow(
+            self.add_field("use_monospace", QCheckBox(self.tr("Use monospace font")))
+        )
+        panel_layout.addRow(
+            self.add_field("display_as_is", QCheckBox(self.tr("Display content as is")))
+        )
+        panel_layout.addRow(
+            self.add_field("no_line_wrapping", QCheckBox(self.tr("No line wrapping")))
+        )
+        panel_layout.addRow(
+            self.add_field(
+                "use_otp", QCheckBox(self.tr("Show one-time passwords (TOTP)"))
+            )
+        )
+        panel_layout.addRow(
+            self.add_field(
+                "use_qrencode",
+                QCheckBox(self.tr("Offer QR codes (needs qrencode)")),
+            )
         )
         panel_layout.addRow(
             self.add_field(
@@ -110,6 +144,12 @@ class ConfigDialog(QDialog):
             self.add_field(
                 "always_copy_to_clipboard",
                 QCheckBox(self.tr("Always copy to clipboard")),
+            )
+        )
+        clipboard_layout.addRow(
+            self.add_field(
+                "use_selection",
+                QCheckBox(self.tr("Also copy to the selection (middle click)")),
             )
         )
         clipboard_layout.addRow(
@@ -144,20 +184,47 @@ class ConfigDialog(QDialog):
             self.add_field("password_length", length_spin_box),
         )
         charset_combo_box = QComboBox(self)
-        charset_combo_box.addItems(
-            [
-                self.tr("All characters"),
-                self.tr("Letters and numbers"),
-                self.tr("Letters only"),
-                self.tr("Numbers only"),
-            ]
-        )
+        charset_combo_box.addItems(charset_names(self))
         password_layout.addRow(
             self.tr("Characters:"),
             self.add_field("password_charset", charset_combo_box),
         )
+        custom_edit = QLineEdit(self)
+        custom_edit.setEnabled(False)
+        charset_combo_box.currentIndexChanged.connect(
+            lambda index: custom_edit.setEnabled(index == CUSTOM_CHARSET)
+        )
+        password_layout.addRow(
+            self.tr("Custom characters:"), self.add_field("custom_chars", custom_edit)
+        )
         layout.addWidget(password_group)
         layout.addStretch(1)
+        return tab
+
+    def create_template_tab(self):
+        """Create the tab with the field template settings."""
+        tab = QWidget(self)
+        layout = QVBoxLayout(tab)
+        layout.addWidget(
+            self.add_field("use_template", QCheckBox(self.tr("Use a template")))
+        )
+        explanation = QLabel(
+            self.tr(
+                "Field names, one per line. Template fields get their own "
+                "input in the password dialog and their own row, with a copy "
+                "button, in the content panel."
+            ),
+            tab,
+        )
+        explanation.setWordWrap(True)
+        layout.addWidget(explanation)
+        layout.addWidget(self.add_field("pass_template", QPlainTextEdit(tab)))
+        layout.addWidget(
+            self.add_field(
+                "template_all_fields",
+                QCheckBox(self.tr("Show all 'name: value' lines as fields")),
+            )
+        )
         return tab
 
     def create_git_tab(self):
@@ -221,8 +288,52 @@ class ConfigDialog(QDialog):
             self.add_field("always_on_top", QCheckBox(self.tr("Always on top")))
         )
         layout.addWidget(system_group)
+
+        programs_group = QGroupBox(self.tr("Locations:"), tab)
+        programs_layout = QFormLayout(programs_group)
+        programs_layout.addRow(
+            self.tr("Password store:"),
+            self.path_row("pass_store", directory=True),
+        )
+        programs_layout.addRow(self.tr("GnuPG:"), self.path_row("gpg_executable"))
+        programs_layout.addRow(self.tr("Git:"), self.path_row("git_executable"))
+        programs_layout.addRow(
+            self.tr("qrencode:"), self.path_row("qrencode_executable")
+        )
+        layout.addWidget(programs_group)
         layout.addStretch(1)
         return tab
+
+    def path_row(self, key, directory=False):
+        """
+        A line edit for a path setting with a browse button.
+
+        :param key: The settings key.
+        :param directory: Browse for a directory instead of a file.
+        :return: The layout holding both.
+        """
+        edit = self.add_field(key, QLineEdit(self))
+        if not directory:
+            edit.setPlaceholderText(self.tr("Found automatically"))
+        browse = QToolButton(self)
+        browse.setText("...")
+        browse.setToolTip(self.tr("Browse"))
+
+        def pick():
+            if directory:
+                path = QFileDialog.getExistingDirectory(self, self.tr("Select folder"))
+            else:
+                path, _ = QFileDialog.getOpenFileName(
+                    self, self.tr("Select executable")
+                )
+            if path:
+                edit.setText(path)
+
+        browse.clicked.connect(pick)
+        row = QHBoxLayout()
+        row.addWidget(edit)
+        row.addWidget(browse)
+        return row
 
     def init_buttons(self, layout):
         """OK and Cancel buttons"""
@@ -283,6 +394,10 @@ class ConfigDialog(QDialog):
                 widget.setValue(int(value))
             elif isinstance(widget, QComboBox):
                 widget.setCurrentIndex(int(value))
+            elif isinstance(widget, QLineEdit):
+                widget.setText(str(value or ""))
+            elif isinstance(widget, QPlainTextEdit):
+                widget.setPlainText(str(value or ""))
         profiles = self.settings_manager.get("profiles") or {}
         for name, path in profiles.items():
             row = self.profiles_table.rowCount()
@@ -305,6 +420,12 @@ class ConfigDialog(QDialog):
                 self.settings_manager.set(key, widget.value())
             elif isinstance(widget, QComboBox):
                 self.settings_manager.set(key, widget.currentIndex())
+            elif isinstance(widget, QLineEdit):
+                self.settings_manager.set(key, widget.text().strip())
+            elif isinstance(widget, QPlainTextEdit):
+                self.settings_manager.set(key, widget.toPlainText().strip())
+        if not self.settings_manager.get("pass_store"):
+            self.settings_manager.set("pass_store", "~/.password-store")
         profiles = self.get_profiles()
         self.settings_manager.set("profiles", profiles)
         if self.settings_manager.get("current_profile") not in profiles:

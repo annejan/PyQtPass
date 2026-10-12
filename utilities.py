@@ -9,7 +9,10 @@ import sys
 
 from PyQt6.QtCore import Qt, QLocale, QTranslator, QCoreApplication, QLibraryInfo
 from PyQt6.QtGui import QStandardItemModel, QStandardItem, QIcon
-from PyQt6.QtWidgets import QWidget
+from PyQt6.QtWidgets import QApplication, QStyle, QWidget
+
+PATH_ROLE = Qt.ItemDataRole.UserRole + 1
+IS_FOLDER_ROLE = Qt.ItemDataRole.UserRole + 2
 
 PLATFORM_ICONS = {
     "win32": "artwork/icon.ico",
@@ -36,16 +39,35 @@ def get_lato_font_path():
     return os.path.join(os.path.dirname(__file__), "artwork/fonts/Lato-Regular.ttf")
 
 
+def get_localization_dir():
+    """
+    :return: str path of the directory holding the compiled translations.
+    """
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "localization")
+
+
+_translators = []
+
+
 def set_locale():
-    """Do the Qt magic localization things based on system locale"""
-    system_locale = QLocale.system()
-    language_code = system_locale.name()
+    """
+    Install the translations for the system locale.
+
+    The translators are kept referenced, otherwise Python would garbage
+    collect them and Qt would silently fall back to English.
+    """
+    language_code = QLocale.system().name()
+    app_translator = QTranslator()
+    if app_translator.load(f"localization_{language_code}", get_localization_dir()):
+        QCoreApplication.installTranslator(app_translator)
+        _translators.append(app_translator)
     qt_translator = QTranslator()
-    qt_translator.load(
-        f"localization/localization_{language_code}",
+    if qt_translator.load(
+        f"qtbase_{language_code}",
         QLibraryInfo.path(QLibraryInfo.LibraryPath.TranslationsPath),
-    )
-    QCoreApplication.installTranslator(qt_translator)
+    ):
+        QCoreApplication.installTranslator(qt_translator)
+        _translators.append(qt_translator)
 
 
 def create_tree_model(store):
@@ -56,6 +78,12 @@ def create_tree_model(store):
     :return: QStandardItemModel populated with the directories and entries.
     """
     model = QStandardItemModel()
+    folder_icon = QIcon.fromTheme("folder")
+    if folder_icon.isNull() and QApplication.instance() is not None:
+        folder_icon = QApplication.style().standardIcon(
+            QStyle.StandardPixmap.SP_DirIcon
+        )
+    entry_icon = QIcon(get_icon_path())
 
     def add_items(parent, path):
         """
@@ -67,26 +95,41 @@ def create_tree_model(store):
         try:
             directories, entries = store.list_dir(path)
             for directory in directories:
-                dir_name = os.path.basename(directory)
-                dir_item = QStandardItem(dir_name)
+                dir_path = f"{path}/{directory}" if path else directory
+                dir_item = QStandardItem(directory)
                 dir_item.setFlags(dir_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-                dir_item.setIcon(QIcon.fromTheme("folder"))
+                dir_item.setIcon(folder_icon)
+                dir_item.setData(dir_path, PATH_ROLE)
+                dir_item.setData(True, IS_FOLDER_ROLE)
                 parent.appendRow(dir_item)
-                add_items(
-                    dir_item, os.path.join(path, directory) if path else directory
-                )
+                add_items(dir_item, dir_path)
 
             for entry in entries:
-                entry_name = os.path.basename(entry)
-                entry_item = QStandardItem(entry_name)
-                entry_item.setFlags(entry_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-                entry_item.setIcon(QIcon(get_icon_path()))
+                entry_item = QStandardItem(entry)
+                entry_item.setFlags(
+                    (entry_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                    & ~Qt.ItemFlag.ItemIsDropEnabled
+                )
+                entry_item.setIcon(entry_icon)
+                entry_item.setData(f"{path}/{entry}" if path else entry, PATH_ROLE)
+                entry_item.setData(False, IS_FOLDER_ROLE)
                 parent.appendRow(entry_item)
-        except (FileNotFoundError, PermissionError) as e:
+        except (OSError, ValueError) as e:
             print(f"Error accessing {path}: {e}")
 
     add_items(model.invisibleRootItem(), "")
     return model
+
+
+def is_folder_item(item):
+    """
+    :param item: An item of the tree model.
+    :return: True when the item is a folder.
+    """
+    is_folder = item.data(IS_FOLDER_ROLE)
+    if is_folder is None:
+        return item.rowCount() > 0
+    return bool(is_folder)
 
 
 def get_item_folder(item):
@@ -97,7 +140,7 @@ def get_item_folder(item):
     :return: Full path as a string.
     """
     path = get_item_full_path(item)
-    if item.rowCount() == 0:  # get folder for leaf node
+    if not is_folder_item(item):  # get folder for leaf node
         path = path[: -len(item.text())]
     if not path.endswith("/"):
         return path + "/"
@@ -111,6 +154,9 @@ def get_item_full_path(item):
     :param item: The item in the tree.
     :return: Full path as a string.
     """
+    stored = item.data(PATH_ROLE)
+    if stored:
+        return stored
     path_list = [item.text()]
     while item.parent():
         item = item.parent()
@@ -119,6 +165,17 @@ def get_item_full_path(item):
 
 
 URL_PATTERN = re.compile(r"(https?://[^\s<]+)")
+WEB_URL_PATTERN = re.compile(r"^https?://\S+$", re.IGNORECASE)
+
+
+def is_web_url(value):
+    """
+    :param value: A field value.
+    :return: True when the value is a single http(s) address.
+    """
+    return bool(WEB_URL_PATTERN.match(value.strip()))
+
+
 HIDDEN_PASSWORD = "●" * 8
 
 
@@ -140,6 +197,17 @@ def format_key_html(key_data, hide_password=False):
         URL_PATTERN.sub(r'<a href="\1">\1</a>', html.escape(line)) for line in lines
     ]
     return "<br>".join(escaped_lines)
+
+
+def filter_pattern(text):
+    """
+    Turn the search box text into a regular expression: its words are
+    matched literally, in order, with anything in between, like QtPass.
+
+    :param text: The search box text.
+    :return: A regular expression string.
+    """
+    return ".*".join(re.escape(word) for word in text.split())
 
 
 def set_widgets_enabled(container, enabled):

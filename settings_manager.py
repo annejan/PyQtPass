@@ -5,7 +5,11 @@ and retrieving various settings such as window geometry, splitter sizes, and
 boolean flags for application behavior.
 """
 
+import string
+
 from PyQt6.QtCore import QSettings, QByteArray
+
+DEFAULT_CUSTOM_CHARS = string.ascii_letters + string.digits + string.punctuation
 
 
 class SettingsManager:
@@ -31,6 +35,7 @@ class SettingsManager:
             "close_is_hide": False,
             "splitter_sizes": [200, 400],
             "window_geometry": QByteArray,
+            "window_state": QByteArray,
             "always_on_top": False,
             "use_tray_icon": True,
             "start_minimized": False,
@@ -48,6 +53,22 @@ class SettingsManager:
             "git_pull_on_start": False,
             "profiles": {},
             "current_profile": "",
+            "pass_store": "~/.password-store",
+            "use_selection": False,
+            "use_monospace": True,
+            "display_as_is": False,
+            "no_line_wrapping": False,
+            "use_otp": True,
+            "use_qrencode": True,
+            "use_template": False,
+            "pass_template": "login\nurl",
+            "template_all_fields": False,
+            "custom_chars": DEFAULT_CUSTOM_CHARS,
+            "use_grep_search": False,
+            "show_process_output": False,
+            "gpg_executable": "",
+            "git_executable": "",
+            "qrencode_executable": "",
         }
         self.load()
 
@@ -100,7 +121,22 @@ class SettingsManager:
             else:
                 self.options[key] = value
 
+    def template_fields(self):
+        """
+        :return: The template field names when templates are in use.
+        """
+        if not self.get("use_template"):
+            return []
+        return [
+            name.strip()
+            for name in str(self.get("pass_template")).splitlines()
+            if name.strip()
+        ]
+
     def save(self):
         """Save settings"""
         for key, value in self.options.items():
+            if isinstance(value, type):
+                continue  # placeholder default, nothing stored yet
             self.settings.setValue(key, value)
+        self.settings.sync()

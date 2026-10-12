@@ -21,48 +21,76 @@ Your feedback and contributions during this phase are invaluable and will help s
 
 ## Features
 
-As of now, PyQtPass provides the following features:
+PyQtPass follows the feature set of [QtPass 2.0](https://github.com/IJHack/QtPass):
 
-- Graphical interface to interact with the `pass` password store.
-- Tree view for password navigation with filtering to easily find specific passwords.
-- Password display in the content panel, with clickable links and optional hiding of the password and/or content.
-- Adding, editing, renaming and deleting of passwords and folders.
-- Configurable random password generation.
-- Clipboard integration: copy on demand or automatically, with automatic clearing of the clipboard after a configurable timeout.
-- Git synchronisation: pull and push from the toolbar, update on startup and automatic pushing of local changes.
-- GPG user management: select the keys a store or folder is encrypted for and re-encrypt the affected passwords, like `pass init`.
+- Talks to `gpg` and `git` directly, like QtPass's native backend; no Python password store library needed.
+  Entries are written atomically, so a failing `gpg` never truncates a password.
+- Tree view for password navigation; the search box matches its words literally and in order against the full path.
+- Optional content search: press Enter to search the decrypted contents with a regular expression.
+- Content panel showing the password and every field in its own row with a copy button,
+  an "open in browser" button for web addresses and optional QR codes (with `qrencode`).
+- Built-in TOTP one-time passwords (`otpauth://` URIs or `otp:` fields, including Steam codes), no `pass-otp` needed.
+- One dialog for adding and editing entries, with folder picker, field templates (e.g. `login`, `url`)
+  and configurable password generation (including a custom character set).
+- Adding, editing, renaming, duplicating and deleting passwords and folders; drag and drop to move (Ctrl to copy).
+- Clipboard integration: copy on demand or automatically, optional X11 selection, automatic clearing after a timeout,
+  and marked as secret so clipboard managers skip it.
+- Git integration: pull and push in the background, update on startup and automatic pushing of local changes;
+  every change to the store is committed.
+- Per-folder GPG recipients (the Users dialog, like `pass init`) with background re-encryption,
+  import of keys from a file or the clipboard, key pair generation and exporting your public key to share a store.
+- A first-run wizard that sets up a store, a key and Git for new users.
+- A dockable process output panel showing what `gpg` and `git` were asked and what they said.
 - Multiple password store profiles that can be switched from the toolbar.
-- System tray icon with start minimized and hide on close behavior.
+- Links inside the store are never followed, and paths cannot escape the store.
+- System tray icon, start minimized, hide on close, always on top and a single running instance.
 - Cross-platform compatibility, thanks to the Python and PyQt6 combination.
 
 ## Installation
 
-Before running PyQtPass, ensure you have `pass` and `gpg` properly set up on your system. Then, follow these steps to get PyQtPass up and running:
+PyQtPass needs Python 3.10 or newer and GnuPG (`gpg` or `gpg2`) with a graphical pinentry.
+Git is optional (for synchronisation) and so is `qrencode` (for QR codes). Then:
 
-1. Install the required Python packages:
-
-   ```sh
-   pip install PyQt6 passpy Markdown
-   ```
-
-2. Clone this repository:
+1. Clone this repository:
 
    ```sh
    git clone https://github.com/annejan/PyQtPass.git
+   cd PyQtPass
    ```
 
-3. Navigate to the cloned directory and run the application:
+2. Install the required Python packages:
 
    ```sh
-   cd PyQtPass
+   pip install -r requirements.txt
+   ```
+
+3. Run the application:
+
+   ```sh
    python pyqtpass.py
    ```
+
+When no password store exists yet, a wizard helps you set one up.
 
 ## Usage
 
 Upon launching PyQtPass, you will see a split interface.
-On the left side is the tree view of your passwords, and on the right is the text area where the content of the selected password entry is displayed.
+On the left side is the tree view of your passwords, and on the right is the content panel of the selected entry.
 You can filter the entries using the search box above the tree view.
+
+Fields are `name: value` lines below the password. Add a line like
+`otpauth://totp/Example?secret=JBSWY3DPEHPK3PXP` (or `otp: JBSWY3DPEHPK3PXP`) to an entry to get one-time passwords.
+
+## Development
+
+```sh
+pip install -r requirements-dev.txt
+pylint $(git ls-files '*.py')
+black --check .
+QT_QPA_PLATFORM=offscreen python -m pytest
+```
+
+The tests create a throwaway GnuPG home and key, so they never touch your own keyring or store.
 
 ## Contributions and Feedback
 
@@ -91,4 +119,4 @@ Should you encounter any issues or have feature suggestions, please feel free to
   Discover more about the Qt Framework at [qt.io](https://www.qt.io/).
 - `QtPass`: Qt GUI for Pass, written in C++, can be found at [qtpass.org](https://qtpass.org/).
 - Co-Authorship: This project includes code and documentation co-written with the assistance of ChatGPT from OpenAI.
-- Co-Authorship: The QtPass feature-parity work (clipboard, content panel, git sync, GPG user management and profiles) and the PyQt6 migration were co-written with the assistance of Claude from Anthropic.
+- Co-Authorship: The QtPass feature-parity work (clipboard, content panel, git sync, GPG user management, profiles, the native store backend, TOTP, templates, the first-run wizard and key management) and the PyQt6 migration were co-written with the assistance of Claude from Anthropic.
