@@ -26,6 +26,7 @@ from PyQt6.QtWidgets import (
 )
 
 from pyqtpass import executor
+from pyqtpass.settings_manager import CLIPBOARD_NEVER
 from pyqtpass.tasks import run_task
 from pyqtpass import otp
 from pyqtpass.utilities import format_key_html, is_web_url
@@ -52,6 +53,7 @@ class PasswordPanel(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.qrencode = ""
+        self.copy_buttons = True
         self.otp_settings = None
         self.otp_code_edit = None
         self.otp_progress = None
@@ -102,6 +104,7 @@ class PasswordPanel(QWidget):
         :param settings: The SettingsManager.
         """
         self.clear()
+        self.copy_buttons = settings.get("clipboard_mode") != CLIPBOARD_NEVER
         self.qrencode = (
             find_qrencode(settings.get("qrencode_executable"))
             if settings.get("use_qrencode")
@@ -188,14 +191,15 @@ class PasswordPanel(QWidget):
                 )
             )
         what = self.tr("Password") if is_password else name
-        row.addWidget(
-            self.tool_button(
-                "edit-copy",
-                QStyle.StandardPixmap.SP_FileDialogContentsView,
-                self.tr("Copy {} to clipboard").format(what),
-                lambda: self.copy_requested.emit(value, what),
+        if self.copy_buttons:
+            row.addWidget(
+                self.tool_button(
+                    "edit-copy",
+                    QStyle.StandardPixmap.SP_FileDialogContentsView,
+                    self.tr("Copy {} to clipboard").format(what),
+                    lambda: self.copy_requested.emit(value, what),
+                )
             )
-        )
         if not is_password and is_web_url(value):
             row.addWidget(
                 self.tool_button(
@@ -241,16 +245,17 @@ class PasswordPanel(QWidget):
         self.otp_progress.setFormat("%vs")
         self.otp_progress.setMaximumWidth(80)
         row.addWidget(self.otp_progress)
-        row.addWidget(
-            self.tool_button(
-                "edit-copy",
-                QStyle.StandardPixmap.SP_FileDialogContentsView,
-                self.tr("Copy OTP code to clipboard"),
-                lambda: self.copy_requested.emit(
-                    self.current_otp_code(), self.tr("OTP code")
-                ),
+        if self.copy_buttons:
+            row.addWidget(
+                self.tool_button(
+                    "edit-copy",
+                    QStyle.StandardPixmap.SP_FileDialogContentsView,
+                    self.tr("Copy OTP code to clipboard"),
+                    lambda: self.copy_requested.emit(
+                        self.current_otp_code(), self.tr("OTP code")
+                    ),
+                )
             )
-        )
         self.fields_layout.addRow(self.tr("OTP code"), row)
         self.update_otp()
         self.otp_timer.start(1000)

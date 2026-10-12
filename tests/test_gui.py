@@ -22,6 +22,30 @@ def test_open_entry_shows_fields_and_otp(qapp, window):
     assert OTP_URI not in panel.text_browser.toPlainText()
 
 
+def test_clipboard_modes(qapp, window, settings):
+    from PyQt6.QtWidgets import QToolButton
+
+    from pyqtpass.settings_manager import CLIPBOARD_ALWAYS, CLIPBOARD_NEVER
+
+    def copy_buttons():
+        return [
+            button
+            for button in window.ui.panel.fields_widget.findChildren(QToolButton)
+            if "clipboard" in button.toolTip()
+        ]
+
+    QApplication.clipboard().clear()
+    settings.set("clipboard_mode", CLIPBOARD_NEVER)
+    window.ui.tree_view.setCurrentIndex(find_index(window, "other"))
+    wait_until(qapp, lambda: window.ui.panel.fields_layout.rowCount() >= 1)
+    assert not copy_buttons()
+    assert QApplication.clipboard().text() != "pw2"
+    settings.set("clipboard_mode", CLIPBOARD_ALWAYS)
+    window.ui.tree_view.setCurrentIndex(find_index(window, "web/site"))
+    wait_until(qapp, lambda: QApplication.clipboard().text() == "secret")
+    assert copy_buttons()
+
+
 def test_clipboard_is_marked_secret_and_cleared(qapp, window):
     window.copy_text_to_clipboard("topsecret")
     mime = QApplication.clipboard().mimeData()

@@ -4,6 +4,10 @@
 
 ### Clipboard
 
+- The clipboard setting has QtPass's three modes: No clipboard, Always copy
+  and On-demand copy. No clipboard removes the copy buttons from the content
+  panel. The old "Always copy to clipboard" setting carries over: on becomes
+  Always, off becomes On demand (#47).
 - Quitting PyQtPass clears a password or OTP code it copied, like QtPass.
   Before, only the autoclear timer did, so quitting before it ran, or with
   autoclear off, left the password in the clipboard (#45).

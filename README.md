@@ -33,7 +33,7 @@ PyQtPass follows the feature set of [QtPass 2.0](https://github.com/IJHack/QtPas
 - One dialog for adding and editing entries, with folder picker, field templates (e.g. `login`, `url`)
   and configurable password generation (including a custom character set).
 - Adding, editing, renaming, duplicating and deleting passwords and folders; drag and drop to move (Ctrl to copy).
-- Clipboard integration: copy on demand or automatically, optional X11 selection, automatic clearing after a timeout,
+- Clipboard integration: copy never, on demand or automatically, optional X11 selection, automatic clearing after a timeout,
   and marked as secret so clipboard managers skip it.
 - Git integration: pull and push in the background, automatic pull (on startup, before an edit and before re-encrypting) and automatic pushing of local changes;
   every change to the store is committed.

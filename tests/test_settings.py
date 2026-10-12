@@ -54,3 +54,19 @@ def test_signing_key_from_environment(settings, monkeypatch):
     assert settings.signing_keys() == [FINGERPRINT]
     settings.set("pass_signing_key", "C" * 40)
     assert settings.signing_keys() == ["C" * 40]
+
+
+def test_clipboard_mode_comes_from_the_old_setting(settings):
+    from pyqtpass.settings_manager import (  # pylint: disable=import-outside-toplevel
+        CLIPBOARD_ALWAYS,
+        CLIPBOARD_ON_DEMAND,
+    )
+
+    assert settings.get("clipboard_mode") == CLIPBOARD_ON_DEMAND
+    for old, mode in (("true", CLIPBOARD_ALWAYS), ("false", CLIPBOARD_ON_DEMAND)):
+        settings.settings.setValue("always_copy_to_clipboard", old)
+        settings.load()
+        assert settings.get("clipboard_mode") == mode
+    settings.settings.setValue("clipboard_mode", 7)
+    settings.load()
+    assert settings.get("clipboard_mode") == CLIPBOARD_ON_DEMAND

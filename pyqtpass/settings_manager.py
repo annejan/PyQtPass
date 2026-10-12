@@ -18,6 +18,10 @@ DEFAULT_STORE_DIR = "~/.password-store"
 # holds the settings instead of the platform's settings store.
 PORTABLE_INI = "pyqtpass.ini"
 
+# When to copy the password, QtPass's ClipBoardType: never (no copy buttons),
+# always when an entry is shown, or on demand with the copy buttons.
+CLIPBOARD_NEVER, CLIPBOARD_ALWAYS, CLIPBOARD_ON_DEMAND = range(3)
+
 # Settings a profile can override; None in a profile means "as configured".
 PROFILE_OVERRIDES = ("use_git", "auto_push", "git_pull_on_start")
 
@@ -101,7 +105,7 @@ class SettingsManager:
             "always_on_top": False,
             "use_tray_icon": True,
             "start_minimized": False,
-            "always_copy_to_clipboard": False,
+            "clipboard_mode": CLIPBOARD_ON_DEMAND,
             "autoclear_clipboard": True,
             "clipboard_timeout": 45,
             "hide_password": False,
@@ -195,6 +199,23 @@ class SettingsManager:
                     self.options[key] = value
             else:
                 self.options[key] = value
+        self.load_clipboard_mode()
+
+    def load_clipboard_mode(self):
+        """
+        Check the clipboard mode, or take it from the on/off setting that
+        older versions stored: on is Always, off is On demand.
+        """
+        if self.settings.value("clipboard_mode") is None:
+            always = self.settings.value("always_copy_to_clipboard")
+            if always is not None:
+                self.options["clipboard_mode"] = (
+                    CLIPBOARD_ALWAYS
+                    if str(always).lower() in ("true", "1")
+                    else CLIPBOARD_ON_DEMAND
+                )
+        if self.options["clipboard_mode"] not in range(3):
+            self.options["clipboard_mode"] = CLIPBOARD_ON_DEMAND
 
     def template_fields(self):
         """

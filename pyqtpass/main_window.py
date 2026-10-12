@@ -47,7 +47,7 @@ from pyqtpass.clipboard_actions import ClipboardActionsMixin
 from pyqtpass.config_dialog import ConfigDialog
 from pyqtpass.entry import parse_entry
 from pyqtpass.git_actions import GitActionsMixin
-from pyqtpass.settings_manager import SettingsManager
+from pyqtpass.settings_manager import CLIPBOARD_ALWAYS, SettingsManager
 from pyqtpass.store_setup import (
     apply_executables,
     configured_store_dir,
@@ -302,7 +302,7 @@ class QtPassGUI(
         self.show_key_content(data, path)
         self.verbose_print(f"Opened: {path}")
         self.statusBar().clearMessage()
-        if self.settings.get("always_copy_to_clipboard"):
+        if self.settings.get("clipboard_mode") == CLIPBOARD_ALWAYS:
             self.copy_text_to_clipboard(data.split("\n", 1)[0])
 
     def show_key_content(self, key_data, path=""):
