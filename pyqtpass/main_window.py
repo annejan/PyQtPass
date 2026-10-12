@@ -22,6 +22,7 @@ from PyQt6.QtCore import (
     Qt,
     QCoreApplication,
     QByteArray,
+    QModelIndex,
     QTimer,
     pyqtSignal,
 )
@@ -40,9 +41,10 @@ from PyQt6.QtWidgets import (
     QProgressDialog,
     QSplitter,
     QSystemTrayIcon,
+    QTreeWidgetItem,
 )
 
-from pyqtpass import __version__, executor
+from pyqtpass import __version__, executor, otp
 from pyqtpass.clipboard_actions import ClipboardActionsMixin
 from pyqtpass.config_dialog import ConfigDialog
 from pyqtpass.entry import parse_entry
@@ -62,6 +64,8 @@ from pyqtpass.store_actions import StoreActionsMixin
 from pyqtpass.ui_container import UiContainer
 from pyqtpass.window_actions import WindowActionsMixin
 from pyqtpass.utilities import (
+    IS_FOLDER_ROLE,
+    PATH_ROLE,
     create_tree_model,
     get_icon_path,
     get_item_folder,
@@ -70,6 +74,16 @@ from pyqtpass.utilities import (
     is_folder_item,
     set_locale,
 )
+
+
+def is_otp_line(line):
+    """
+    :param line: A line of an entry.
+    :return: True when it holds an OTP secret: an otpauth:// URI or an
+             'otp:' or 'totp:' field.
+    """
+    name, colon, _ = line.partition(":")
+    return otp.is_otp_uri(line) or bool(colon) and otp.is_otp_field_name(name)
 
 
 class QtPassGUI(
@@ -329,6 +343,8 @@ class QtPassGUI(
         Clear the content panel, called by the panel autoclear timer.
         """
         self.ui.panel.clear()
+        if not self.ui.search_results.isHidden():
+            self.hide_search_results()
 
     # Tree events
 
@@ -522,6 +538,7 @@ class QtPassGUI(
 
     def update_search_placeholder(self):
         """Say in the search box whether Enter searches the content."""
+        self.ui.match_case_button.setVisible(bool(self.settings.get("use_grep_search")))
         if self.settings.get("use_grep_search"):
             self.ui.filter_text_box.setPlaceholderText(
                 self.tr("Filter passwords, Enter searches the content (regex)")
@@ -535,13 +552,14 @@ class QtPassGUI(
         """Search the content of all entries when content search is on."""
         pattern = self.ui.filter_text_box.text()
         if not self.settings.get("use_grep_search") or not pattern:
-            index = self.ui.proxy_model.index(0, 0)
+            index = self.first_entry()
             if index.isValid():
                 self.ui.tree_view.setCurrentIndex(index)
             return
         if self.search_task is not None:
             self.search_task.cancel()
         store = self.store
+        match_case = self.ui.match_case_button.isChecked()
         self.show_status(self.tr("Searching..."), 0)
         task = None
 
@@ -556,6 +574,7 @@ class QtPassGUI(
                 return
             self.ui.proxy_model.set_content_matches(set(results))
             self.ui.tree_view.expandAll()
+            self.show_search_results(results)
             lines = sum(len(found) for found in results.values())
             if results:
                 self.show_status(
@@ -568,11 +587,115 @@ class QtPassGUI(
 
         task = run_task(
             lambda progress, cancelled: store.search(
-                pattern, progress=progress, cancelled=cancelled
+                pattern,
+                progress=progress,
+                cancelled=cancelled,
+                match_case=match_case,
             ),
             done,
         )
         self.search_task = task
+
+    def first_entry(self, parent=None):
+        """
+        :param parent: The proxy index to look below; the root when None.
+        :return: The proxy index of the first password shown, depth first,
+                 or an invalid index when no password is shown.
+        """
+        model = self.ui.proxy_model
+        parent = parent if parent is not None else QModelIndex()
+        for row in range(model.rowCount(parent)):
+            index = model.index(row, 0, parent)
+            if not index.data(IS_FOLDER_ROLE):
+                return index
+            found = self.first_entry(index)
+            if found.isValid():
+                return found
+        return QModelIndex()
+
+    def show_search_results(self, results):
+        """
+        List the matching lines of a content search in place of the tree,
+        like QtPass. Hidden content and a hidden password stay hidden, and
+        an OTP secret is never shown, as in the content panel.
+
+        :param results: Dict of entry path to (line number, line) pairs.
+        """
+        results_list = self.ui.search_results
+        results_list.clear()
+        if not results:
+            self.hide_search_results()
+            return
+        hide_content = self.settings.get("hide_content")
+        hide_password = self.settings.get("hide_password")
+        for path in sorted(results):
+            item = QTreeWidgetItem(results_list, [path])
+            item.setData(0, PATH_ROLE, path)
+            for number, line in results[path]:
+                if hide_content:
+                    line = self.tr("Content hidden")
+                elif (number == 1 and hide_password) or is_otp_line(line):
+                    line = "********"
+                child = QTreeWidgetItem(item, [line])
+                child.setData(0, PATH_ROLE, path)
+        results_list.expandAll()
+        self.ui.tree_view.hide()
+        results_list.show()
+        if self.settings.get("autoclear_panel"):
+            self.panel_timer.start(int(self.settings.get("panel_timeout")) * 1000)
+
+    def hide_search_results(self):
+        """Clear the content search results and show the tree again."""
+        self.ui.search_results.clear()
+        self.ui.search_results.hide()
+        self.ui.tree_view.show()
+
+    def on_search_result_clicked(self, item):
+        """
+        Open the entry of a clicked or activated search result in the tree.
+
+        :param item: The QTreeWidgetItem.
+        """
+        # Later: a click can also activate the item, and clearing the list
+        # now would delete the item the second signal carries.
+        path = item.data(0, PATH_ROLE)
+        QTimer.singleShot(0, lambda: self.open_search_result(path))
+
+    def open_search_result(self, path):
+        """
+        Leave the search results and select an entry in the tree.
+
+        :param path: The entry path.
+        """
+        self.hide_search_results()
+        index = self.find_proxy_index(path)
+        if index.isValid():
+            self.ui.tree_view.setCurrentIndex(index)
+            self.ui.tree_view.scrollTo(index)
+            self.ui.tree_view.setFocus()
+
+    def find_proxy_index(self, path, parent=None):
+        """
+        :param path: An entry path.
+        :param parent: The proxy index to look below; the root when None.
+        :return: The proxy index of that entry, or an invalid index.
+        """
+        model = self.ui.proxy_model
+        parent = parent if parent is not None else QModelIndex()
+        for row in range(model.rowCount(parent)):
+            index = model.index(row, 0, parent)
+            if index.data(PATH_ROLE) == path:
+                return index
+            if index.data(IS_FOLDER_ROLE) and path.startswith(
+                f"{index.data(PATH_ROLE)}/"
+            ):
+                return self.find_proxy_index(path, index)
+        return QModelIndex()
+
+    def on_match_case_toggled(self):
+        """Search again with the new case setting when results are shown."""
+        if not self.ui.search_results.isHidden():
+            self.on_search_return()
 
     # Profiles
 
@@ -708,6 +831,10 @@ Check out the [documentation](https://github.com/annejan/PyQtPass/) for more inf
         self.ui.tree_view.customContextMenuRequested.connect(self.show_context_menu)
         self.ui.tree_view.move_requested.connect(self.on_move_requested)
         self.ui.filter_text_box.returnPressed.connect(self.on_search_return)
+        self.ui.filter_text_box.textChanged.connect(self.hide_search_results)
+        self.ui.match_case_button.toggled.connect(self.on_match_case_toggled)
+        self.ui.search_results.itemActivated.connect(self.on_search_result_clicked)
+        self.ui.search_results.itemClicked.connect(self.on_search_result_clicked)
         self.ui.panel.copy_requested.connect(self.copy_text_to_clipboard)
         self.ui.panel.edit_requested.connect(self.edit_item)
 

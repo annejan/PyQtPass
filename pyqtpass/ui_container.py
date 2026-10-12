@@ -18,8 +18,11 @@ from PyQt6.QtCore import (
 )
 from PyQt6.QtWidgets import (
     QAbstractItemView,
+    QHBoxLayout,
     QLineEdit,
+    QToolButton,
     QTreeView,
+    QTreeWidget,
     QVBoxLayout,
     QWidget,
 )
@@ -163,6 +166,17 @@ class UiContainer(QWidget):
         )
         self.filter_text_box.textChanged.connect(self.filter_tree_view)
 
+        # Content search: match case, and the matching lines per entry.
+        self.match_case_button = QToolButton()
+        self.match_case_button.setText("Aa")
+        self.match_case_button.setCheckable(True)
+        self.match_case_button.setToolTip(self.tr("Match case in content search"))
+        self.match_case_button.setAccessibleName(self.tr("Match case"))
+        self.search_results = QTreeWidget()
+        self.search_results.setHeaderHidden(True)
+        self.search_results.setAccessibleName(self.tr("Search results"))
+        self.search_results.hide()
+
     def setup_ui(self, splitter):
         """
         Set up the User Interface items
@@ -176,9 +190,13 @@ class UiContainer(QWidget):
         self.tree_view = StoreTreeView()
         self.tree_view.setModel(self.proxy_model)
 
+        search_layout = QHBoxLayout()
+        search_layout.addWidget(self.filter_text_box)
+        search_layout.addWidget(self.match_case_button)
         top_layout = QVBoxLayout()
-        top_layout.addWidget(self.filter_text_box)
+        top_layout.addLayout(search_layout)
         top_layout.addWidget(self.tree_view)
+        top_layout.addWidget(self.search_results)
 
         top_widget = QWidget()
         top_widget.setLayout(top_layout)

@@ -84,7 +84,8 @@ def test_move_copy_remove(store):
 def test_search_and_folders(store):
     store.set_key("x/one", "pw\nurl: https://example.org")
     store.set_key("two", "pw\nnote: nothing")
-    assert store.search("example") == {"x/one": ["url: https://example.org"]}
+    assert store.search("EXAMPLE") == {"x/one": [(2, "url: https://example.org")]}
+    assert store.search("EXAMPLE", match_case=True) == {}
     assert store.list_folders() == ["", "x"]
     assert sorted(store.iter_entries()) == ["two", "x/one"]
 
