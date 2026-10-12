@@ -140,12 +140,16 @@ class ConfigDialog(QDialog):
 
         clipboard_group = QGroupBox(self.tr("Clipboard behavior:"), tab)
         clipboard_layout = QFormLayout(clipboard_group)
-        clipboard_layout.addRow(
-            self.add_field(
-                "always_copy_to_clipboard",
-                QCheckBox(self.tr("Always copy to clipboard")),
-            )
+        clipboard_combo_box = QComboBox(self)
+        # In the order of the CLIPBOARD_ modes, like QtPass.
+        clipboard_combo_box.addItems(
+            [
+                self.tr("No clipboard"),
+                self.tr("Always copy to clipboard"),
+                self.tr("On-demand copy to clipboard"),
+            ]
         )
+        clipboard_layout.addRow(self.add_field("clipboard_mode", clipboard_combo_box))
         clipboard_layout.addRow(
             self.add_field(
                 "use_selection",
