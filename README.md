@@ -49,7 +49,8 @@ PyQtPass follows the feature set of [QtPass 2.0](https://github.com/IJHack/QtPas
 - Optionally runs the `pass` script itself for every change, for pass extensions and hooks.
 - Links (and NTFS junctions) inside the store are never followed, and paths cannot escape the store.
 - A menu bar that can be hidden (Ctrl+M); Alt shows it while you use it.
-- System tray icon, start minimized, hide on close, always on top and a single running instance.
+- System tray icon, start minimized, hide on close, always on top and a single running instance;
+  `pyqtpass <search text>` searches in the running window.
 - Cross-platform compatibility, thanks to the Python and PyQt6 combination.
 - Available in the 64 languages QtPass is translated into, for the strings both programs share.
 

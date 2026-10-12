@@ -22,6 +22,13 @@ def test_open_entry_shows_fields_and_otp(qapp, window):
     assert OTP_URI not in panel.text_browser.toPlainText()
 
 
+def test_search_for_fills_the_search_box_and_selects(qapp, window):
+    window.search_for("site")
+    assert window.ui.filter_text_box.text() == "site"
+    assert window.ui.tree_view.currentIndex().isValid()
+    assert find_index(window, "other") is None
+
+
 def test_clipboard_modes(qapp, window, settings):
     from PyQt6.QtWidgets import QToolButton
 

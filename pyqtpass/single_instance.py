@@ -1,6 +1,7 @@
 """
 Keeps PyQtPass to one window per user: a second start asks the running
-instance to show itself, like the QtPass single application.
+instance to show itself, and to search for the text given on the command
+line, like the QtPass single application.
 
 On POSIX the socket lives in the user's private runtime directory (on
 Linux $XDG_RUNTIME_DIR, mode 0700), not in the shared temporary directory,
@@ -20,6 +21,8 @@ from PyQt6.QtCore import QStandardPaths
 from PyQt6.QtNetwork import QLocalServer, QLocalSocket
 
 TIMEOUT_MS = 1000
+# Longest command a running instance reads; a search text is short.
+MAX_COMMAND = 4096
 _token = {}
 
 
@@ -75,7 +78,7 @@ def ask_running_instance(command):
     """
     Send a command to a running instance.
 
-    :param command: b"show" or b"ping".
+    :param command: b"show", b"ping" or b"search " and the UTF-8 text.
     :return: True when a PyQtPass instance answered.
     """
     socket = QLocalSocket()
@@ -92,18 +95,23 @@ def ask_running_instance(command):
     return answer.startswith(expected)
 
 
-def activate_running_instance():
+def activate_running_instance(search=""):
     """
-    Ask an already running PyQtPass to show its window.
+    Ask an already running PyQtPass to show its window, and to search.
 
+    :param search: Text for the search box, may be ''.
     :return: True when another instance answered.
     """
-    return ask_running_instance(b"show")
+    # One line: a newline would end the command.
+    text = " ".join(search.split()).encode("utf-8")
+    if not text:
+        return ask_running_instance(b"show")
+    return ask_running_instance(b"search " + text[: MAX_COMMAND - 8])
 
 
 def listen_for_instances(window):
     """
-    Show the window when another instance is started.
+    Show the window, and search, when another instance is started.
 
     :param window: The main window.
     :return: The QLocalServer, which has to be kept referenced.
@@ -134,12 +142,22 @@ def accept_instance(server, window):
     if connection is None:
         return
     connection.disconnected.connect(connection.deleteLater)
+    received = bytearray()
+    answered = []
 
     def read_command():
-        command = bytes(connection.readAll()).strip()
+        if answered:
+            return
+        received.extend(bytes(connection.readAll()))
+        if b"\n" not in received and len(received) <= MAX_COMMAND:
+            return  # the rest of the command is still on its way
+        answered.append(True)
+        command = bytes(received).split(b"\n", 1)[0][:MAX_COMMAND].strip()
         connection.write(greeting())
         connection.flush()
         if command == b"show":
             window.show_and_raise()
+        elif command.startswith(b"search "):
+            window.search_for(command[7:].decode("utf-8", "ignore"))
 
     connection.readyRead.connect(read_command)
